@@ -11,6 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base, utc_now
 
 if TYPE_CHECKING:
+    from app.modules.foods.models import Food
     from app.modules.nutrition_assessment.models import Assessment
     from app.modules.privacy.models import ConsentRecord
 
@@ -51,6 +52,9 @@ class Profile(Base):
     )
     consent_records: Mapped[list[ConsentRecord]] = relationship(
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
+    )
+    foods: Mapped[list[Food]] = relationship(
+        back_populates="owner", cascade="all, delete-orphan", passive_deletes=True
     )
 
 

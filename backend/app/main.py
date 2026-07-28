@@ -21,6 +21,7 @@ from app.core.errors import (
 )
 from app.core.logging import configure_logging, request_log_middleware
 from app.core.security import assert_safe_runtime_configuration
+from app.modules.foods.router import router as foods_router
 from app.modules.nutrition_assessment.router import router as assessment_router
 from app.modules.privacy.router import router as privacy_router
 from app.modules.profiles.router import router as profiles_router
@@ -64,6 +65,7 @@ app.include_router(profiles_router)
 app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(assessment_router)
+app.include_router(foods_router)
 
 
 @app.get("/health", tags=["operations"])

@@ -451,3 +451,21 @@ The current structured request middleware emits timestamp, random request ID, ro
 Docker Compose publishes both PostgreSQL and the API on host loopback by default. Set `API_BIND_ADDRESS` only when intentional device/LAN reachability is required; this development resolver is not safe for public exposure. The Compose Uvicorn command disables Uvicorn's access log, preventing a second default request log from recording raw paths. Any production ingress, proxy, platform or alternative Uvicorn command needs its own field and retention review.
 
 The API is not production-ready until the blockers in [privacy/production_privacy_checklist.md](privacy/production_privacy_checklist.md) are completed and verified.
+# Food Core
+
+- `GET /api/v1/nutrients` – Katalog; Filter `category`, `basic_only`, `active_only`
+- `GET /api/v1/nutrients/{code}` – Katalogeintrag
+- `GET /api/v1/foods` – eigene Lebensmittel; Suche, Kategorie, Archivfilter und Pagination
+- `GET /api/v1/foods/duplicates` – mögliche Namens-/Markendubletten
+- `POST /api/v1/foods` – Lebensmittel, bekannte Nährwerte und Maße transaktional anlegen
+- `GET /api/v1/foods/{id}` – vollständige Details einschließlich Ableitungen und Qualität
+- `PUT /api/v1/foods/{id}` – eigenes aktives Lebensmittel ersetzen
+- `DELETE /api/v1/foods/{id}` – archivieren, nicht dauerhaft löschen
+- `POST /api/v1/foods/{id}/restore` – wiederherstellen
+- `DELETE /api/v1/foods/{id}/permanent` – eigenes Lebensmittel und abhängige Werte nach ausdrücklicher Bestätigung endgültig löschen
+- `GET /api/v1/foods/barcode/{code}` – Produktvorschau von Open Food Facts laden; überträgt den Barcode an den externen Dienst
+- `POST /api/v1/foods/barcode/{code}/import` – bestätigte Vorschau als profilgebundenes Lebensmittel speichern
+
+Relevante Fehlercodes sind `FOOD_NOT_FOUND`, `FOOD_ARCHIVED`, `FOOD_DUPLICATE_WARNING`, `INCOMPLETE_BASIC_NUTRITION`, `NUTRIENT_NOT_FOUND`, `NUTRIENT_UNIT_MISMATCH`, `INCONSISTENT_SALT_SODIUM`, `INVALID_REFERENCE_BASIS` und `INVALID_MEASURE_CONVERSION`.
+
+Barcodefehler: `INVALID_BARCODE`, `BARCODE_PRODUCT_NOT_FOUND` und `EXTERNAL_FOOD_SERVICE_UNAVAILABLE`.

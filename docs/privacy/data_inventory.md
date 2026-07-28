@@ -176,3 +176,8 @@ Logs must never contain request/response bodies, raw URLs with query data, profi
 ## Explicitly not collected
 
 The MVP does not collect legal name, postal address, phone number, email address, exact location, employer, government identifiers, contact list, advertising ID, device fingerprint, camera/microphone content or payment data. Adding any of these requires a new purpose and privacy review.
+# Food Core
+
+Profilgebundene, manuell eingegebene Lebensmittelnamen, Marken, Beschreibungen, Bezugsbasis, optionale Dichte, Nährwerte und Haushaltsmaße einschließlich Quellen- und Archivmetadaten. Manuell eingegebene Lebensmittel werden nicht an externe Dienste übermittelt.
+
+Bei Barcode-Importen zusätzlich: Barcode, Open-Food-Facts-Quellstand und importierte Produktdaten. Der Barcode wird für die vom Nutzer ausgelöste Suche an Open Food Facts übertragen; Profil- und Bewertungsdaten werden nicht mitgesendet.

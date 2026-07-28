@@ -213,3 +213,6 @@ and known reference gaps are listed in
 The MVP implements technical and architectural measures designed to support German and European
 data-protection requirements. Legal, organizational and production compliance must be reviewed
 before public release.
+# Food Core
+
+Die App unterstützt jetzt profilgebundene, manuell eingegebene Lebensmittel mit Nährwerten pro 100 g/ml, Suche, Qualitätsanzeige, Haushaltsmaßen sowie Archivierung und Wiederherstellung. Details und ehrliche Einschränkungen: [docs/food_core.md](docs/food_core.md).

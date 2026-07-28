@@ -138,3 +138,8 @@ The Compose Uvicorn access log is disabled so this allowlisted application log i
 - Calculation calls to an LLM or external service.
 - Data reuse for recipe import, marketing, research, model training or another undefined purpose.
 - Third-country transfer without a documented provider and transfer review.
+# Food Core
+
+Android-App → eigene FastAPI → PostgreSQL. Lebensmitteldaten verlassen diesen lokalen/selbst betriebenen Datenfluss nicht. Der Export wird nur auf ausdrückliche Aktion erzeugt.
+
+Beim ausdrücklich gestarteten Barcode-Scan gilt abweichend: Android-App → eigene FastAPI → Open Food Facts. Übertragen werden Barcode, technische HTTP-Metadaten und die IP-Adresse des Backendservers. Die Produktantwort wird vor dem Speichern angezeigt. Manuell eingegebene Lebensmittel und Profildaten werden nicht an Open Food Facts übertragen.

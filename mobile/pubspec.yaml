@@ -17,6 +17,7 @@ dependencies:
   go_router: ^17.3.0
   # Keep aligned with the exact version pinned by flutter_localizations.
   intl: 0.20.2
+  mobile_scanner: ^7.4.0
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
   share_plus: ^13.3.0
