@@ -5,6 +5,7 @@ import '../core/config/app_config.dart';
 import '../core/secure_storage/sensitive_store.dart';
 import '../features/nutrition_assessment/assessment_repository.dart';
 import '../features/onboarding/draft_repository.dart';
+import '../features/foods/food_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig was not supplied at startup.'),
@@ -27,4 +28,8 @@ final assessmentRepositoryProvider = Provider<AssessmentRepository>(
     ref.watch(apiClientProvider),
     ref.watch(sensitiveStoreProvider),
   ),
+);
+
+final foodRepositoryProvider = Provider<FoodRepository>(
+  (ref) => FoodRepository(ref.watch(apiClientProvider)),
 );

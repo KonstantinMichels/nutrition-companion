@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.branding import CONSENT_TEXT_VERSION
 from app.core.errors import ApiError
+from app.modules.foods.models import Food
+from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
 from app.modules.nutrition_assessment.models import Assessment
 from app.modules.privacy import repository
 from app.modules.privacy.models import (
@@ -146,6 +148,14 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
         )
     )
     consents = repository.list_consents(session, profile_id)
+    foods = list(
+        session.scalars(
+            select(Food)
+            .where(Food.owner_profile_id == profile_id)
+            .options(selectinload(Food.nutrients), selectinload(Food.measures))
+            .order_by(Food.created_at)
+        )
+    )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
     session.flush()
     privacy_actions = list(
@@ -296,6 +306,47 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for assessment in assessments
         ],
+        "user_created_foods": [
+            {
+                "id": food.id,
+                "name": food.name,
+                "brand": food.brand,
+                "description": food.description,
+                "category_code": food.category_code,
+                "reference_quantity": food.reference_quantity,
+                "reference_unit": food.reference_unit,
+                "density_g_per_ml": food.density_g_per_ml,
+                "source_type": food.source_type,
+                "is_archived": food.is_archived,
+                "archived_at": food.archived_at,
+                "created_at": food.created_at,
+                "updated_at": food.updated_at,
+                "nutrients": [
+                    {
+                        "code": nutrient.nutrient_code,
+                        "name_de": NUTRIENT_BY_CODE[nutrient.nutrient_code].display_name_de,
+                        "amount": nutrient.amount,
+                        "unit": nutrient.unit,
+                        "value_source": nutrient.value_source,
+                        "is_estimated": nutrient.is_estimated,
+                    }
+                    for nutrient in food.nutrients
+                ],
+                "measures": [
+                    {
+                        "name": measure.name,
+                        "quantity": measure.quantity,
+                        "unit_code": measure.unit_code,
+                        "equivalent_quantity": measure.equivalent_quantity,
+                        "equivalent_unit": measure.equivalent_unit,
+                        "is_estimated": measure.is_estimated,
+                        "source_type": measure.source_type,
+                    }
+                    for measure in food.measures
+                ],
+            }
+            for food in foods
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -354,12 +405,16 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
     assessment_count = session.scalar(
         select(func.count()).select_from(Assessment).where(Assessment.profile_id == profile_id)
     )
+    food_count = session.scalar(
+        select(func.count()).select_from(Food).where(Food.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
         + len(profile.restrictions)
         + len(profile.consent_records)
         + int(assessment_count or 0)
+        + int(food_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)

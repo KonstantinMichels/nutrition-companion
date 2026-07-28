@@ -67,6 +67,9 @@ class ApiClient:
     def put(self, url: str, **kwargs: Any) -> httpx2.Response:
         return self.request("PUT", url, **kwargs)
 
+    def delete(self, url: str, **kwargs: Any) -> httpx2.Response:
+        return self.request("DELETE", url, **kwargs)
+
 
 @pytest.fixture
 def db_engine() -> Generator[Engine, None, None]:

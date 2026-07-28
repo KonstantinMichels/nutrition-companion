@@ -204,3 +204,6 @@ The implemented repository is suitable for local development with synthetic data
 - App Store/Play declarations and replacement of `com.example.nutrition_companion`.
 
 The authoritative release gate is [privacy/production_privacy_checklist.md](privacy/production_privacy_checklist.md).
+# Food Core module
+
+`app.modules.foods` is a modular-monolith sibling of profiles, privacy and nutrition assessment. Router → service → repository separates HTTP, domain validation/conversions/quality, and SQLAlchemy access. The code nutrient catalog is authoritative; persisted foods reference stable codes and use `NUMERIC`/`Decimal` throughout.

@@ -91,6 +91,12 @@ final class _NavigationDrawer extends StatelessWidget {
       _destination(context, Icons.history, 'Verlauf', '/history'),
       _destination(
         context,
+        Icons.restaurant_outlined,
+        'Lebensmittel',
+        '/foods',
+      ),
+      _destination(
+        context,
         Icons.person_outline,
         'Profil bearbeiten',
         '/profile',

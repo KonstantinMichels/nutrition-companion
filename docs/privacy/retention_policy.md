@@ -60,3 +60,6 @@ Do not claim this process exists until it is deployed, tested and evidenced.
 Any legal hold, accounting/security requirement or contested request needs a recorded owner, exact scope, legal basis, access restriction, start date, review date and deletion date. Do not retain a full health profile merely to prove that a privacy action occurred.
 
 Review this schedule at least annually in production and whenever a purpose, vendor, legal basis, backup, authentication model or data field changes.
+# Food Core
+
+Aktive und archivierte Lebensmittel bleiben bis zur vollständigen Profillöschung erhalten. Archivierung ist keine Datenschutzlöschung.

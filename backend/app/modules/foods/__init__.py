@@ -1,0 +1,1 @@
+"""Food Core domain module."""

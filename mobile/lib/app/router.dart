@@ -9,6 +9,10 @@ import '../features/onboarding/onboarding_screen.dart';
 import '../features/privacy/privacy_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/foods/food_list_screen.dart';
+import '../features/foods/food_detail_screen.dart';
+import '../features/foods/food_form_screen.dart';
+import '../features/foods/barcode_scanner_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -40,6 +44,28 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/foods',
+      builder: (context, state) => const FoodListScreen(),
+    ),
+    GoRoute(
+      path: '/foods/new',
+      builder: (context, state) => const FoodFormScreen(),
+    ),
+    GoRoute(
+      path: '/foods/scan',
+      builder: (context, state) => const BarcodeScannerScreen(),
+    ),
+    GoRoute(
+      path: '/foods/:id',
+      builder: (context, state) =>
+          FoodDetailScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/foods/:id/edit',
+      builder: (context, state) =>
+          FoodFormScreen(id: state.pathParameters['id']!),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
