@@ -1,0 +1,126 @@
+{
+  "rule_set": {
+    "identifier": "nutrition_companion_mvp_v1",
+    "version": "v1",
+    "name": "Nutrition Companion MVP application rules",
+    "effective_date": "2026-07-28",
+    "engine_version": "nutrition_engine_v1",
+    "classification": "product_application_rules_not_scientific_reference_values"
+  },
+  "pal": {
+    "source_identifier": "dge_pal_reference",
+    "categories": {
+      "mostly_seated": {
+        "minimum": "1.4",
+        "midpoint": "1.45",
+        "maximum": "1.5",
+        "description_de": "Überwiegend sitzende Tätigkeit mit wenig anstrengender Freizeitaktivität."
+      },
+      "seated_with_walking": {
+        "minimum": "1.6",
+        "midpoint": "1.65",
+        "maximum": "1.7",
+        "description_de": "Sitzende Tätigkeit mit zeitweiligem Gehen oder Stehen."
+      },
+      "mostly_standing_walking": {
+        "minimum": "1.8",
+        "midpoint": "1.85",
+        "maximum": "1.9",
+        "description_de": "Überwiegend gehende oder stehende Tätigkeit."
+      },
+      "physically_demanding": {
+        "minimum": "2.0",
+        "midpoint": "2.2",
+        "maximum": "2.4",
+        "description_de": "Körperlich schwere Arbeit oder sehr hohe Alltagsaktivität."
+      }
+    },
+    "sport_adjustment": {
+      "rule_identifier": "pal_sport_plus_0_3_when_dge_pattern_met",
+      "minimum_qualifying_sessions_per_week": "4",
+      "minimum_minutes_per_qualifying_session": "30",
+      "qualifying_intensities": ["moderate", "vigorous"],
+      "adjustment": "0.3",
+      "final_pal_maximum": "2.4",
+      "base_categories_include_logged_sport": false,
+      "manual_override_includes_all_activity": true,
+      "note_de": "Die DGE nennt +0,3 PAL bei 30–60 Minuten anstrengender Freizeitaktivität an 4–5 Tagen pro Woche. Die MVP-Regel wendet +0,3 konservativ ab vier protokollierten Einheiten von mindestens 30 Minuten mit mittlerer oder hoher Intensität an; andere Muster erhalten mangels verifizierter Abstufung keinen erfundenen Teilaufschlag."
+    },
+    "manual_override_minimum": "1.2",
+    "manual_override_maximum": "2.4"
+  },
+  "energy_goal_adjustments_percent": {
+    "maintain_weight": {"default": "0"},
+    "general_health": {"default": "0"},
+    "athletic_performance": {"default": "0"},
+    "lose_weight": {"mild": "-10", "moderate": "-15"},
+    "gain_weight": {"mild": "5", "moderate": "10"}
+  },
+  "energy_safety": {
+    "maximum_deficit_percent": "20",
+    "apply_ree_floor": true,
+    "aggressive_requested_weekly_change_kg": "1.0"
+  },
+  "protein": {
+    "general_adult_19_to_under_65_g_per_kg": "0.8",
+    "age_18_category_a_g_per_kg": "0.9",
+    "age_18_category_b_g_per_kg": "0.8",
+    "age_65_g_per_kg": "1.0",
+    "athletic_threshold_hours_exclusive": "5",
+    "athletic_minimum_g_per_kg": "1.2",
+    "athletic_upper_g_per_kg": "2.0",
+    "selection_g_per_kg": {
+      "weight_loss_with_substantial_training": "1.8",
+      "strength_or_weight_gain": "1.7",
+      "athletic_performance": "1.6",
+      "mixed_or_team": "1.5",
+      "endurance_maintenance": "1.4",
+      "other_athletic": "1.4"
+    },
+    "selection_note_de": "Die Spannweite 1,2–2,0 g/kg/Tag stammt aus der DGE-Sportposition. Die Auswahl innerhalb der Spannweite ist eine transparente MVP-Anwendungsregel und kein eigener DGE-Referenzwert."
+  },
+  "macronutrients": {
+    "fat_energy_percent": "30",
+    "saturated_fat_max_energy_percent": "10",
+    "carbohydrate_guidance_energy_percent_exclusive": "50",
+    "protein_kcal_per_g": "4",
+    "carbohydrate_kcal_per_g": "4",
+    "fat_kcal_per_g": "9"
+  },
+  "fiber": {
+    "absolute_minimum_g_per_day": "30",
+    "energy_relative_g_per_1000_kcal": "14.6"
+  },
+  "validation": {
+    "age_minimum": "13",
+    "age_maximum": "120",
+    "height_cm_minimum_exclusive": "100",
+    "height_cm_maximum": "250",
+    "weight_kg_minimum_exclusive": "25",
+    "weight_kg_maximum": "350",
+    "body_fat_percent_minimum": "2",
+    "body_fat_percent_maximum": "75",
+    "circumference_cm_minimum": "30",
+    "circumference_cm_maximum": "250",
+    "measured_ree_minimum": "500",
+    "measured_ree_maximum": "5000",
+    "sport_sessions_maximum": "14",
+    "sport_minutes_per_session_maximum": "600",
+    "target_weight_kg_minimum_exclusive": "25",
+    "target_weight_kg_maximum": "350",
+    "requested_weekly_rate_kg_maximum": "2"
+  },
+  "presentation_decimal_places": {
+    "bmi": 1,
+    "ratio": 2,
+    "mass_kg": 1,
+    "energy_kcal": 0,
+    "pal": 2,
+    "protein_g_per_kg": 1,
+    "grams": 1,
+    "percentage": 1,
+    "water_ml": 0,
+    "micronutrient": 2
+  }
+}
+

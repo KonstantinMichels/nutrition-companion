@@ -1,0 +1,27 @@
+{
+  "identifier": "dge_food_based_recommendations_2024_mvp_v1",
+  "version": "2024_mvp_structured_v1",
+  "source": {
+    "organization": "Deutsche Gesellschaft für Ernährung (DGE)",
+    "title": "Gut essen und trinken – DGE-Empfehlungen und DGE-Ernährungskreis",
+    "edition": "Veröffentlicht 2024; Online-Fassung abgerufen 2026-07-28",
+    "publication_date": "2024-04-30",
+    "url": "https://www.dge.de/gesunde-ernaehrung/gut-essen-und-trinken/dge-ernaehrungskreis/",
+    "reference_kind": "official_food_based_recommendation",
+    "scope_de": "Orientierungswerte für gesunde Erwachsene von 18 bis 65 Jahren mit Mischkost und etwa 2.000 kcal Energiebedarf; nicht grammgenau als individuelle Vorgabe zu interpretieren."
+  },
+  "recommendations": [
+    {"code": "water_calorie_free_beverages", "display_name_de": "Wasser und kalorienfreie Getränke", "recommendation_de": "Rund 1,5 Liter täglich, am besten Wasser oder andere kalorienfreie Getränke.", "amount": "1.5", "unit": "Liter", "frequency": "daily", "minimum": null, "maximum": null, "combined_group_code": null},
+    {"code": "vegetables", "display_name_de": "Gemüse", "recommendation_de": "Gemüse und Obst bunt auswählen und zusammen mindestens fünf Portionen täglich einplanen.", "amount": null, "unit": "Portionen", "frequency": "daily", "minimum": null, "maximum": null, "combined_group_code": "vegetables_and_fruit"},
+    {"code": "fruit", "display_name_de": "Obst", "recommendation_de": "Obst und Gemüse bunt auswählen und zusammen mindestens fünf Portionen täglich einplanen.", "amount": null, "unit": "Portionen", "frequency": "daily", "minimum": null, "maximum": null, "combined_group_code": "vegetables_and_fruit"},
+    {"code": "legumes", "display_name_de": "Hülsenfrüchte", "recommendation_de": "Mindestens einmal pro Woche Hülsenfrüchte; der Orientierungswert nennt 125 g verzehrfertig pro Portion.", "amount": "125", "unit": "g verzehrfertig", "frequency": "weekly", "minimum": "1", "maximum": null, "combined_group_code": null},
+    {"code": "nuts_seeds", "display_name_de": "Nüsse und Samen", "recommendation_de": "Täglich eine kleine Handvoll ungesalzene Nüsse oder Samen.", "amount": "25", "unit": "g", "frequency": "daily", "minimum": "1", "maximum": null, "combined_group_code": null},
+    {"code": "whole_grain_foods", "display_name_de": "Vollkornprodukte", "recommendation_de": "Bei Getreideprodukten Vollkorn bevorzugen; vom Getreide-Orientierungswert soll mindestens ein Drittel Vollkorn sein.", "amount": null, "unit": null, "frequency": "regularly", "minimum": null, "maximum": null, "combined_group_code": "grain_products"},
+    {"code": "plant_oils", "display_name_de": "Pflanzliche Öle", "recommendation_de": "Pflanzliche Öle bevorzugen; der Orientierungswert nennt einen Esslöffel beziehungsweise 10 g täglich.", "amount": "10", "unit": "g", "frequency": "daily", "minimum": null, "maximum": null, "combined_group_code": null},
+    {"code": "dairy_or_alternatives", "display_name_de": "Milchprodukte oder geeignete Alternativen", "recommendation_de": "Täglich zwei Portionen Milch oder Milchprodukte. Bei pflanzlichen Alternativen besonders auf Calcium, Jod, Vitamin B2 und B12 achten.", "amount": "2", "unit": "Portionen", "frequency": "daily", "minimum": null, "maximum": null, "combined_group_code": null},
+    {"code": "fish", "display_name_de": "Fisch", "recommendation_de": "Ein- bis zweimal pro Woche Fisch, möglichst aus nachhaltigen Quellen.", "amount": "120", "unit": "g je Orientierungsportion", "frequency": "weekly", "minimum": "1", "maximum": "2", "combined_group_code": null},
+    {"code": "meat_processed_meat", "display_name_de": "Fleisch und Wurst", "recommendation_de": "Wenn Fleisch und Wurst gegessen werden, zusammen höchstens 300 g pro Woche.", "amount": "300", "unit": "g", "frequency": "weekly", "minimum": null, "maximum": "300", "combined_group_code": null},
+    {"code": "highly_processed_discretionary", "display_name_de": "Süße, salzige und fettreiche Extras", "recommendation_de": "Stark verarbeitete süße, salzige und fettreiche Produkte sowie zuckergesüßte Getränke nur gelegentlich und in kleinen Mengen.", "amount": null, "unit": null, "frequency": "occasionally", "minimum": null, "maximum": null, "combined_group_code": null}
+  ]
+}
+

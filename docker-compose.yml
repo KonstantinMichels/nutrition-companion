@@ -1,0 +1,48 @@
+name: nutrition-companion
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nutrition_companion
+      POSTGRES_USER: nutrition_dev
+      POSTGRES_PASSWORD: nutrition_dev_only
+    volumes:
+      - nutrition_companion_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrition_dev -d nutrition_companion"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  api:
+    build:
+      context: ./backend
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://nutrition_dev:nutrition_dev_only@db:5432/nutrition_companion}
+      API_HOST: ${API_HOST:-0.0.0.0}
+      API_PORT: ${API_PORT:-8000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      DEVELOPMENT_PROFILE_ID: ${DEVELOPMENT_PROFILE_ID:-00000000-0000-4000-8000-000000000001}
+      USE_DEVELOPMENT_PROFILE_RESOLVER: ${USE_DEVELOPMENT_PROFILE_RESOLVER:-true}
+      ALLOW_INSECURE_LOCAL_HTTP: ${ALLOW_INSECURE_LOCAL_HTTP:-true}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    command: >-
+      sh -c "alembic upgrade head &&
+      python -m app.modules.reference_data.seed &&
+      uvicorn app.main:app --host $${API_HOST} --port $${API_PORT} --no-access-log"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-8000}:${API_PORT:-8000}"
+
+volumes:
+  nutrition_companion_db:

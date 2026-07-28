@@ -1,0 +1,22 @@
+# This file tracks properties of this Flutter project.
+version:
+  revision: "ee80f08"
+  channel: "stable"
+
+project_type: app
+
+migration:
+  platforms:
+    - platform: root
+      create_revision: ee80f08
+      base_revision: ee80f08
+    - platform: android
+      create_revision: ee80f08
+      base_revision: ee80f08
+    - platform: ios
+      create_revision: ee80f08
+      base_revision: ee80f08
+
+  unmanaged_files:
+    - 'lib/main.dart'
+    - 'ios/Runner.xcodeproj/project.pbxproj'

@@ -1,0 +1,31 @@
+name: nutrition_companion
+description: Android-first client for transparent nutrition assessments.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  dio: ^5.11.0
+  flutter_riverpod: ^3.4.2
+  flutter_secure_storage: ^10.3.1
+  go_router: ^17.3.0
+  # Keep aligned with the exact version pinned by flutter_localizations.
+  intl: 0.20.2
+  package_info_plus: ^10.2.1
+  path_provider: ^2.1.6
+  share_plus: ^13.3.0
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

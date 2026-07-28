@@ -1,0 +1,392 @@
+from __future__ import annotations
+
+import secrets
+from datetime import UTC, datetime
+from decimal import Decimal
+from typing import Any
+from uuid import UUID
+
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, selectinload
+
+from app.core.branding import CONSENT_TEXT_VERSION
+from app.core.errors import ApiError
+from app.modules.nutrition_assessment.models import Assessment
+from app.modules.privacy import repository
+from app.modules.privacy.models import (
+    ConsentRecord,
+    DeletionRecord,
+    PrivacyAction,
+    ProcessingPurpose,
+)
+from app.modules.privacy.schemas import ConsentCreate, DeletionResponse, PrivacyExportResponse
+from app.modules.profiles import repository as profile_repository
+
+REQUIRED_ASSESSMENT_PURPOSE = "nutrition_assessment_calculation"
+
+
+def grant_consent(session: Session, profile_id: UUID, payload: ConsentCreate) -> ConsentRecord:
+    if profile_repository.get_profile(session, profile_id) is None:
+        raise ApiError(
+            code="PROFILE_NOT_FOUND",
+            message="Speichere zuerst dein Profil.",
+            status_code=404,
+        )
+    if not payload.affirmed:
+        raise ApiError(
+            code="CONSENT_NOT_GRANTED",
+            message="Ohne ausdrückliche Einwilligung wird keine Auswertung erstellt.",
+            status_code=422,
+        )
+    if payload.consent_text_version != CONSENT_TEXT_VERSION:
+        raise ApiError(
+            code="CONSENT_TEXT_VERSION_MISMATCH",
+            message="Die Einwilligungsinformation wurde aktualisiert. Bitte lies sie erneut.",
+            status_code=409,
+        )
+    purpose = session.get(ProcessingPurpose, payload.purpose_code)
+    if purpose is None or not purpose.consent_required:
+        raise ApiError(
+            code="PURPOSE_NOT_AVAILABLE",
+            message="Der Verarbeitungszweck ist nicht verfügbar.",
+            status_code=409,
+        )
+
+    existing = repository.active_consent(
+        session,
+        profile_id,
+        payload.purpose_code,
+        payload.consent_text_version,
+    )
+    if existing is not None:
+        return existing
+
+    now = datetime.now(UTC)
+    record = ConsentRecord(
+        profile_id=profile_id,
+        purpose_code=payload.purpose_code,
+        consent_text_version=payload.consent_text_version,
+        status="granted",
+        granted_at=now,
+        source=payload.source,
+    )
+    session.add(record)
+    session.add(PrivacyAction(profile_id=profile_id, action_type="consent_granted"))
+    session.commit()
+    return record
+
+
+def withdraw_consent(session: Session, profile_id: UUID, consent_id: UUID) -> ConsentRecord:
+    record = session.get(ConsentRecord, consent_id)
+    if record is None or record.profile_id != profile_id:
+        raise ApiError(
+            code="CONSENT_NOT_FOUND",
+            message="Der Einwilligungsnachweis wurde nicht gefunden.",
+            status_code=404,
+        )
+    active_records = repository.active_consents_for_version(
+        session,
+        profile_id,
+        record.purpose_code,
+        record.consent_text_version,
+    )
+    if active_records:
+        withdrawn_at = datetime.now(UTC)
+        for active_record in active_records:
+            active_record.status = "withdrawn"
+            active_record.withdrawn_at = withdrawn_at
+        session.add(PrivacyAction(profile_id=profile_id, action_type="consent_withdrawn"))
+        session.commit()
+    return record
+
+
+def require_assessment_consent(session: Session, profile_id: UUID) -> ConsentRecord:
+    consent = repository.active_consent(
+        session,
+        profile_id,
+        REQUIRED_ASSESSMENT_PURPOSE,
+        CONSENT_TEXT_VERSION,
+    )
+    if consent is None:
+        raise ApiError(
+            code="CONSENT_REQUIRED",
+            message="Für eine neue Auswertung ist deine ausdrückliche Einwilligung erforderlich.",
+            status_code=403,
+        )
+    return consent
+
+
+def _measurement_dict(item: Any) -> dict[str, Any]:
+    return {
+        "id": item.id,
+        "measurement_type": item.measurement_type,
+        "value": item.value,
+        "unit": item.unit,
+        "measured_at": item.measured_at,
+        "source_type": item.source_type,
+        "created_at": item.created_at,
+    }
+
+
+def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
+    profile = profile_repository.get_profile(session, profile_id)
+    if profile is None:
+        raise ApiError(
+            code="PROFILE_NOT_FOUND",
+            message="Es sind keine Profildaten zum Exportieren gespeichert.",
+            status_code=404,
+        )
+    assessments = list(
+        session.scalars(
+            select(Assessment)
+            .where(Assessment.profile_id == profile_id)
+            .options(selectinload(Assessment.metrics), selectinload(Assessment.safety_flags))
+            .order_by(Assessment.calculated_at)
+        )
+    )
+    consents = repository.list_consents(session, profile_id)
+    session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
+    session.flush()
+    privacy_actions = list(
+        session.scalars(
+            select(PrivacyAction)
+            .where(PrivacyAction.profile_id == profile_id)
+            .order_by(PrivacyAction.occurred_at)
+        )
+    )
+    activity = profile.activity_profile
+    goal = profile.goal
+    screening = profile.health_screening
+
+    export_data: dict[str, Any] = {
+        "profile": {
+            "id": profile.id,
+            "birth_date": profile.birth_date,
+            "physiological_category": profile.physiological_category,
+            "height_cm": profile.height_cm,
+            "current_weight_kg": profile.current_weight_kg,
+            "dietary_preference": profile.dietary_preference,
+            "preferred_meals_per_day": profile.preferred_meals_per_day,
+            "preferred_meal_timing": profile.preferred_meal_timing,
+            "created_at": profile.created_at,
+            "updated_at": profile.updated_at,
+        },
+        "measurements": [_measurement_dict(item) for item in profile.measurements],
+        "activity": None
+        if activity is None
+        else {
+            "occupational_activity_category": activity.occupational_activity_category,
+            "average_daily_steps": activity.average_daily_steps,
+            "active_commuting": activity.active_commuting,
+            "movement_notes": activity.movement_notes,
+            "manual_pal_override": activity.manual_pal_override,
+            "sports": [
+                {
+                    "id": sport.id,
+                    "sport_type": sport.sport_type,
+                    "sessions_per_week": sport.sessions_per_week,
+                    "minutes_per_session": sport.minutes_per_session,
+                    "intensity": sport.intensity,
+                    "note": sport.note,
+                }
+                for sport in activity.sports
+            ],
+            "created_at": activity.created_at,
+            "updated_at": activity.updated_at,
+        },
+        "goal": None
+        if goal is None
+        else {
+            "goal_type": goal.goal_type,
+            "target_weight_kg": goal.target_weight_kg,
+            "desired_intensity": goal.desired_intensity,
+            "requested_weekly_rate_kg": goal.requested_weekly_rate_kg,
+            "created_at": goal.created_at,
+            "updated_at": goal.updated_at,
+        },
+        "dietary_restrictions": [
+            {
+                "id": item.id,
+                "restriction_type": item.restriction_type,
+                "value": item.value,
+                "hard_exclusion": item.hard_exclusion,
+                "note": item.note,
+            }
+            for item in profile.restrictions
+        ],
+        "health_screening": None
+        if screening is None
+        else {
+            "pregnant": screening.pregnant,
+            "breastfeeding": screening.breastfeeding,
+            "diagnosed_eating_disorder": screening.diagnosed_eating_disorder,
+            "diabetes": screening.diabetes,
+            "kidney_disease": screening.kidney_disease,
+            "liver_disease": screening.liver_disease,
+            "medically_prescribed_diet": screening.medically_prescribed_diet,
+            "serious_metabolic_condition": screening.serious_metabolic_condition,
+            "other_professional_nutrition_condition": (
+                screening.other_professional_nutrition_condition
+            ),
+            "user_note": screening.user_note,
+            "screened_at": screening.screened_at,
+        },
+        "consent_records": [
+            {
+                "id": item.id,
+                "purpose_code": item.purpose_code,
+                "consent_text_version": item.consent_text_version,
+                "status": item.status,
+                "granted_at": item.granted_at,
+                "withdrawn_at": item.withdrawn_at,
+                "source": item.source,
+                "created_at": item.created_at,
+            }
+            for item in consents
+        ],
+        "privacy_actions": [
+            {
+                "action_type": item.action_type,
+                "occurred_at": item.occurred_at,
+                "outcome": item.outcome,
+            }
+            for item in privacy_actions
+        ],
+        "assessments": [
+            {
+                "id": assessment.id,
+                "client_request_id": assessment.client_request_id,
+                "input_snapshot": assessment.input_snapshot,
+                "supported_scope_status": assessment.supported_scope_status,
+                "reference_set_identifier": assessment.reference_set_identifier,
+                "reference_set_version": assessment.reference_set_version,
+                "application_rule_set_identifier": assessment.application_rule_set_identifier,
+                "application_rule_set_version": assessment.application_rule_set_version,
+                "engine_version": assessment.engine_version,
+                "calculated_at": assessment.calculated_at,
+                "summary": assessment.summary,
+                "metrics": [
+                    {
+                        "metric_code": metric.metric_code,
+                        "raw_value": metric.raw_value,
+                        "display_value": metric.display_value,
+                        "lower_value": metric.lower_value,
+                        "upper_value": metric.upper_value,
+                        "unit": metric.unit,
+                        "method_code": metric.method_code,
+                        "explanation_de": metric.explanation_de,
+                        "limitations_de": metric.limitations_de,
+                        "calculation_inputs": metric.calculation_inputs,
+                        "source_metadata": metric.source_metadata,
+                        "application_rule_identifier": metric.application_rule_identifier,
+                        "confidence_type": metric.confidence_type,
+                    }
+                    for metric in assessment.metrics
+                ],
+                "safety_flags": [
+                    {
+                        "code": flag.code,
+                        "severity": flag.severity,
+                        "explanation_de": flag.explanation_de,
+                        "recommended_action_de": flag.recommended_action_de,
+                    }
+                    for flag in assessment.safety_flags
+                ],
+            }
+            for assessment in assessments
+        ],
+    }
+    session.commit()
+    return PrivacyExportResponse(
+        generated_at=datetime.now(UTC),
+        notice_de=(
+            "Dieser Export wurde auf deine ausdrückliche Aktion erstellt und enthält die "
+            "im lokalen MVP gespeicherten Profildaten."
+        ),
+        data=jsonable_encoder(export_data, custom_encoder={Decimal: str}),
+    )
+
+
+def delete_assessment_history(session: Session, profile_id: UUID) -> DeletionResponse:
+    if profile_repository.get_profile(session, profile_id) is None:
+        raise ApiError(
+            code="PROFILE_NOT_FOUND",
+            message="Es wurde kein Profil gefunden.",
+            status_code=404,
+        )
+    assessments = list(
+        session.scalars(select(Assessment).where(Assessment.profile_id == profile_id))
+    )
+    count = len(assessments)
+    confirmation = secrets.token_hex(8)
+    try:
+        for assessment in assessments:
+            session.delete(assessment)
+        session.add(PrivacyAction(profile_id=profile_id, action_type="assessment_history_deleted"))
+        session.add(
+            DeletionRecord(
+                deletion_scope="assessment_history",
+                deleted_record_count=count,
+                confirmation_code=confirmation,
+            )
+        )
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return DeletionResponse(
+        deleted=True,
+        scope="assessment_history",
+        confirmation_code=confirmation,
+        message_de="Der Auswertungsverlauf wurde dauerhaft aus der aktiven Datenbank gelöscht.",
+    )
+
+
+def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionResponse:
+    profile = profile_repository.get_profile(session, profile_id)
+    if profile is None:
+        raise ApiError(
+            code="PROFILE_NOT_FOUND",
+            message="Es wurde kein Profil gefunden.",
+            status_code=404,
+        )
+    assessment_count = session.scalar(
+        select(func.count()).select_from(Assessment).where(Assessment.profile_id == profile_id)
+    )
+    approximate_count = (
+        1
+        + len(profile.measurements)
+        + len(profile.restrictions)
+        + len(profile.consent_records)
+        + int(assessment_count or 0)
+        + (1 if profile.activity_profile else 0)
+        + (1 if profile.goal else 0)
+        + (1 if profile.health_screening else 0)
+    )
+    confirmation = secrets.token_hex(8)
+    try:
+        session.delete(profile)
+        session.flush()
+        # Deliberately omit the former profile UUID from post-deletion audit data.
+        session.add(PrivacyAction(profile_id=None, action_type="profile_deleted"))
+        session.add(
+            DeletionRecord(
+                deletion_scope="complete_profile",
+                deleted_record_count=approximate_count,
+                confirmation_code=confirmation,
+            )
+        )
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return DeletionResponse(
+        deleted=True,
+        scope="complete_profile",
+        confirmation_code=confirmation,
+        message_de=(
+            "Das Profil und die zugehörigen aktiven Daten wurden dauerhaft gelöscht. "
+            "Lösche nun auch die lokalen verschlüsselten App-Daten."
+        ),
+    )

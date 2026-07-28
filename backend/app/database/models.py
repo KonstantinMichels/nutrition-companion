@@ -1,0 +1,39 @@
+"""Import all ORM models so Alembic sees one complete metadata graph."""
+
+from app.modules.nutrition_assessment.models import Assessment, AssessmentMetric, SafetyFlag
+from app.modules.privacy.models import (
+    ConsentRecord,
+    DeletionRecord,
+    PrivacyAction,
+    ProcessingPurpose,
+)
+from app.modules.profiles.models import (
+    ActivityProfile,
+    DietaryRestriction,
+    HealthScreening,
+    Measurement,
+    NutritionGoal,
+    Profile,
+    SportActivity,
+)
+from app.modules.reference_data.models import ApplicationRuleSet, ReferenceSet, ReferenceValue
+
+__all__ = [
+    "ActivityProfile",
+    "ApplicationRuleSet",
+    "Assessment",
+    "AssessmentMetric",
+    "ConsentRecord",
+    "DeletionRecord",
+    "DietaryRestriction",
+    "HealthScreening",
+    "Measurement",
+    "NutritionGoal",
+    "PrivacyAction",
+    "ProcessingPurpose",
+    "Profile",
+    "ReferenceSet",
+    "ReferenceValue",
+    "SafetyFlag",
+    "SportActivity",
+]
