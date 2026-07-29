@@ -1,5 +1,9 @@
 # Personal-data inventory
 
+Pantry data includes profile-owned storage locations, Food references, current and
+entered quantities, dates, free-text notes, archive/depletion state, and immutable
+movement history with before/after balances and operation identifiers.
+
 Weekly views are sensitive derived planning data calculated from daily plans,
 assessments, foods, and recipes. No weekly record, history, local cache, or export copy
 is persisted.

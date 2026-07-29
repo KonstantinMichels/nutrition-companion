@@ -1,5 +1,9 @@
 # Processing-purpose registry
 
+`pantry_management` covers user-requested storage, organization, and traceability of
+manual food stock. It is optional service storage and introduces no new consent checkbox
+in this architecture; the legal basis still requires qualified review.
+
 The existing `daily_meal_planning` purpose includes manual weekly organization and the
 on-demand aggregation of daily plans. This adds no automated decision and needs no
 redundant consent.

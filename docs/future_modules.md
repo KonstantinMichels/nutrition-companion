@@ -1,5 +1,10 @@
 # Future modules
 
+The next expected branch is `feat/shopping-list-core`. It will collect requirements
+from selected daily or weekly plans, normalize quantities, compare them with Pantry
+availability, calculate missing amounts, and allow manual entries while keeping planned
+requirements separate from actual purchases. None of this is implemented in Pantry Core.
+
 The next expected branch is `feat/pantry-core`. Pantry Core will introduce stored food
 items, available quantities, storage locations, optional best-before dates, manual stock
 adjustments, and links to Food Core. It prepares later pantry-aware planning and shopping

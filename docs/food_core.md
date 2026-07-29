@@ -1,5 +1,9 @@
 # Food Core
 
+Pantry Core reuses Food reference units, densities, and household measures. Food Core
+does not import or calculate Pantry availability. Archiving a food preserves existing
+lots but prevents new stock creation.
+
 Food Core verwaltet manuell angelegte und ausdrücklich aus Open Food Facts importierte, profilgebundene Lebensmittel. Der Barcode-Import ist keine Herstellerprüfung. Rezepte, Vorräte und Mahlzeitenplanung sind noch nicht implementiert.
 
 ## Modell und Katalog

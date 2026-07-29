@@ -3,6 +3,7 @@
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
 from app.modules.foods.models import Food, FoodMeasure, FoodNutrient
 from app.modules.nutrition_assessment.models import Assessment, AssessmentMetric, SafetyFlag
+from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.privacy.models import (
     ConsentRecord,
     DeletionRecord,
@@ -38,6 +39,9 @@ __all__ = [
     "MealEntry",
     "Measurement",
     "NutritionGoal",
+    "PantryLocation",
+    "PantryMovement",
+    "PantryStockLot",
     "PrivacyAction",
     "ProcessingPurpose",
     "Profile",

@@ -1,5 +1,9 @@
 # Retention policy
 
+Pantry lots and movement history remain until complete profile deletion. Archive and
+depletion are operational states, not privacy deletion. No Pantry draft/cache is
+persisted on the device in this MVP.
+
 Weekly results remain only in Flutter memory for the open session. The server does not
 persist them. Daily source plans follow the existing retention and archive rules.
 

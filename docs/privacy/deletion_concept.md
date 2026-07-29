@@ -1,5 +1,9 @@
 # Deletion concept
 
+Complete profile deletion removes Pantry movements, lots, and locations before Food
+records so restrictive source references cannot become orphaned. Archiving Pantry or
+Food records never silently deletes inventory history.
+
 Weekly Meal Planning adds no deletable entity. Deleting the profile or daily plans
 removes the sources; refreshing or clearing application state removes the derived view.
 
