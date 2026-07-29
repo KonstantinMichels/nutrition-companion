@@ -24,6 +24,7 @@ from app.core.security import assert_safe_runtime_configuration
 from app.modules.daily_meal_planning.router import router as daily_plans_router
 from app.modules.foods.router import router as foods_router
 from app.modules.nutrition_assessment.router import router as assessment_router
+from app.modules.pantry.router import router as pantry_router
 from app.modules.privacy.router import router as privacy_router
 from app.modules.profiles.router import router as profiles_router
 from app.modules.recipe_target_comparison.router import router as comparison_router
@@ -69,6 +70,7 @@ app.include_router(profiles_router)
 app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(daily_plans_router)
+app.include_router(pantry_router)
 app.include_router(weekly_plans_router)
 app.include_router(comparison_router)
 app.include_router(assessment_router)

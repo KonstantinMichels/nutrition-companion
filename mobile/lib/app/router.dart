@@ -19,12 +19,30 @@ import '../features/recipes/recipe_list_screen.dart';
 import '../features/daily_plans/daily_plan_editor_screen.dart';
 import '../features/daily_plans/daily_plan_screen.dart';
 import '../features/weekly_plans/weekly_plan_screen.dart';
+import '../features/pantry/pantry_add_screen.dart';
+import '../features/pantry/pantry_detail_screen.dart';
+import '../features/pantry/pantry_locations_screen.dart';
+import '../features/pantry/pantry_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),
+    GoRoute(
+      path: '/pantry/add',
+      builder: (context, state) => const PantryAddScreen(),
+    ),
+    GoRoute(
+      path: '/pantry/locations',
+      builder: (context, state) => const PantryLocationsScreen(),
+    ),
+    GoRoute(
+      path: '/pantry/items/:id',
+      builder: (context, state) =>
+          PantryDetailScreen(id: state.pathParameters['id']!),
+    ),
     GoRoute(
       path: '/weekly-plan',
       builder: (context, state) => const WeeklyPlanScreen(),

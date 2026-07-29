@@ -1,5 +1,13 @@
 # REST API
 
+## Pantry Core
+
+`/api/v1/pantry` exposes summary, location CRUD/archive/restore, paginated lots,
+availability, lot detail/metadata, immutable movements, add, consume, discard,
+correction, transfer, archive, and restore. Quantity-changing requests require a
+client-generated `client_operation_id`. Generic metadata updates cannot change balance
+or food reference. See [Pantry Core](pantry_core.md).
+
 ## Weekly Meal Planning
 
 `GET /api/v1/weekly-meal-plans?anchor_date=YYYY-MM-DD` normalizes the anchor to

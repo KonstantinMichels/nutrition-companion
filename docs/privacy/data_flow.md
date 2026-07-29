@@ -1,5 +1,9 @@
 # Personal-data flows
 
+Pantry inputs flow from the Android form to the first-party FastAPI inventory service
+and PostgreSQL. Food Core supplies local conversion metadata. No external service,
+analytics recipient, or third-country transfer receives Pantry data.
+
 For Weekly Meal Planning the Android client sends a local anchor date to the first-party
 API. The API batch-loads profile-owned daily source records, derives the response in
 memory, and returns it to the client. No external recipient or third-country transfer is

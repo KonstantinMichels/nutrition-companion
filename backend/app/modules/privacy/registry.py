@@ -114,6 +114,28 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
         "required": False,
     },
     {
+        "code": "pantry_management",
+        "description_de": "Manuelle Verwaltung verfügbarer Lebensmittelbestände und Lagerorte.",
+        "data_categories": [
+            "food references",
+            "stock quantities",
+            "locations",
+            "dates",
+            "inventory movements",
+            "notes",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; no Pantry form cache in the MVP",
+        "retention_period": "Until complete profile deletion",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Lagerorte, Bestände und Bewegungen werden bei vollständiger Profillöschung entfernt."
+        ),
+        "required": False,
+    },
+    {
         "code": "technical_security_logging",
         "description_de": (
             "Minimierte technische Protokolle zur Fehler- und Sicherheitsanalyse ohne Inhaltsdaten."

@@ -1,5 +1,10 @@
 # Architecture
 
+Pantry Core depends on Food Core (`Pantry Core → Food Core`) for unit, density, and
+FoodMeasure normalization. Food, Recipe, Daily Planning, and Weekly Planning do not
+depend on Pantry Core. A later Shopping List Core may read plan requirements and Pantry
+availability without reversing this dependency.
+
 Weekly Meal Planning is a read-time aggregation module over seven local-date daily
 plans. It introduces REST read/action endpoints but no weekly database entity or
 calculation cache. See [Weekly Meal Planning](weekly_meal_planning.md).

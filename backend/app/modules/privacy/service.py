@@ -16,6 +16,7 @@ from app.modules.daily_meal_planning.models import DailyMealPlan, Meal
 from app.modules.foods.models import Food
 from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
 from app.modules.nutrition_assessment.models import Assessment
+from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.privacy import repository
 from app.modules.privacy.models import (
     ConsentRecord,
@@ -183,6 +184,27 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .where(DailyMealPlan.owner_profile_id == profile_id)
             .options(selectinload(DailyMealPlan.meals).selectinload(Meal.entries))
             .order_by(DailyMealPlan.plan_date, DailyMealPlan.created_at)
+        )
+    )
+    pantry_locations = list(
+        session.scalars(
+            select(PantryLocation)
+            .where(PantryLocation.owner_profile_id == profile_id)
+            .order_by(PantryLocation.position)
+        )
+    )
+    pantry_lots = list(
+        session.scalars(
+            select(PantryStockLot)
+            .where(PantryStockLot.owner_profile_id == profile_id)
+            .order_by(PantryStockLot.created_at)
+        )
+    )
+    pantry_movements = list(
+        session.scalars(
+            select(PantryMovement)
+            .where(PantryMovement.owner_profile_id == profile_id)
+            .order_by(PantryMovement.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -465,6 +487,68 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for plan in daily_plans
         ],
+        "pantry_locations": [
+            {
+                "id": item.id,
+                "name": item.name,
+                "location_type": item.location_type,
+                "position": item.position,
+                "description": item.description,
+                "is_archived": item.is_archived,
+                "archived_at": item.archived_at,
+                "created_at": item.created_at,
+                "updated_at": item.updated_at,
+            }
+            for item in pantry_locations
+        ],
+        "pantry_stock_lots": [
+            {
+                "id": item.id,
+                "food_id": item.food_id,
+                "location_id": item.location_id,
+                "current_quantity": item.current_quantity,
+                "normalized_unit": item.normalized_unit,
+                "initial_entered_quantity": item.initial_entered_quantity,
+                "initial_entered_unit_code": item.initial_entered_unit_code,
+                "initial_food_measure_id": item.initial_food_measure_id,
+                "initial_conversion_estimated": item.initial_conversion_estimated,
+                "purchase_date": item.purchase_date,
+                "opened_date": item.opened_date,
+                "best_before_date": item.best_before_date,
+                "use_by_date": item.use_by_date,
+                "note": item.note,
+                "is_depleted": item.is_depleted,
+                "depleted_at": item.depleted_at,
+                "is_archived": item.is_archived,
+                "archived_at": item.archived_at,
+                "version": item.version,
+                "created_at": item.created_at,
+                "updated_at": item.updated_at,
+            }
+            for item in pantry_lots
+        ],
+        "pantry_movements": [
+            {
+                "id": item.id,
+                "stock_lot_id": item.stock_lot_id,
+                "movement_type": item.movement_type,
+                "quantity_delta": item.quantity_delta,
+                "normalized_unit": item.normalized_unit,
+                "balance_before": item.balance_before,
+                "balance_after": item.balance_after,
+                "entered_quantity": item.entered_quantity,
+                "entered_unit_code": item.entered_unit_code,
+                "food_measure_id": item.food_measure_id,
+                "conversion_estimated": item.conversion_estimated,
+                "source_type": item.source_type,
+                "note": item.note,
+                "target_location_id": item.target_location_id,
+                "related_stock_lot_id": item.related_stock_lot_id,
+                "client_operation_id": item.client_operation_id,
+                "created_at": item.created_at,
+            }
+            for item in pantry_movements
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -534,6 +618,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         .select_from(DailyMealPlan)
         .where(DailyMealPlan.owner_profile_id == profile_id)
     )
+    pantry_count = session.scalar(
+        select(func.count())
+        .select_from(PantryStockLot)
+        .where(PantryStockLot.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -543,6 +632,7 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(food_count or 0)
         + int(recipe_count or 0)
         + int(daily_plan_count or 0)
+        + int(pantry_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
@@ -551,6 +641,10 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
     try:
         # Plan entries and recipe ingredients protect their source records.
         session.execute(delete(DailyMealPlan).where(DailyMealPlan.owner_profile_id == profile_id))
+        session.flush()
+        session.execute(delete(PantryMovement).where(PantryMovement.owner_profile_id == profile_id))
+        session.execute(delete(PantryStockLot).where(PantryStockLot.owner_profile_id == profile_id))
+        session.execute(delete(PantryLocation).where(PantryLocation.owner_profile_id == profile_id))
         session.flush()
         session.execute(delete(Recipe).where(Recipe.owner_profile_id == profile_id))
         session.flush()

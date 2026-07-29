@@ -108,6 +108,7 @@ final class _NavigationDrawer extends StatelessWidget {
         'Wochenplan',
         '/weekly-plan',
       ),
+      _destination(context, Icons.inventory_2_outlined, 'Vorrat', '/pantry'),
       _destination(
         context,
         Icons.person_outline,
