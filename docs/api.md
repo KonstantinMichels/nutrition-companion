@@ -104,6 +104,12 @@ Common statuses:
 | DELETE | `/api/v1/recipes/{recipe_id}` | Yes | — | Archive, but do not erase, a recipe |
 | DELETE | `/api/v1/recipes/{recipe_id}/permanent` | Yes | — | Permanently delete the owned recipe graph |
 | POST | `/api/v1/recipes/{recipe_id}/restore` | Yes | — | Restore an archived recipe |
+| GET | `/api/v1/recipes/{recipe_id}/target-comparison` | Yes | Optional `assessment_id`, `portion_count` | Grouped on-demand personal target comparison |
+| GET | `/api/v1/assessments/comparable` | Yes | — | Lightweight owned assessment selector with usability state |
+
+## Recipe Target Comparison
+
+Without `assessment_id`, the newest supported owned assessment with at least one mapped quantitative target is selected. `portion_count` defaults to 1 and accepts a positive Decimal up to 100. Archived owned recipes remain comparable. Unsupported/foreign/missing assessments and recipes use the standard German error envelope. Results include current recipe and immutable assessment timestamps/versions, nutrient-specific target kinds, selected known amounts, percentages, relation, coverage, missing ingredients, deterministic explanations and calculation formulas. Results are derived and not persisted.
 
 ## Recipe Core
 

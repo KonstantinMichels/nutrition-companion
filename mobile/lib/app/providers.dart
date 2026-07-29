@@ -7,6 +7,7 @@ import '../features/nutrition_assessment/assessment_repository.dart';
 import '../features/onboarding/draft_repository.dart';
 import '../features/foods/food_repository.dart';
 import '../features/recipes/recipe_repository.dart';
+import '../features/recipes/recipe_comparison_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig was not supplied at startup.'),
@@ -37,4 +38,8 @@ final foodRepositoryProvider = Provider<FoodRepository>(
 
 final recipeRepositoryProvider = Provider<RecipeRepository>(
   (ref) => RecipeRepository(ref.watch(apiClientProvider)),
+);
+
+final recipeComparisonRepositoryProvider = Provider<RecipeComparisonRepository>(
+  (ref) => RecipeComparisonRepository(ref.watch(apiClientProvider)),
 );

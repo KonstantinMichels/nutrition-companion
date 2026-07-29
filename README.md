@@ -1,5 +1,7 @@
 # Nutrition Companion
 
+Recipe Target Comparison verbindet aktuelle Rezept-Nährwerte auf Abruf mit einer ausgewählten unveränderlichen Ernährungsanalyse. Portionszahl, Assessment-Auswahl und Vergleichsergebnisse bleiben flüchtig; es gibt keinen Health Score oder medizinische Bewertung. Siehe [docs/recipe_target_comparison.md](docs/recipe_target_comparison.md).
+
 Nutrition Companion is an Android-first, German-language nutrition-assessment MVP for
 generally healthy adults. It collects a deliberately limited profile, creates a transparent
 and reproducible assessment on the backend, and explains every returned result. It is not a

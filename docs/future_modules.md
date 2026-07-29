@@ -100,4 +100,8 @@ Production must never fall back to the development resolver.
 Separate services are not a roadmap goal. Reconsider only if there is evidence of an independently scaling workload, materially different security isolation, a separately operated team or a hard availability boundary. Even then, first define ownership, transaction changes, failure behavior and privacy impact. A queue, cache, generic plugin framework or additional database should not be introduced merely because a future feature could use one.
 # Implementiert: `feat/recipe-core`
 
-Recipe Core referenziert Lebensmittel per ID, normalisiert g/ml und vorhandene Haushaltsmaße und aggregiert bekannte Nährwerte dezimalgenau mit sichtbarer Abdeckung. Barcode-Produkte können nach dem Food-Import als Fertiggericht in einen Rezeptentwurf übernommen werden. Nächster Schritt ist `feat/recipe-target-comparison`; Zielvergleiche müssen eine konkrete unveränderliche Assessment-Version referenzieren.
+Recipe Core referenziert Lebensmittel per ID, normalisiert g/ml und vorhandene Haushaltsmaße und aggregiert bekannte Nährwerte dezimalgenau mit sichtbarer Abdeckung. Barcode-Produkte können nach dem Food-Import als Fertiggericht in einen Rezeptentwurf übernommen werden.
+
+# Implementiert: `feat/recipe-target-comparison`
+
+Ein einzelnes Rezept kann mit einer gewählten unveränderlichen Einschätzung und einer frei gewählten Portionszahl verglichen werden. Nächster erwarteter Branch ist `feat/daily-meal-planning`: mehrere Foods und Rezepte zu Mahlzeiten und einem Tag kombinieren, vollständige Tagessummen und verbleibende Zielbereiche anzeigen und einen Tag manuell zusammenstellen. Tagesplanung ist noch nicht implementiert.

@@ -1,5 +1,9 @@
 # Nutrition methodology
 
+## Vergleich eines Rezepts mit persönlichen Tageswerten
+
+Recipe Target Comparison skaliert die bekannte Nährstoffmenge einer ausgewählten Rezeptportionenzahl und stellt sie den gespeicherten Tageswerten einer unveränderten Einschätzung gegenüber. Das ist keine Bewertung der gesamten Tagesernährung und diagnostiziert weder Mangel noch Überschuss. Ein geringer Beitrag einer einzelnen Mahlzeit ist nicht grundsätzlich negativ. Fehlende Food-Core-Werte begrenzen den Vergleich und werden als bekannte Untergrenze beziehungsweise unbestimmte Höchstwert-/Bereichslage ausgewiesen.
+
 **Engine:** `nutrition_engine_v1`  
 **Scientific subset:** `dge_oege_v3_mvp_2026_05` / `3rd-edition-2025_erratum-2026-05_subset-v1`  
 **Application rules:** `nutrition_companion_mvp_v1` / `v1`  
