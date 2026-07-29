@@ -74,6 +74,7 @@ The backend groups cohesive code into:
 - `foods`: profile-owned foods, nutrient provenance, measures and barcode import; and
 - `recipes`: profile-owned recipes, ordered Food references and on-demand nutrient aggregation.
 - `recipe_target_comparison`: pure decimal comparison engine plus an on-demand adapter joining current Recipe Core values to one immutable assessment; no persistence or external I/O.
+- `pantry_recipe_availability`: pure decimal availability engine plus an on-demand adapter joining current recipe requirements to active Pantry lots; no persistence or stock mutation.
 
 Routes deal with HTTP schemas and status codes. Services implement use cases and transaction boundaries. Repositories express persistence queries. This separation is deliberately lightweight: there is no interface for every class and no generic plugin architecture.
 

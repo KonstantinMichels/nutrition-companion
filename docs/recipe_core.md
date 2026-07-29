@@ -23,3 +23,7 @@ Export und vollständige Profillöschung umfassen Rezepte, Zutaten und Schritte.
 ## Persönlicher Vergleich
 
 Recipe Target Comparison ist implementiert und verknüpft die aktuellen Recipe-Core-Ergebnisse auf Abruf mit einer ausdrücklich ausgewählten unveränderlichen Assessment-Version. Der Vergleich wird nicht gespeichert; Details stehen in [recipe_target_comparison.md](recipe_target_comparison.md). Historische Rezept-Nährwertsnapshots bleiben außerhalb des Umfangs.
+
+Pantry Recipe Availability vergleicht aktuelle Rezeptzutaten auf Abruf mit aktiven Vorratslosen.
+Ergebnisse werden nicht im Rezept gespeichert; siehe
+[pantry_recipe_availability.md](pantry_recipe_availability.md).

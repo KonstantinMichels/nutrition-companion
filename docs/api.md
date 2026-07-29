@@ -125,6 +125,8 @@ Common statuses:
 | DELETE | `/api/v1/recipes/{recipe_id}/permanent` | Yes | — | Permanently delete the owned recipe graph |
 | POST | `/api/v1/recipes/{recipe_id}/restore` | Yes | — | Restore an archived recipe |
 | GET | `/api/v1/recipes/{recipe_id}/target-comparison` | Yes | Optional `assessment_id`, `portion_count` | Grouped on-demand personal target comparison |
+| GET | `/api/v1/recipes/{recipe_id}/pantry-availability` | Yes | `portion_count`, optional ingredients, date mode | Live comparison against active owned Pantry lots |
+| GET | `/api/v1/recipes/pantry-availability` | Yes | Search, archive/state filters, pagination | Compact live availability summaries |
 | GET | `/api/v1/assessments/comparable` | Yes | — | Lightweight owned assessment selector with usability state |
 
 ## Recipe Target Comparison
@@ -138,6 +140,14 @@ Without `assessment_id`, the newest supported owned assessment with at least one
 Responses calculate nutrients on demand from the current referenced Food values. Each nutrient reports total, per-serving and—when recipe weight is available—per-100-g amounts plus known/relevant counts, coverage, missing ingredients and derived-input status. Missing values remain missing; a known zero remains zero. `weight.status` explains whether per-100-g calculation uses entered finished weight, complete theoretical weight or is unavailable. `quality` reports coverage and estimated conversions without claiming verification or medical suitability.
 
 Archived recipes are hidden by default and become read-only until restored. Archived Foods remain readable for an existing recipe but cannot be newly attached. All routes enforce current-profile ownership. Archive is reversible; the separately confirmed permanent-delete action removes only that recipe and its ingredients/steps, not the referenced Foods. Complete profile deletion removes all recipes through the privacy deletion flow.
+
+## Pantry Recipe Availability
+
+Availability responses aggregate exact Food IDs, scale requirements by the requested portion count,
+and expose ingredient shortages, hypothetical remaining quantities, contributing lots, maximum
+possible portions and limiting ingredients. Optional ingredients are excluded by default. Date modes
+can exclude past use-by dates or all past date fields. Results are derived and do not reserve, mutate,
+persist or export Pantry quantities.
 
 ## Health
 

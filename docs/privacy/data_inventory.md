@@ -209,3 +209,10 @@ Verarbeitet auf ausdrückliches Öffnen eine eigene Rezept-ID, eine eigene unver
 # Purchase to Pantry
 
 Gespeichert werden Übergabe-Batches, Shopping- und Food-Referenzen, geplante und tatsächliche Mengen, Ziel-Lagerorte, Pantry-Lot-/Bewegungsreferenzen, getrennte Datumsangaben, Notizen und die ausdrückliche Abschlussentscheidung.
+
+# Pantry Recipe Availability
+
+Transient verarbeitet werden eine eigene Rezept-ID, gewünschte Portionszahl, optionale
+Darstellungsfilter sowie aktuelle Zutaten- und Vorratsmengen. Abgeleitete Fehlmengen, hypothetische
+Reste, maximal mögliche Portionen und begrenzende Zutaten werden weder serverseitig noch lokal als
+eigene Datensätze persistiert und erzeugen daher keinen zusätzlichen Export- oder Löschdatensatz.

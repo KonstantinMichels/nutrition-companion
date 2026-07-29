@@ -1,5 +1,9 @@
 # Nutrition Companion
 
+Rezepte zeigen ihre aktuelle Verfügbarkeit aus aktiven Vorratslosen, einschließlich Fehlmengen und
+maximal möglicher Portionen. Die Berechnung verändert oder reserviert keinen Bestand. Details:
+[Pantry Recipe Availability](docs/pantry_recipe_availability.md).
+
 Purchase to Pantry ermöglicht die ausdrücklich bestätigte, nachvollziehbare Übernahme gekaufter Einkaufslistenartikel in den Vorrat. Abhaken allein verändert keinen Bestand; Details stehen in `docs/purchase_to_pantry.md`.
 
 **Vorrat** provides manual Pantry Core inventory with storage locations, separate stock

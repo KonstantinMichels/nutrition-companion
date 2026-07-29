@@ -36,6 +36,10 @@ locations are created once per profile.
 Availability sums active, non-depleted, non-archived lots by food and location. No
 nutritional score, shortage, shopping list, or recipe-availability decision is made.
 
+Die Rezeptverfügbarkeit ist inzwischen als getrennte, rein abgeleitete Live-Berechnung
+implementiert. Sie reserviert und verändert keine Lose; siehe
+[pantry_recipe_availability.md](pantry_recipe_availability.md).
+
 Pantry locations, lots, and movements are included in profile export and removed during
 complete profile deletion. Requests are logged only by endpoint template/status; stock
 names, quantities, dates, notes, and request bodies are not logged. No Pantry form cache
