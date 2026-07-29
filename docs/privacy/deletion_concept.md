@@ -148,3 +148,6 @@ Vollständige Profillöschung entfernt zuerst Übergabe-Verknüpfungen und danac
 Vollständige Profillöschung entfernt zuerst Pantry-aware Operation-Audits und anschließend die
 Shopping-Listen samt Source-Links. Das Archivieren oder Löschen einer Quelle entfernt bestehende
 Shopping-Snapshots nicht stillschweigend, verändert aber spätere Abgleiche.
+
+Complete deletion removes optimizer audits before their preference profile and the profile. Local
+session drafts disappear with app/process state; OR-Tools retains no user-specific model files.

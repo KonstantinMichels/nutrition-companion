@@ -81,3 +81,6 @@ Erfolgreiche Übergaben bleiben bis zur vollständigen Profillöschung erhalten.
 
 Operation-Audits und angewandte Source-Snapshots bleiben bis zur vollständigen Profillöschung.
 Vorschauen und Preview-Token werden nicht persistiert.
+
+Optimizer preferences and applied summaries remain until complete profile deletion. Solver models,
+candidate matrices and mobile drafts last only for the bounded request or current app session.

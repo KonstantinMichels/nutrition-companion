@@ -13,7 +13,11 @@ from app.modules.meal_plan_automation.models import (
     AutomationMealSlot,
     AutomationPreferences,
 )
-from app.modules.meal_plan_automation.schemas import PreferencesWrite, SlotWrite
+from app.modules.meal_plan_automation.schemas import (
+    DEFAULT_OBJECTIVE_WEIGHTS,
+    PreferencesWrite,
+    SlotWrite,
+)
 
 
 def err(code: str, msg: str, status: int = 422) -> ApiError:
@@ -53,6 +57,27 @@ def serialize(x: AutomationPreferences) -> dict[str, Any]:
         "excluded_recipe_tag_codes": x.excluded_recipe_tag_codes,
         "excluded_recipe_ids": x.excluded_recipe_ids,
         "scoring_weights": x.scoring_weights,
+        "optimizer_enabled": x.optimizer_enabled,
+        "default_generation_engine": x.default_generation_engine,
+        "solver_time_limit_day_seconds": x.solver_time_limit_day_seconds,
+        "solver_time_limit_week_seconds": x.solver_time_limit_week_seconds,
+        "solver_relative_gap_limit": x.solver_relative_gap_limit,
+        "solver_candidate_limit_per_slot": x.solver_candidate_limit_per_slot,
+        "maximum_recipe_repetitions_per_day": x.maximum_recipe_repetitions_per_day,
+        "strict_energy_target": x.strict_energy_target,
+        "strict_protein_minimum": x.strict_protein_minimum,
+        "strict_fiber_minimum": x.strict_fiber_minimum,
+        "strict_fat_range": x.strict_fat_range,
+        "strict_saturated_fat_maximum": x.strict_saturated_fat_maximum,
+        "strict_daily_preparation_time": x.strict_daily_preparation_time,
+        "maximum_daily_preparation_time_minutes": x.maximum_daily_preparation_time_minutes,
+        "maximum_weekly_unique_shopping_items": x.maximum_weekly_unique_shopping_items,
+        "constraint_relaxation_enabled": x.constraint_relaxation_enabled,
+        "relaxable_constraint_priorities": x.relaxable_constraint_priorities,
+        "objective_weights": x.objective_weights
+        or {key: str(value) for key, value in DEFAULT_OBJECTIVE_WEIGHTS.items()},
+        "meal_prep_preference": x.meal_prep_preference,
+        "compare_with_greedy": x.compare_with_greedy,
         "is_archived": x.is_archived,
         "updated_at": x.updated_at,
         "slots": [
@@ -93,7 +118,7 @@ def create(session: Session, owner: UUID, payload: PreferencesWrite) -> dict[str
                 [str(v) for v in val]
                 if k == "excluded_recipe_ids"
                 else {a: str(b) for a, b in val.items()}
-                if k == "scoring_weights"
+                if k in {"scoring_weights", "objective_weights"}
                 else val
             )
             for k, val in payload.model_dump(exclude={"slots"}).items()
@@ -126,7 +151,7 @@ def replace(session: Session, owner: UUID, pid: UUID, payload: PreferencesWrite)
     for key, value in values.items():
         if key == "excluded_recipe_ids":
             value = [str(item) for item in value]
-        elif key == "scoring_weights":
+        elif key in {"scoring_weights", "objective_weights"}:
             value = {code: str(weight) for code, weight in value.items()}
         setattr(x, key, value)
     x.slots.clear()
@@ -177,6 +202,15 @@ def applications(session: Session, owner: UUID) -> list[dict[str, Any]]:
             "applied_references": item.applied_references,
             "applied_slot_count": item.applied_slot_count,
             "client_operation_id": item.client_operation_id,
+            "generation_engine": item.generation_engine,
+            "solver_status": item.solver_status,
+            "solver_version": item.solver_version,
+            "objective_value": item.objective_value,
+            "relative_gap": item.relative_gap,
+            "relaxation_used": item.relaxation_used,
+            "relaxation_summary": item.relaxation_summary,
+            "objective_summary": item.objective_summary,
+            "greedy_comparison_enabled": item.greedy_comparison_enabled,
             "created_at": item.created_at,
         }
         for item in session.scalars(

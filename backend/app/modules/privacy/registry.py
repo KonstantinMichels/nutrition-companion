@@ -91,8 +91,9 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
     {
         "code": "daily_meal_planning",
         "description_de": (
-            "Manuelle oder ausdrücklich bestätigte, regelbasierte Zusammenstellung geplanter "
-            "Mahlzeiten und persönlicher Tagesvergleiche."
+            "Manuelle oder ausdrücklich bestätigte, lokal regelbasierte beziehungsweise "
+            "mathematisch optimierte Zusammenstellung geplanter Mahlzeiten und persönlicher "
+            "Tagesvergleiche."
         ),
         "data_categories": [
             "plan date",
@@ -102,6 +103,7 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
             "assessment reference",
             "automation preferences and meal slots",
             "automation application audit records",
+            "optimizer constraints, weights, solver status and relaxation summaries",
         ],
         "may_include_special_category_data": True,
         "storage_location": (

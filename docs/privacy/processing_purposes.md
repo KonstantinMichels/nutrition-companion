@@ -209,3 +209,7 @@ The current API accepts and enforces only `nutrition_assessment_calculation` con
 # Purchase to Pantry
 
 `purchase_to_pantry_management` deckt die vom Nutzer gestartete Übernahme von Kaufmengen und Zielen ab. Sie benötigt keine zusätzliche Einwilligungscheckbox und endet mit vollständiger Profillöschung.
+
+`daily_meal_planning` also covers explicitly requested local deterministic/CP-SAT draft generation,
+preference profiles and compact application audits. Existing coverage is reused; no separate
+optimizer consent checkbox is introduced.

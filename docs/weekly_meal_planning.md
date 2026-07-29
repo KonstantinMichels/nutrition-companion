@@ -60,3 +60,6 @@ The next expected feature is `feat/pantry-core`.
 Die Wochenansicht ist inzwischen ein Einstieg für Pantry-aware Shopping. Dabei bleiben die stabilen
 Identitäten der zugrunde liegenden Tagesplaneinträge erhalten; es wird kein eigener Wochenbedarf
 persistiert.
+
+ISO-week optimization jointly evaluates enabled free slots but persists only ordinary daily plans.
+Daily constraints remain per-day; weekly aggregates are planning objectives, not intake records.

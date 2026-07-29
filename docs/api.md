@@ -550,3 +550,10 @@ reference semantics. Common errors include `DAILY_PLAN_NOT_FOUND`, `DAILY_PLAN_A
 # Purchase to Pantry
 
 Unter `/api/v1/shopping-lists/{id}` stehen `pantry-handoff-eligibility`, `pantry-handoff-preview`, `pantry-handoff`, `pantry-handoffs` sowie artikelbezogene Historie zur Verfügung. Apply verlangt Vorschau-Token und Client-Operations-ID.
+# Meal-plan optimizer
+
+`POST /api/v1/meal-plan-automation/generate` accepts `generation_engine` (`greedy`,
+`optimizer_strict`, `optimizer_explainable_relaxation`). `POST .../optimize` explicitly invokes the
+optimizer; `recalculate` preserves locks/overrides and `apply` reuses the foundation transaction.
+Responses include solver status/version/time/gap, candidate/model metrics, objective and constraint
+summaries, relaxations, optional greedy comparison and the opaque preview token.

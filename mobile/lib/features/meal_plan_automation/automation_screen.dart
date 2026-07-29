@@ -9,6 +9,7 @@ import '../../core/errors/app_exception.dart';
 import '../../core/formatting/german_decimal.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
+import 'automation_presentation.dart';
 
 final class AutomationScreen extends ConsumerStatefulWidget {
   const AutomationScreen({
@@ -27,6 +28,7 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
   late String scope = widget.initialScope;
   late DateTime date = widget.initialDate ?? DateTime.now();
   String mode = 'empty_meal_slots_only';
+  String engine = 'optimizer_strict';
   List<Map<String, dynamic>> preferences = [];
   Map<String, dynamic>? selected;
   Map<String, dynamic>? draft;
@@ -36,6 +38,7 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
   final locked = <String>{};
   final removed = <String>{};
   bool busy = true;
+  bool relaxationAccepted = false;
   String? error;
 
   @override
@@ -61,6 +64,9 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
         (value) => value['is_default'] == true,
         orElse: () => preferences.first,
       );
+      engine =
+          selected!['default_generation_engine']?.toString() ??
+          'optimizer_strict';
     } on AppException catch (value) {
       error = value.message;
     } finally {
@@ -79,6 +85,7 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     else
       'anchor_date': _day(date),
     'existing_plan_mode': mode,
+    'generation_engine': engine,
     'recipe_overrides': recipeOverrides,
     'portion_overrides': portionOverrides,
     'locked_slot_keys': locked.toList(),
@@ -122,6 +129,34 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     var maximum = int.tryParse(
       value['maximum_preparation_time_minutes']?.toString() ?? '',
     );
+    var optimizerEnabled = value['optimizer_enabled'] == true;
+    var dayLimit =
+        int.tryParse(value['solver_time_limit_day_seconds'].toString()) ?? 5;
+    var weekLimit =
+        int.tryParse(value['solver_time_limit_week_seconds'].toString()) ?? 20;
+    var strictEnergy = value['strict_energy_target'] == true;
+    var strictProtein = value['strict_protein_minimum'] == true;
+    var strictFiber = value['strict_fiber_minimum'] == true;
+    var relax = value['constraint_relaxation_enabled'] == true;
+    var compare = value['compare_with_greedy'] != false;
+    final objectiveWeights = <String, double>{
+      for (final entry
+          in (value['objective_weights'] as Map? ?? const {}).entries)
+        entry.key.toString(): double.tryParse(entry.value.toString()) ?? 1,
+    };
+    const objectiveLabels = {
+      'nutrition_fit': 'Nährwertziele',
+      'pantry_usage': 'Vorrat',
+      'shopping_effort': 'Einkaufsaufwand',
+      'preparation_time': 'Zubereitungszeit',
+      'variety': 'Abwechslung',
+      'meal_prep': 'Meal-Prep',
+      'recipe_preference': 'Rezeptpräferenz',
+      'data_quality': 'Datenqualität',
+    };
+    for (final key in objectiveLabels.keys) {
+      objectiveWeights.putIfAbsent(key, () => 1);
+    }
     final slots = (value['slots'] as List)
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
@@ -221,6 +256,104 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                   const Text(
                     'Tags, Zielanteile, Portionsbereiche und Gewichte bleiben in diesem Profil erhalten.',
                   ),
+                  const Divider(),
+                  const Text(
+                    'Optimierungseinstellungen',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: optimizerEnabled,
+                    onChanged: (v) =>
+                        setDialogState(() => optimizerEnabled = v),
+                    title: const Text('Gemeinsame Optimierung aktivieren'),
+                  ),
+                  DropdownButtonFormField<int>(
+                    initialValue: dayLimit,
+                    decoration: const InputDecoration(
+                      labelText: 'Zeitlimit Tag',
+                    ),
+                    items: const [3, 5, 10, 15]
+                        .map(
+                          (v) => DropdownMenuItem(
+                            value: v,
+                            child: Text('$v Sekunden'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => dayLimit = v!),
+                  ),
+                  DropdownButtonFormField<int>(
+                    initialValue: weekLimit,
+                    decoration: const InputDecoration(
+                      labelText: 'Zeitlimit Woche',
+                    ),
+                    items: const [5, 10, 20, 30, 60]
+                        .map(
+                          (v) => DropdownMenuItem(
+                            value: v,
+                            child: Text('$v Sekunden'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => weekLimit = v!),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: strictEnergy,
+                    onChanged: (v) => setDialogState(() => strictEnergy = v!),
+                    title: const Text('Energie-Zielbereich strikt'),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: strictProtein,
+                    onChanged: (v) => setDialogState(() => strictProtein = v!),
+                    title: const Text('Protein-Mindestwert strikt'),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: strictFiber,
+                    onChanged: (v) => setDialogState(() => strictFiber = v!),
+                    title: const Text('Ballaststoff-Mindestwert strikt'),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: relax,
+                    onChanged: (v) => setDialogState(() => relax = v!),
+                    title: const Text('Erklärbare Lockerungen erlauben'),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: compare,
+                    onChanged: (v) => setDialogState(() => compare = v!),
+                    title: const Text('Mit schnellem Entwurf vergleichen'),
+                  ),
+                  const Text(
+                    'Relative Wichtigkeit',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  ...objectiveLabels.entries.map(
+                    (entry) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '${entry.value}: ${objectiveWeights[entry.key]!.round()}',
+                        ),
+                        Slider(
+                          value: objectiveWeights[entry.key]!,
+                          min: 0,
+                          max: 10,
+                          divisions: 10,
+                          label: objectiveWeights[entry.key]!
+                              .round()
+                              .toString(),
+                          onChanged: (v) => setDialogState(
+                            () => objectiveWeights[entry.key] = v,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -246,6 +379,15 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     payload['pantry_preference'] = pantry;
     payload['shopping_effort_preference'] = shopping;
     payload['maximum_preparation_time_minutes'] = maximum;
+    payload['optimizer_enabled'] = optimizerEnabled;
+    payload['solver_time_limit_day_seconds'] = dayLimit;
+    payload['solver_time_limit_week_seconds'] = weekLimit;
+    payload['strict_energy_target'] = strictEnergy;
+    payload['strict_protein_minimum'] = strictProtein;
+    payload['strict_fiber_minimum'] = strictFiber;
+    payload['constraint_relaxation_enabled'] = relax;
+    payload['compare_with_greedy'] = compare;
+    payload['objective_weights'] = objectiveWeights;
     payload['slots'] = slots
         .map((slot) => Map<String, dynamic>.from(slot)..remove('id'))
         .toList();
@@ -324,6 +466,7 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
         'selected_slot_keys': <String>[],
         'create_missing_plans': create,
         'application_mode': applicationMode,
+        'relaxation_confirmed': relaxationAccepted,
       });
       if (mounted) {
         context.go(
@@ -395,6 +538,10 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                         selected = preferences.firstWhere(
                           (v) => v['id'].toString() == id,
                         );
+                        engine =
+                            selected!['default_generation_engine']
+                                ?.toString() ??
+                            'optimizer_strict';
                         draft = null;
                       }),
                     ),
@@ -402,6 +549,36 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                     onPressed: selected == null ? null : _editPreferences,
                     icon: const Icon(Icons.tune),
                     label: const Text('Einstellungen bearbeiten'),
+                  ),
+                  DropdownButtonFormField<String>(
+                    key: const Key('automation-engine-selector'),
+                    initialValue: engine,
+                    decoration: const InputDecoration(
+                      labelText: 'Planungsmethode',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'greedy',
+                        child: Text('Schneller regelbasierter Entwurf'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'optimizer_strict',
+                        child: Text('Gemeinsame Optimierung'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'optimizer_explainable_relaxation',
+                        child: Text('Optimierung mit erklärbarer Lockerung'),
+                      ),
+                    ],
+                    onChanged: (value) => setState(() {
+                      engine = value!;
+                      draft = null;
+                      relaxationAccepted = false;
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, bottom: 12),
+                    child: Text(automationEngineDescription(engine)),
                   ),
                   DropdownButtonFormField<String>(
                     initialValue: mode,
@@ -458,9 +635,9 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     return [
       const Divider(height: 32),
       Text('Entwurf prüfen', style: Theme.of(context).textTheme.titleLarge),
-      Text(
-        'Basis: Einschätzung ${draft!['assessment']['calculated_at'] ?? draft!['assessment']['id']}',
-      ),
+      if (draft!['solver'] is Map)
+        _solverSummary(Map.from(draft!['solver'] as Map)),
+      Text('Basis: ${automationAssessmentBasis(draft!['assessment'])}'),
       ...days.expand(
         (day) => [
           Padding(
@@ -482,17 +659,116 @@ final class _AutomationScreenState extends ConsumerState<AutomationScreen> {
           title: Text(v.toString()),
         ),
       ),
+      if ((draft!['objective_breakdown'] as List?)?.isNotEmpty == true)
+        ExpansionTile(
+          title: const Text('Ziele und Gewichtung'),
+          children: (draft!['objective_breakdown'] as List)
+              .cast<Map>()
+              .map(
+                (item) => ListTile(
+                  title: Text(item['display_name_de'].toString()),
+                  subtitle: Text(item['explanation_de'].toString()),
+                  trailing: Text(
+                    '× ${GermanDecimal.formatString(item['configured_weight'])}',
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      if (draft!['greedy_comparison'] is Map)
+        ListTile(
+          leading: const Icon(Icons.compare_arrows),
+          title: const Text('Vergleich mit schnellem Entwurf'),
+          subtitle: Text(
+            '${draft!['greedy_comparison']['changed_slot_count']} geänderte Slots. ${draft!['greedy_comparison']['explanation_de']}',
+          ),
+        ),
+      if ((draft!['infeasibility_reasons'] as List?)?.isNotEmpty == true)
+        ..._infeasibilityWidgets(),
+      if ((draft!['relaxations'] as List?)?.isNotEmpty == true)
+        Card(
+          color: Theme.of(context).colorScheme.errorContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Für diesen Entwurf wurden Regeln gelockert',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                ...(draft!['relaxations'] as List).cast<Map>().map(
+                  (item) => Text('• ${item['explanation_de']}'),
+                ),
+                CheckboxListTile(
+                  value: relaxationAccepted,
+                  onChanged: (value) =>
+                      setState(() => relaxationAccepted = value!),
+                  title: const Text(
+                    'Lockerungen verstanden und Entwurf übernehmen',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       Text(draft!['pantry_projection']['notice'].toString()),
       Text(draft!['shopping_projection']['notice'].toString()),
       const SizedBox(height: 16),
       FilledButton.icon(
         key: const Key('apply-automation-draft'),
-        onPressed: busy ? null : _apply,
+        onPressed:
+            busy ||
+                ((draft!['relaxations'] as List?)?.isNotEmpty == true &&
+                    !relaxationAccepted) ||
+                (draft!['solver'] is Map &&
+                    !{
+                      'optimal',
+                      'feasible',
+                    }.contains(draft!['solver']['status']))
+            ? null
+            : _apply,
         icon: const Icon(Icons.check),
         label: const Text('Entwurf prüfen und übernehmen'),
       ),
     ];
   }
+
+  Widget _solverSummary(Map<String, dynamic> solver) {
+    final status = solver['status']?.toString();
+    final title = optimizerStatusLabel(status);
+    return Semantics(
+      label: title,
+      child: Card(
+        child: ListTile(
+          leading: const Icon(Icons.calculate_outlined),
+          title: Text(title),
+          subtitle: Text(
+            'Laufzeit ${GermanDecimal.formatString(solver['solve_time_seconds'])} s · '
+            'Limit ${GermanDecimal.formatString(solver['time_limit_seconds'])} s'
+            '${solver['relative_gap'] == null ? '' : ' · Modelllücke ${GermanDecimal.formatString(solver['relative_gap'])}'}',
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _infeasibilityWidgets() => [
+    const ListTile(
+      leading: Icon(Icons.warning_amber),
+      title: Text('Keine zulässige Kombination gefunden'),
+    ),
+    ...(draft!['infeasibility_reasons'] as List).cast<Map>().map(
+      (item) => ListTile(title: Text(item['explanation_de'].toString())),
+    ),
+    OutlinedButton(
+      onPressed: () => setState(() {
+        engine = 'greedy';
+        draft = null;
+      }),
+      child: const Text('Schnellen Entwurf verwenden'),
+    ),
+  ];
 
   Widget _proposal(Map proposal) {
     final key = proposal['slot_key'].toString();
