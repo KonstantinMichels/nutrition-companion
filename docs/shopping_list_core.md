@@ -19,3 +19,8 @@ Eine Pantry-Übernahme ist ausschließlich über den separaten, bestätigten Pur
 ## API
 
 Die API liegt unter `/api/v1/shopping-lists` und unterstützt Übersicht, Detail, manuelle Erstellung, `generation-preview`, `generate`, Item-CRUD, Sortierung, Abhaken, zweistufigen Refresh, Abschluss/Wiederöffnung sowie Archivierung/Wiederherstellung. Alle Zugriffe sind auf das aktive Profil beschränkt. Shopping-Listen sind im Datenschutzexport enthalten und werden bei vollständiger Profillöschung vor ihren referenzierten Plänen, Rezepten und Lebensmitteln gelöscht.
+
+Pantry-aware Shopping ergänzt einen quellenübergreifenden Preview-/Apply-Abgleich mit anderen
+offenen Listen und Handoff-Restmengen. Er ersetzt den generischen Plan-Refresh nicht und aktualisiert
+nie eine andere als die ausgewählte Zielliste; Details stehen in
+[pantry_aware_shopping.md](pantry_aware_shopping.md).

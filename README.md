@@ -1,5 +1,9 @@
 # Nutrition Companion
 
+Pantry-aware Shopping gleicht Rezept-, Tages- und Wochenbedarf ausdrücklich mit aktuellem Vorrat
+und offenen Einkaufslisten ab, bevor genau eine Zielliste aktualisiert wird. Bestände werden nicht
+reserviert oder verändert; siehe [Pantry-aware Shopping](docs/pantry_aware_shopping.md).
+
 Rezepte zeigen ihre aktuelle Verfügbarkeit aus aktiven Vorratslosen, einschließlich Fehlmengen und
 maximal möglicher Portionen. Die Berechnung verändert oder reserviert keinen Bestand. Details:
 [Pantry Recipe Availability](docs/pantry_recipe_availability.md).

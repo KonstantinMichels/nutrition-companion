@@ -216,3 +216,10 @@ Transient verarbeitet werden eine eigene Rezept-ID, gewünschte Portionszahl, op
 Darstellungsfilter sowie aktuelle Zutaten- und Vorratsmengen. Abgeleitete Fehlmengen, hypothetische
 Reste, maximal mögliche Portionen und begrenzende Zutaten werden weder serverseitig noch lokal als
 eigene Datensätze persistiert und erzeugen daher keinen zusätzlichen Export- oder Löschdatensatz.
+
+# Pantry-aware Shopping
+
+Persistiert werden stabile Source-Identität und -Version, angewandter Mengensnapshot,
+Ziellistenreferenz, Datumsmodus, Other-List-Option, Client-Operations-ID, Ergebniszählwerte und
+Zeitpunkte. Vorschau-Token, aktuelle Pantry-Ableitungen und globale Zusatzbedarfe werden nicht als
+dauerhafte Wahrheit gespeichert. Export und vollständige Löschung umfassen die persistierten Daten.

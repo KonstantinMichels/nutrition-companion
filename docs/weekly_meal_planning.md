@@ -56,3 +56,7 @@ shopping list, price/budget calculation, leftover handling, consumed-meal tracki
 recurring template, Health Score, or medical interpretation.
 
 The next expected feature is `feat/pantry-core`.
+
+Die Wochenansicht ist inzwischen ein Einstieg für Pantry-aware Shopping. Dabei bleiben die stabilen
+Identitäten der zugrunde liegenden Tagesplaneinträge erhalten; es wird kein eigener Wochenbedarf
+persistiert.

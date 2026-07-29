@@ -54,6 +54,11 @@ class _State extends ConsumerState<ShoppingListDetailScreen> {
                     value: 'pantry-handoff',
                     child: Text('In Vorrat übernehmen'),
                   ),
+                if (!data.summary.archived && data.summary.status == 'open')
+                  const PopupMenuItem(
+                    value: 'pantry-aware',
+                    child: Text('Mit Bedarf und Vorrat abgleichen'),
+                  ),
                 PopupMenuItem(
                   value: data.summary.status == 'completed'
                       ? 'reopen'
@@ -260,6 +265,11 @@ class _State extends ConsumerState<ShoppingListDetailScreen> {
     final repo = ref.read(shoppingListRepositoryProvider);
     if (action == 'pantry-handoff') {
       await context.push('/shopping-lists/${widget.id}/pantry-handoff');
+    } else if (action == 'pantry-aware') {
+      await context.push(
+        '/pantry-aware-shopping?sourceType=shopping_list_reconciliation&targetListId=${widget.id}',
+      );
+      reload();
     } else if (action == 'refresh') {
       final p = await repo.refreshPreview(widget.id);
       if (!mounted) return;

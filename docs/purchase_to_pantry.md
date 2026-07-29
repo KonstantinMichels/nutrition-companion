@@ -20,4 +20,7 @@ Jede erfolgreiche Übergabe speichert Batch, Artikel und Ziele einschließlich P
 
 Übergaben erscheinen im Profildatenexport und werden bei vollständiger Profillöschung vor den verknüpften Shopping- und Pantry-Daten entfernt. Vorschauen werden nicht gespeichert, Anfragetexte nicht geloggt und keine Daten extern übertragen. Die Verarbeitung ist Teil der ausdrücklich angeforderten Shopping-/Pantry-Funktion und erhält deshalb keine zusätzliche Einwilligungscheckbox.
 
-Einkäufe und Daten werden manuell bestätigt. Nicht enthalten sind Beleg-/Barcode-Erkennung, Preise, Händlerabgleich, automatische Paketgrößen, automatische Übertragung, Pantry-Abzug oder Rezeptverfügbarkeit. Als Nächstes ist `feat/pantry-recipe-availability` vorgesehen.
+Einkäufe und Daten werden manuell bestätigt. Pantry-aware Shopping verwendet bei offenen Listen die
+verbleibende Zusage: partielle Übergaben reduzieren sie, abgeschlossene Übergaben setzen sie auf
+null. Nicht enthalten sind Beleg-/Barcode-Erkennung, Preise, Händlerabgleich, automatische
+Paketgrößen, automatische Übertragung oder Pantry-Abzug.

@@ -17,6 +17,7 @@ from app.modules.foods.models import Food
 from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
 from app.modules.nutrition_assessment.models import Assessment
 from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
+from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
 from app.modules.privacy import repository
 from app.modules.privacy.models import (
     ConsentRecord,
@@ -230,6 +231,13 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                 )
             )
             .order_by(PurchaseToPantryHandoff.created_at)
+        )
+    )
+    pantry_aware_operations = list(
+        session.scalars(
+            select(PantryAwareShoppingOperation)
+            .where(PantryAwareShoppingOperation.owner_profile_id == profile_id)
+            .order_by(PantryAwareShoppingOperation.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -611,8 +619,12 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                                 "meal_name": source.meal_name_snapshot,
                                 "recipe_name": source.recipe_name_snapshot,
                                 "food_id": source.food_id,
+                                "source_identity": source.source_identity,
+                                "source_version": source.source_version,
+                                "pantry_aware_operation_id": source.pantry_aware_operation_id,
                                 "quantity": source.quantity,
                                 "unit": source.unit,
+                                "refreshed_at": source.refreshed_at,
                             }
                             for source in item.sources
                         ],
@@ -663,6 +675,22 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                 ],
             }
             for handoff in purchase_handoffs
+        ],
+        "pantry_aware_shopping_operations": [
+            {
+                "id": operation.id,
+                "target_shopping_list_id": operation.target_shopping_list_id,
+                "source_scope_type": operation.source_scope_type,
+                "source_reference": operation.source_reference,
+                "source_version": operation.source_version,
+                "pantry_date_mode": operation.pantry_date_mode,
+                "other_open_lists_considered": operation.other_open_lists_considered,
+                "client_operation_id": operation.client_operation_id,
+                "result_summary": operation.result_summary,
+                "applied_at": operation.applied_at,
+                "created_at": operation.created_at,
+            }
+            for operation in pantry_aware_operations
         ],
     }
     session.commit()
@@ -748,6 +776,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         .select_from(PurchaseToPantryHandoff)
         .where(PurchaseToPantryHandoff.owner_profile_id == profile_id)
     )
+    pantry_aware_count = session.scalar(
+        select(func.count())
+        .select_from(PantryAwareShoppingOperation)
+        .where(PantryAwareShoppingOperation.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -760,6 +793,7 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(pantry_count or 0)
         + int(shopping_count or 0)
         + int(handoff_count or 0)
+        + int(pantry_aware_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
@@ -767,6 +801,12 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
     confirmation = secrets.token_hex(8)
     try:
         # Handoff links protect shopping and Pantry records, so remove them first.
+        session.execute(
+            delete(PantryAwareShoppingOperation).where(
+                PantryAwareShoppingOperation.owner_profile_id == profile_id
+            )
+        )
+        session.flush()
         session.execute(
             delete(PurchaseToPantryHandoff).where(
                 PurchaseToPantryHandoff.owner_profile_id == profile_id

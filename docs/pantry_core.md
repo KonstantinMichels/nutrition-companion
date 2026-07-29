@@ -53,3 +53,6 @@ or recipe recommendation exists. The next expected feature is
 # Herkunft aus Einkaufslisten
 
 Bestände aus ausdrücklich bestätigten Übergaben verwenden die generische Bewegungsquelle `shopping_list_purchase`. Pantry bleibt für Mengen und Bewegungen autoritativ; Listenhaken oder Listenabschluss erzeugen keine Bewegung.
+
+Pantry-aware Shopping liest aktive Lose und Datumszustände nur für eine flüchtige Vorschau. Es
+erzeugt weder Reservierung noch Bewegung oder Abzug.

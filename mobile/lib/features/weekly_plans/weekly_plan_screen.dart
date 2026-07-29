@@ -75,6 +75,14 @@ final class _WeeklyPlanScreenState extends ConsumerState<WeeklyPlanScreen> {
               children: [
                 _header(week!),
                 _summary(week!),
+                FilledButton.tonalIcon(
+                  key: const Key('weekly-pantry-aware-shopping'),
+                  onPressed: () => context.push(
+                    '/pantry-aware-shopping?sourceType=weekly_plan&weekAnchor=${_apiDate(week!.weekStart)}',
+                  ),
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  label: const Text('Wocheneinkauf abgleichen'),
+                ),
                 ...week!.days.map(_dayCard),
                 _nutrients(week!),
                 _targets(week!),

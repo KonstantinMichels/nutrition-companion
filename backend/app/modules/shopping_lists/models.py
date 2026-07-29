@@ -24,6 +24,7 @@ from app.database.base import JSON_DOCUMENT, Base, utc_now
 if TYPE_CHECKING:
     from app.modules.daily_meal_planning.models import DailyMealPlan
     from app.modules.foods.models import Food, FoodMeasure
+    from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
 
 
 class ShoppingList(Base):
@@ -156,12 +157,18 @@ class ShoppingListItemSource(Base):
     __table_args__ = (
         Index("ix_shopping_source_item", "shopping_list_item_id"),
         Index("ix_shopping_source_plan_date", "daily_plan_id", "plan_date"),
+        Index("ix_shopping_source_identity", "source_identity"),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     shopping_list_item_id: Mapped[UUID] = mapped_column(
         ForeignKey("shopping_list_items.id", ondelete="CASCADE"), nullable=False
     )
     source_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_identity: Mapped[str | None] = mapped_column(String(500))
+    source_version: Mapped[str | None] = mapped_column(String(128))
+    pantry_aware_operation_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("pantry_aware_shopping_operations.id", ondelete="SET NULL"), index=True
+    )
     daily_plan_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("daily_meal_plans.id", ondelete="SET NULL")
     )
@@ -184,4 +191,6 @@ class ShoppingListItemSource(Base):
     conversion_estimated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     warning_codes: Mapped[list[str]] = mapped_column(JSON_DOCUMENT, nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    refreshed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     item: Mapped[ShoppingListItem] = relationship(back_populates="sources")
+    pantry_aware_operation: Mapped[PantryAwareShoppingOperation | None] = relationship()

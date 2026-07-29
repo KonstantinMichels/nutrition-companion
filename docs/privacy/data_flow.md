@@ -195,3 +195,14 @@ eigene Rezept-ID + Portionszahl + Anzeigeoptionen
 
 Es gibt keinen externen Empfänger, keinen Ergebnisdatensatz, keine Reservierung und keine
 Bestandsbewegung. Protokolliert werden keine Rezept-, Food- oder Mengenwerte.
+
+# Pantry-aware Shopping
+
+```text
+eigene Quelle + Optionen + Zielliste -> eigene FastAPI
+-> aktuelle Quellen + Pantry + offene Listen + Handoff-Zustände
+-> flüchtige Vorschau -> ausdrückliches Apply -> genau eine Zielliste + Audit
+```
+
+Andere Listen und Pantry bleiben unverändert. Logs enthalten nur Route, Status, Dauer und zufällige
+Request-ID, keine Listen-, Food-, Plan- oder Mengeninhalte.

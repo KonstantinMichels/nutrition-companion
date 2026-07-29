@@ -141,6 +141,14 @@ final class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               const Divider(),
               RecipeComparisonSection(recipeId: widget.id),
               RecipeAvailabilitySection(recipeId: widget.id),
+              FilledButton.tonalIcon(
+                key: const Key('recipe-pantry-aware-shopping'),
+                onPressed: () => context.push(
+                  '/pantry-aware-shopping?sourceType=recipe&sourceId=${widget.id}',
+                ),
+                icon: const Icon(Icons.shopping_cart_outlined),
+                label: const Text('Fehlende Zutaten einkaufen'),
+              ),
               const SizedBox(height: 16),
               if (!recipe.archived) ...[
                 FilledButton(

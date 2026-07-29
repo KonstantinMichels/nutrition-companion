@@ -124,6 +124,10 @@ Recipe Core referenziert Lebensmittel per ID, normalisiert g/ml und vorhandene H
 Ein einzelnes Rezept kann mit einer gewählten unveränderlichen Einschätzung und einer frei gewählten Portionszahl verglichen werden. `feat/daily-meal-planning` ist ebenfalls implementiert: mehrere Foods und Rezepte lassen sich manuell zu Mahlzeiten und einem Tag kombinieren. Nächster erwarteter Branch ist `feat/weekly-meal-planning`.
 # Nächster Ausbau
 
-`feat/pantry-recipe-availability` ist implementiert. Rezeptanforderungen werden live gegen aktive
-Pantry-Lose verglichen; Bestände werden nicht reserviert oder verändert. Der nächste erwartete Branch
-ist `feat/pantry-aware-shopping`.
+`feat/pantry-recipe-availability` und `feat/pantry-aware-shopping` sind implementiert. Aktuelle
+Rezept-/Plananforderungen können ausdrücklich mit Pantry und offenen Einkaufslisten abgeglichen und
+auf genau eine Zielliste angewandt werden; Bestände werden nicht reserviert oder verändert. Der
+nächste erwartete Branch ist `feat/meal-plan-automation-foundation`. Dieser Ausbau soll ausdrückliche
+Planungsbedingungen, Kandidateneignung, deterministische Bewertung und erklärbare Entwürfe
+vorbereiten. Er darf ohne Review nichts speichern, keinen Vorrat reservieren und keine
+Black-Box-Ernährungsentscheidung treffen.
