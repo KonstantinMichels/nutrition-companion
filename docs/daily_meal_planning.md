@@ -1,5 +1,9 @@
 # Daily Meal Planning
 
+Daily plans remain the sole persisted planning source for the derived weekly overview.
+Complete-day duplication is reused by Weekly Meal Planning; cross-day meal transfers
+persist only ordinary `Meal` and `MealEntry` rows.
+
 ## Scope and product boundary
 
 Daily Meal Planning is a manual planning tool. A profile can create meals for a local calendar

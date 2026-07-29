@@ -1,5 +1,8 @@
 # Deletion concept
 
+Weekly Meal Planning adds no deletable entity. Deleting the profile or daily plans
+removes the sources; refreshing or clearing application state removes the derived view.
+
 **Status:** Local-MVP behavior and production design requirements  
 **Last reviewed:** 2026-07-28  
 **Legal status:** Draft; legal obligations and exceptions require professional review.

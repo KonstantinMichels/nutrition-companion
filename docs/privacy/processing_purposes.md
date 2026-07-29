@@ -1,5 +1,9 @@
 # Processing-purpose registry
 
+The existing `daily_meal_planning` purpose includes manual weekly organization and the
+on-demand aggregation of daily plans. This adds no automated decision and needs no
+redundant consent.
+
 **Status:** Technical MVP registry and German user-text draft  
 **Last reviewed:** 2026-07-28  
 **Legal status:** All legal-basis entries are placeholders requiring qualified German/EU review before public release.

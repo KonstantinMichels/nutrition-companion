@@ -1,5 +1,8 @@
 # Retention policy
 
+Weekly results remain only in Flutter memory for the open session. The server does not
+persist them. Daily source plans follow the existing retention and archive rules.
+
 **Status:** Local-MVP policy with explicit production gaps  
 **Last reviewed:** 2026-07-28  
 **Approval:** Draft; controller and legal/privacy approval required before production

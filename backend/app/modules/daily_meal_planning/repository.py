@@ -96,3 +96,21 @@ def list_plans(
         )
     )
     return items, total
+
+
+def in_date_range(
+    session: Session, profile_id: UUID, date_from: date, date_to: date
+) -> list[DailyMealPlan]:
+    """Batch-load complete calculation inputs for a derived calendar range."""
+    return list(
+        session.scalars(
+            select(DailyMealPlan)
+            .where(
+                DailyMealPlan.owner_profile_id == profile_id,
+                DailyMealPlan.plan_date >= date_from,
+                DailyMealPlan.plan_date <= date_to,
+            )
+            .options(*LOAD)
+            .order_by(DailyMealPlan.plan_date, DailyMealPlan.updated_at.desc())
+        ).unique()
+    )

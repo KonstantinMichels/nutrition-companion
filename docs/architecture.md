@@ -1,5 +1,9 @@
 # Architecture
 
+Weekly Meal Planning is a read-time aggregation module over seven local-date daily
+plans. It introduces REST read/action endpoints but no weekly database entity or
+calculation cache. See [Weekly Meal Planning](weekly_meal_planning.md).
+
 **Status:** Implemented local-MVP architecture and production boundary  
 **Last reviewed:** 2026-07-28
 

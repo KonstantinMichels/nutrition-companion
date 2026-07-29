@@ -1,5 +1,17 @@
 # REST API
 
+## Weekly Meal Planning
+
+`GET /api/v1/weekly-meal-plans?anchor_date=YYYY-MM-DD` normalizes the anchor to
+Monday and returns seven day summaries, weekly totals, compatible target sums,
+coverage, quality, and structured warnings.
+
+`POST /api/v1/weekly-meal-plans/actions/copy-meal` and
+`POST /api/v1/weekly-meal-plans/actions/move-meal` accept source plan/meal IDs,
+target date, `new_meal` or `append_to_existing_meal`, an optional target meal, and
+assessment behavior (`source`, `latest`, `none`). Move is transactional. Complete-day
+copy continues to use `POST /api/v1/daily-meal-plans/{plan_id}/duplicate`.
+
 **API title:** Nutrition Companion API  
 **Implemented version prefix:** `/api/v1`  
 **Document reviewed:** 2026-07-28  

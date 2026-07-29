@@ -13,9 +13,15 @@ import '../recipes/recipe_models.dart';
 import 'daily_plan_models.dart';
 
 final class DailyPlanEditorScreen extends ConsumerStatefulWidget {
-  const DailyPlanEditorScreen({this.id, required this.date, super.key});
+  const DailyPlanEditorScreen({
+    this.id,
+    required this.date,
+    this.returnToWeeklyPlan = false,
+    super.key,
+  });
   final String? id;
   final DateTime date;
+  final bool returnToWeeklyPlan;
   @override
   ConsumerState<DailyPlanEditorScreen> createState() =>
       _DailyPlanEditorScreenState();
@@ -871,7 +877,13 @@ final class _DailyPlanEditorScreenState
           .read(dailyPlanDraftRepositoryProvider)
           .delete(apiDate(widget.date));
       dirty = false;
-      if (mounted) context.go('/daily-plan?date=${apiDate(result.date)}');
+      if (mounted) {
+        if (widget.returnToWeeklyPlan) {
+          context.pop();
+        } else {
+          context.go('/daily-plan?date=${apiDate(result.date)}');
+        }
+      }
     } on AppException catch (exception) {
       _message(exception.message);
     } finally {
@@ -893,7 +905,13 @@ final class _DailyPlanEditorScreenState
           'Editor verlassen?',
           'Der verschlüsselte Entwurf bleibt 30 Tage gespeichert.',
         )) {
-      if (mounted) context.go('/daily-plan?date=${apiDate(widget.date)}');
+      if (mounted) {
+        if (widget.returnToWeeklyPlan) {
+          context.pop();
+        } else {
+          context.go('/daily-plan?date=${apiDate(widget.date)}');
+        }
+      }
     }
   }
 
