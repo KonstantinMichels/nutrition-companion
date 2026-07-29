@@ -496,3 +496,19 @@ The API is not production-ready until the blockers in [privacy/production_privac
 Relevante Fehlercodes sind `FOOD_NOT_FOUND`, `FOOD_ARCHIVED`, `FOOD_DUPLICATE_WARNING`, `INCOMPLETE_BASIC_NUTRITION`, `NUTRIENT_NOT_FOUND`, `NUTRIENT_UNIT_MISMATCH`, `INCONSISTENT_SALT_SODIUM`, `INVALID_REFERENCE_BASIS` und `INVALID_MEASURE_CONVERSION`.
 
 Barcodefehler: `INVALID_BARCODE`, `BARCODE_PRODUCT_NOT_FOUND` und `EXTERNAL_FOOD_SERVICE_UNAVAILABLE`.
+
+## Daily Meal Planning API
+
+- `GET /api/v1/daily-meal-plans` lists lightweight owned date summaries.
+- `GET /api/v1/daily-meal-plans/by-date/{YYYY-MM-DD}` returns the active plan; GET never creates.
+- `POST /api/v1/daily-meal-plans/preview` validates and calculates without persistence.
+- `POST /api/v1/daily-meal-plans` and `PUT /api/v1/daily-meal-plans/{id}` create/replace the graph transactionally.
+- `GET /api/v1/daily-meal-plans/{id}` returns sources, meal/day totals, coverage and comparison.
+- `DELETE /api/v1/daily-meal-plans/{id}` archives; `POST /{id}/restore` restores if the date is free.
+- `POST /api/v1/daily-meal-plans/{id}/duplicate` creates new graph IDs and never overwrites.
+
+Amounts are decimal strings. Plan dates are local calendar dates and meal times are local wall-clock
+times. Remaining values carry exact/uncertain status appropriate to minimum, maximum, range or
+reference semantics. Common errors include `DAILY_PLAN_NOT_FOUND`, `DAILY_PLAN_ALREADY_EXISTS`,
+`DAILY_PLAN_ARCHIVED`, `TARGET_DATE_ALREADY_HAS_PLAN`, `ENTRY_SOURCE_ARCHIVED`,
+`ENTRY_NORMALIZATION_FAILED`, `ASSESSMENT_NOT_FOUND` and `ASSESSMENT_NOT_COMPARABLE`.

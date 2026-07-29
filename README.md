@@ -1,6 +1,9 @@
 # Nutrition Companion
 
-Recipe Target Comparison verbindet aktuelle Rezept-Nährwerte auf Abruf mit einer ausgewählten unveränderlichen Ernährungsanalyse. Portionszahl, Assessment-Auswahl und Vergleichsergebnisse bleiben flüchtig; es gibt keinen Health Score oder medizinische Bewertung. Siehe [docs/recipe_target_comparison.md](docs/recipe_target_comparison.md).
+Daily Meal Planning kombiniert Rezepte und Lebensmittel manuell zu Mahlzeiten eines lokalen
+Kalendertags, berechnet Tageswerte und vergleicht sie neutral mit einem ausgewählten unveränderlichen
+Assessment. Es ist keine Verzehrserfassung und erzeugt weder Empfehlungen noch Scores. Siehe
+[docs/daily_meal_planning.md](docs/daily_meal_planning.md).
 
 Nutrition Companion is an Android-first, German-language nutrition-assessment MVP for
 generally healthy adults. It collects a deliberately limited profile, creates a transparent
@@ -149,7 +152,7 @@ flutter build apk --debug
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` makes the test run independent of unrelated globally
 installed pytest plugins. It does not disable this project's own fixtures or tests.
 
-Verification on 2026-07-29: all 94 backend tests and all 34 mobile tests passed, together with
+Verification on 2026-07-29: all 118 backend tests and all 44 mobile tests passed, together with
 Ruff, Ruff formatting, strict mypy, Dart formatting and Flutter static analysis. The Android
 debug APK also built successfully. Use the commands above to reproduce the checks. iOS
 compilation was not attempted because the development host runs Linux.
@@ -176,11 +179,11 @@ as official DGE/ÖGE values. The engine version is `nutrition_engine_v1`.
 
 PostgreSQL is authoritative for the profile UUID, birth date and physiological category,
 anthropometrics, optional measurements, activity/sport, goal, dietary restrictions, health
-screening, versioned consent, immutable assessments and their source/rule metadata. Minimal
+screening, versioned consent, immutable assessments, Food/Recipe Core and manual daily plans. Minimal
 privacy/deletion action records intentionally contain no copied health values.
 
-On-device sensitive state is limited to an unfinished onboarding draft (30-day expiry), its
-idempotency UUID, and a minimal latest-assessment cache (stale marker after 24 hours). These use
+On-device sensitive state is limited to unfinished onboarding/daily-plan drafts (30-day expiry),
+the assessment idempotency UUID, and a minimal latest-assessment cache. These use
 `flutter_secure_storage` with Android Keystore-backed encryption. SharedPreferences stores only
 `ui.theme_mode`; Android backup is disabled. A requested JSON export exists only in the app
 temporary directory while it is handed to the system share sheet and is then deleted.

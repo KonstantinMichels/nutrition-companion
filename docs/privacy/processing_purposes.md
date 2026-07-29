@@ -154,6 +154,19 @@ Die nutzerinitiierte Recipe-Target-Comparison verwendet eine bereits gespeichert
 
 ## Deutscher Informationstext — Entwurf
 
+## `daily_meal_planning`
+
+| Attribute | Value |
+|---|---|
+| Purpose | Manuelle Speicherung und Berechnung selbst zusammengestellter Tagespläne |
+| Data | Date, meal names/times/notes, recipe/food references, quantities, optional assessment reference |
+| Special-category possibility | Yes; nutrition behavior and target linkage can be sensitive |
+| Storage | PostgreSQL; unfinished structure in Keystore/Keychain-backed secure storage |
+| Retention | Plans until complete profile deletion; encrypted drafts 30 days or earlier save/manual/profile deletion |
+| Recipients | Local app, FastAPI and PostgreSQL only; none configured externally |
+| Deletion | Complete profile deletion hard-deletes graph and clears app-owned drafts; archive is not deletion |
+| Legal status | Placeholder; Article 6/9 and information duties require qualified review |
+
 **Nicht rechtlich freigegeben. Vor einer Veröffentlichung müssen Verantwortlicher, Kontaktdaten, Datenschutzbeauftragte, Rechtsgrundlagen, Empfänger, konkrete Speicherfristen, Beschwerdestelle und alle Pflichtinformationen ergänzt und professionell geprüft werden.**
 
 > ### Datenschutz-Kurzinformation

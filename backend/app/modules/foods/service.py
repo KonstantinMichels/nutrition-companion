@@ -269,6 +269,18 @@ def permanently_delete_food(session: Session, profile_id: UUID, food_id: UUID) -
             "dauerhaft gelöscht werden.",
             409,
         )
+    from app.modules.daily_meal_planning.models import MealEntry
+
+    plan_reference = session.scalar(
+        select(MealEntry.id).where(MealEntry.food_id == food.id).limit(1)
+    )
+    if plan_reference is not None:
+        raise _error(
+            "FOOD_REFERENCED_BY_DAILY_PLAN",
+            "Dieses Lebensmittel wird noch in einem Tagesplan verwendet. Archiviere es oder "
+            "entferne zuerst die Planeinträge.",
+            409,
+        )
     deleted_id = food.id
     try:
         session.delete(food)

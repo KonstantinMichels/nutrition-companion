@@ -178,6 +178,15 @@ Logs must never contain request/response bodies, raw URLs with query data, profi
 The MVP does not collect legal name, postal address, phone number, email address, exact location, employer, government identifiers, contact list, advertising ID, device fingerprint, camera/microphone content or payment data. Adding any of these requires a new purpose and privacy review.
 # Food Core
 
+## Daily meal plans
+
+Persisted per-profile data includes plan UUID/date/name/notes/archive timestamps/optional assessment
+reference; meal type/custom name/local time/notes/position/timestamps; and entry recipe/food
+references, decimal quantities, units/measures, notes, positions and timestamps. Meal/day totals,
+coverage and target comparisons are generated on demand and are not separate records. Unsaved plan
+structure may exist for 30 days in encrypted device storage; it contains no complete nutrient source
+record. This is sensitive nutrition and behavioral planning data.
+
 Profilgebundene, manuell eingegebene Lebensmittelnamen, Marken, Beschreibungen, Bezugsbasis, optionale Dichte, Nährwerte und Haushaltsmaße einschließlich Quellen- und Archivmetadaten. Manuell eingegebene Lebensmittel werden nicht an externe Dienste übermittelt.
 
 Bei Barcode-Importen zusätzlich: Barcode, Open-Food-Facts-Quellstand und importierte Produktdaten. Der Barcode wird für die vom Nutzer ausgelöste Suche an Open Food Facts übertragen; Profil- und Bewertungsdaten werden nicht mitgesendet.

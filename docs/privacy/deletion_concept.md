@@ -56,6 +56,7 @@ Database transaction removes, in dependency-safe order or through verified casca
 - health screening;
 - foods, food nutrients and food measures;
 - recipes, recipe ingredients and recipe steps;
+- daily meal plans, meals and meal entries before their protected source records;
 - consent records as appropriate for the local MVP;
 - privacy-action records that are linked and not covered by an approved minimal exception; and
 - the profile.
@@ -65,6 +66,7 @@ The transaction must use current-profile scope throughout. It must not be a UI h
 Only after server confirmation, Flutter deletes:
 
 - unfinished onboarding draft;
+- all encrypted daily-plan drafts;
 - latest-assessment cache;
 - local consent display state;
 - development current-profile context where present; and
@@ -121,6 +123,12 @@ Before production, automated and operational tests must verify:
 - a production restore reapplies deletion before activation.
 
 Schema changes that add profile-linked data must update this concept, the export, inventory, cascade/transaction and deletion tests in the same change.
+
+Assessment-history deletion leaves daily plans intact. Their `assessment_id` becomes `NULL` through
+the foreign key, daily totals remain calculable, and comparison stays unavailable until another
+assessment is selected. Archiving a plan, food or recipe is not privacy deletion. Existing archived
+source references remain structurally present and visibly warned; archived sources cannot be added
+to a new entry.
 # Food Core
 
 Die vollständige Profillöschung löscht eigene Lebensmittel sowie Nährwerte und Maße dauerhaft per Datenbank-Cascade. Die App muss anschließend lokale verschlüsselte Profildaten leeren. `DELETE /foods/{id}` archiviert dagegen nur. Die getrennte, in der App ausdrücklich bestätigte Aktion `DELETE /foods/{id}/permanent` löscht ein einzelnes eigenes Lebensmittel samt abhängigen Werten unwiderruflich.

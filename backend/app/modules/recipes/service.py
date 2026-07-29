@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApiError
@@ -241,6 +242,18 @@ def permanently_delete(session: Session, profile_id: UUID, recipe_id: UUID) -> U
     """Permanently delete one owned recipe and its ingredient/step graph."""
 
     recipe = require(session, profile_id, recipe_id)
+    from app.modules.daily_meal_planning.models import MealEntry
+
+    plan_reference = session.scalar(
+        select(MealEntry.id).where(MealEntry.recipe_id == recipe.id).limit(1)
+    )
+    if plan_reference is not None:
+        raise error(
+            "RECIPE_REFERENCED_BY_DAILY_PLAN",
+            "Dieses Rezept wird noch in einem Tagesplan verwendet. Archiviere es oder "
+            "entferne zuerst die Planeinträge.",
+            409,
+        )
     deleted_id = recipe.id
     try:
         session.delete(recipe)

@@ -1,5 +1,12 @@
 # Future modules
 
+## Next: `feat/weekly-meal-planning`
+
+Daily Meal Planning is implemented. The next branch should organize existing daily plans across a
+week, provide a weekly overview, support deliberate copying/moving of meals between dates and
+aggregate weekly nutrient and food-group information. It may prepare later automatic planning but
+must not silently introduce recommendations or optimization. Weekly planning is not implemented.
+
 **Status:** Architecture roadmap only  
 **Last reviewed:** 2026-07-28
 
@@ -104,4 +111,4 @@ Recipe Core referenziert Lebensmittel per ID, normalisiert g/ml und vorhandene H
 
 # Implementiert: `feat/recipe-target-comparison`
 
-Ein einzelnes Rezept kann mit einer gewählten unveränderlichen Einschätzung und einer frei gewählten Portionszahl verglichen werden. Nächster erwarteter Branch ist `feat/daily-meal-planning`: mehrere Foods und Rezepte zu Mahlzeiten und einem Tag kombinieren, vollständige Tagessummen und verbleibende Zielbereiche anzeigen und einen Tag manuell zusammenstellen. Tagesplanung ist noch nicht implementiert.
+Ein einzelnes Rezept kann mit einer gewählten unveränderlichen Einschätzung und einer frei gewählten Portionszahl verglichen werden. `feat/daily-meal-planning` ist ebenfalls implementiert: mehrere Foods und Rezepte lassen sich manuell zu Mahlzeiten und einem Tag kombinieren. Nächster erwarteter Branch ist `feat/weekly-meal-planning`.

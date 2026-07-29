@@ -8,6 +8,8 @@ import '../features/onboarding/draft_repository.dart';
 import '../features/foods/food_repository.dart';
 import '../features/recipes/recipe_repository.dart';
 import '../features/recipes/recipe_comparison_repository.dart';
+import '../features/daily_plans/daily_plan_draft_repository.dart';
+import '../features/daily_plans/daily_plan_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig was not supplied at startup.'),
@@ -42,4 +44,12 @@ final recipeRepositoryProvider = Provider<RecipeRepository>(
 
 final recipeComparisonRepositoryProvider = Provider<RecipeComparisonRepository>(
   (ref) => RecipeComparisonRepository(ref.watch(apiClientProvider)),
+);
+
+final dailyPlanRepositoryProvider = Provider<DailyPlanRepository>(
+  (ref) => DailyPlanRepository(ref.watch(apiClientProvider)),
+);
+
+final dailyPlanDraftRepositoryProvider = Provider<DailyPlanDraftRepository>(
+  (ref) => DailyPlanDraftRepository(ref.watch(sensitiveStoreProvider)),
 );

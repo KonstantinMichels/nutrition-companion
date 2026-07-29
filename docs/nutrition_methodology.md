@@ -393,3 +393,12 @@ These warning/information messages are product behavior, not diagnoses.
 - Food-group recommendations are mixed-diet general orientation and are not personalized from consumption data.
 - Screening relies on truthful self-report and is not a clinical assessment.
 - The output has not been clinically validated and must not be used for medical nutrition therapy.
+
+## Planned day interpretation
+
+A daily plan describes intended food quantities, not confirmed consumption. Its comparison uses
+immutable targets from the selected assessment with current food and recipe values. Missing source
+nutrients remain unknown and can make relations or remaining amounts indeterminate; known amounts
+are lower bounds. Minimums, maximums, ranges and reference values retain distinct semantics. The
+wording does not diagnose deficiency or excess, and the system generates no automatic diet
+recommendation, optimization or medical interpretation.
