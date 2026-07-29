@@ -18,12 +18,17 @@ import '../features/recipes/recipe_form_screen.dart';
 import '../features/recipes/recipe_list_screen.dart';
 import '../features/daily_plans/daily_plan_editor_screen.dart';
 import '../features/daily_plans/daily_plan_screen.dart';
+import '../features/weekly_plans/weekly_plan_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/weekly-plan',
+      builder: (context, state) => const WeeklyPlanScreen(),
+    ),
     GoRoute(
       path: '/daily-plan',
       builder: (context, state) => DailyPlanScreen(
@@ -34,6 +39,8 @@ final appRouter = GoRouter(
       path: '/daily-plan/edit',
       builder: (context, state) => DailyPlanEditorScreen(
         id: state.uri.queryParameters['id'],
+        returnToWeeklyPlan:
+            state.uri.queryParameters['returnTo'] == 'weekly-plan',
         date:
             DateTime.tryParse(state.uri.queryParameters['date'] ?? '') ??
             DateTime.now(),

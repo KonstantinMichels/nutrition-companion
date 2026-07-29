@@ -1,5 +1,10 @@
 # Nutrition Companion
 
+The Android application includes manual ISO-week planning as a derived overview of
+Daily Meal Planning. Open **Wochenplan** to review Monday through Sunday, open or create
+daily plans, copy days, transfer meals, and inspect weekly totals and target coverage.
+See [Weekly Meal Planning](docs/weekly_meal_planning.md).
+
 Daily Meal Planning kombiniert Rezepte und Lebensmittel manuell zu Mahlzeiten eines lokalen
 Kalendertags, berechnet Tageswerte und vergleicht sie neutral mit einem ausgewählten unveränderlichen
 Assessment. Es ist keine Verzehrserfassung und erzeugt weder Empfehlungen noch Scores. Siehe

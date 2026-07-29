@@ -1,5 +1,10 @@
 # Future modules
 
+The next expected branch is `feat/pantry-core`. Pantry Core will introduce stored food
+items, available quantities, storage locations, optional best-before dates, manual stock
+adjustments, and links to Food Core. It prepares later pantry-aware planning and shopping
+lists; none of those capabilities is implemented yet.
+
 ## Next: `feat/weekly-meal-planning`
 
 Daily Meal Planning is implemented. The next branch should organize existing daily plans across a

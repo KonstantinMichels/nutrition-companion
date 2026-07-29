@@ -1,5 +1,9 @@
 # Personal-data inventory
 
+Weekly views are sensitive derived planning data calculated from daily plans,
+assessments, foods, and recipes. No weekly record, history, local cache, or export copy
+is persisted.
+
 **Status:** MVP design/implementation inventory  
 **Last reviewed:** 2026-07-28  
 **Legal review:** Required before production

@@ -1,5 +1,10 @@
 # Personal-data flows
 
+For Weekly Meal Planning the Android client sends a local anchor date to the first-party
+API. The API batch-loads profile-owned daily source records, derives the response in
+memory, and returns it to the client. No external recipient or third-country transfer is
+introduced.
+
 **Status:** Local-MVP technical flow and production requirements  
 **Last reviewed:** 2026-07-28
 
