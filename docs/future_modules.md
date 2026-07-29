@@ -131,3 +131,8 @@ nächste erwartete Branch ist `feat/meal-plan-automation-foundation`. Dieser Aus
 Planungsbedingungen, Kandidateneignung, deterministische Bewertung und erklärbare Entwürfe
 vorbereiten. Er darf ohne Review nichts speichern, keinen Vorrat reservieren und keine
 Black-Box-Ernährungsentscheidung treffen.
+# Meal-plan optimizer
+
+A future optimizer may replace the current deterministic greedy selection strategy while retaining
+the same hard eligibility, explainability, transient preview, freshness and explicit-apply
+contracts. It is intentionally outside the automation-foundation scope.

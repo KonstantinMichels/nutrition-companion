@@ -49,6 +49,14 @@ final class _WeeklyPlanScreenState extends ConsumerState<WeeklyPlanScreen> {
     title: 'Wochenplan',
     actions: [
       IconButton(
+        key: const Key('weekly-plan-automation'),
+        tooltip: 'Plan automatisch erstellen',
+        onPressed: () => context.push(
+          '/meal-plan-automation?scope=iso_week&date=${_apiDate(anchor)}',
+        ),
+        icon: const Icon(Icons.auto_awesome),
+      ),
+      IconButton(
         key: const Key('weekly-today'),
         tooltip: 'Aktuelle Woche',
         onPressed: () {

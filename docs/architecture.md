@@ -238,3 +238,8 @@ The authoritative release gate is [privacy/production_privacy_checklist.md](priv
 # Purchase-to-Pantry-Abhängigkeit
 
 `Purchase to Pantry → Shopping List Core → Pantry Core → Food Core` beschreibt die fachliche Orchestrierung: Das Übergabemodul verwendet die öffentlichen Normalisierungs- und Bestandsoperationen, während Shopping List, Pantry und Food Core nicht von ihm abhängen. Shopping List bleibt Quelle der Kaufabsicht, Pantry Quelle des Bestands. Abhaken mutiert Pantry nicht.
+# Meal-plan automation
+
+The `meal_plan_automation` backend module separates persistent preferences/application audits from
+the pure deterministic scoring engine and transient draft orchestration. See
+`meal_plan_automation_foundation.md` for boundaries and data flow.

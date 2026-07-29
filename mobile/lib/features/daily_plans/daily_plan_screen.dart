@@ -57,6 +57,14 @@ final class _DailyPlanScreenState extends ConsumerState<DailyPlanScreen> {
     title: 'Tagesplan',
     actions: [
       IconButton(
+        key: const Key('daily-plan-automation'),
+        onPressed: () => context.push(
+          '/meal-plan-automation?scope=single_day&date=${apiDate(date)}',
+        ),
+        tooltip: 'Plan automatisch erstellen',
+        icon: const Icon(Icons.auto_awesome),
+      ),
+      IconButton(
         onPressed: load,
         tooltip: 'Aktualisieren',
         icon: const Icon(Icons.refresh),
