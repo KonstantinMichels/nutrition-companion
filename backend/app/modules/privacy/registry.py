@@ -89,6 +89,31 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
         "required": False,
     },
     {
+        "code": "daily_meal_planning",
+        "description_de": (
+            "Manuelle Zusammenstellung geplanter Mahlzeiten und persönlicher Tagesvergleiche."
+        ),
+        "data_categories": [
+            "plan date",
+            "meal names and times",
+            "food and recipe references",
+            "planned quantities",
+            "assessment reference",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": (
+            "PostgreSQL; unfinished drafts only in Android Keystore-backed secure storage"
+        ),
+        "retention_period": "Until complete profile deletion; drafts expire after 30 days",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Pläne werden bei vollständiger Profillöschung entfernt; Archive sind keine Löschung."
+        ),
+        "required": False,
+    },
+    {
         "code": "technical_security_logging",
         "description_de": (
             "Minimierte technische Protokolle zur Fehler- und Sicherheitsanalyse ohne Inhaltsdaten."

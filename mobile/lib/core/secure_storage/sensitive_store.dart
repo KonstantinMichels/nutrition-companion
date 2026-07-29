@@ -12,11 +12,13 @@ abstract final class SensitiveKeys {
   static const latestAssessment = 'sensitive.latest_assessment.v1';
   static const currentProfileId = 'sensitive.current_profile_id.v1';
   static const consentState = 'sensitive.consent_state.v1';
+  static const dailyPlanDrafts = 'sensitive.daily_plan_drafts.v1';
   static const values = <String>{
     onboardingDraft,
     latestAssessment,
     currentProfileId,
     consentState,
+    dailyPlanDrafts,
   };
 }
 

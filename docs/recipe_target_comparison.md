@@ -1,5 +1,10 @@
 # Recipe Target Comparison
 
+Daily Meal Planning reuses this module's target extraction, target kinds and canonical unit
+conversion for complete-day comparisons. Recipe comparison remains an on-demand view of one
+recipe amount; daily planning persists only plan structure and selected assessment reference.
+See [daily_meal_planning.md](daily_meal_planning.md).
+
 Der persönliche Rezeptvergleich vergleicht eine frei wählbare Anzahl normaler Rezeptportionen mit den unveränderlichen Zielwerten einer gespeicherten Nutrition Assessment. Standardmäßig wird die neueste unterstützte Einschätzung mit mindestens einem vergleichbaren Ziel verwendet; ältere eigene Einschätzungen können ausdrücklich ausgewählt werden. Nicht unterstützte oder zielwertlose Einschätzungen bleiben sichtbar, sind aber nicht auswählbar.
 
 ## Berechnungsbasis
@@ -33,4 +38,4 @@ Recipe Core liefert bekannte/relevante Zutaten, fehlende Zutaten und Abdeckungsq
 
 Die Rezeptdetailansicht lädt den Abschnitt „Persönlicher Vergleich“ erst beim Öffnen. Sie bietet Assessment-Auswahl, Schnellmengen 0,5/1/1,5/2, manuelle deutsche Dezimaleingabe, gruppierte Nährstoffe, Datenqualität und „Wie wird verglichen?“. Archivierte Rezepte bleiben schreibgeschützt vergleichbar.
 
-Es gibt keinen Health Score, keine Ampel, Rezeptbewertung, Rangfolge, Empfehlung, Diagnose oder medizinische Interpretation. Der Vergleich bildet nur eine Rezeptmenge ab, nicht den gesamten Tag. Es existieren keine historischen Rezept-Nährwertsnapshots, Mahlzeitenkombinationen oder Restzielberechnungen. Nächster Schritt ist `feat/daily-meal-planning`.
+Es gibt keinen Health Score, keine Ampel, Rezeptbewertung, Rangfolge, Empfehlung, Diagnose oder medizinische Interpretation. Der Vergleich bildet nur eine Rezeptmenge ab, nicht den gesamten Tag. Historische Rezept-Nährwertsnapshots bleiben außerhalb des Umfangs. Mahlzeitenkombinationen und typgerechte Restzielberechnungen sind inzwischen Bestandteil von Daily Meal Planning; der nächste Schritt ist `feat/weekly-meal-planning`.

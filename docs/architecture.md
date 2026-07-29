@@ -135,6 +135,8 @@ ReferenceSet -- ReferenceValues
 ApplicationRuleSet
 ProcessingPurpose
 PrivacyAction / DeletionRecord (no health-data copy)
+DailyMealPlan -- Meals -- MealEntries --> current Recipe/Food sources
+      `-- optional immutable Assessment target reference
 ```
 
 An assessment row references the concrete scientific/reference and application-rule rows, and also stores their identifiers/versions with engine version, calculation time, supported-scope status and summary. Metric rows preserve raw/lower/upper values, display value, unit, method, German explanation/limitation, calculation inputs, source metadata, application-rule identifier and confidence type.
@@ -186,6 +188,18 @@ Scientific data and product policy are separately versioned:
 - **application rule set:** goal percentages, PAL midpoint/sport mapping, selection within a sports-protein range, warnings, validation and display rounding.
 
 The API and report expose both. A product rule must never be labeled a DGE/ÖGE reference value. Missing scientific values remain unavailable rather than falling back to invented or U.S. values.
+
+## Daily planning orchestration
+
+`app.modules.daily_meal_planning` follows router → service → repository/engine. The service owns
+authorization, source loading and transaction boundaries; it calls Food Core conversion, Recipe
+Core calculation, immutable target extraction and canonical unit conversion. The pure Decimal
+aggregation engine receives typed values and never queries the database. Preview uses this same
+path without persistence. The partial database index on owner/date enforces one active plan.
+
+Flutter adds only form state and presentation. Authoritative nutrient totals and comparisons come
+from FastAPI. Sensitive unsaved structure uses the shared encrypted `SensitiveStore`, not
+SharedPreferences.
 
 ## Future integration
 

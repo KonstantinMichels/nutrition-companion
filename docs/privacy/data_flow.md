@@ -140,6 +140,19 @@ The Compose Uvicorn access log is disabled so this allowlisted application log i
 - Third-country transfer without a documented provider and transfer review.
 # Food Core
 
+## Daily planning flow
+
+```text
+encrypted Flutter draft -> explicit preview/save -> FastAPI ownership checks
+  -> current Food/Recipe Core calculation + immutable assessment targets
+  -> PostgreSQL plan structure / calculated response -> Flutter display
+```
+
+Preview is memory-only. Persisted plans stay in PostgreSQL; calculated totals are not cached. No
+external recipient receives plan content. Request logging records only allowlisted technical
+metadata and excludes bodies, meal names/notes, targets and totals. Export reads only the current
+profile graph. Complete deletion removes server plans and the app clears the encrypted draft key.
+
 Android-App → eigene FastAPI → PostgreSQL. Lebensmitteldaten verlassen diesen lokalen/selbst betriebenen Datenfluss nicht. Der Export wird nur auf ausdrückliche Aktion erzeugt.
 
 Beim ausdrücklich gestarteten Barcode-Scan gilt abweichend: Android-App → eigene FastAPI → Open Food Facts. Übertragen werden Barcode, technische HTTP-Metadaten und die IP-Adresse des Backendservers. Die Produktantwort wird vor dem Speichern angezeigt. Manuell eingegebene Lebensmittel und Profildaten werden nicht an Open Food Facts übertragen.

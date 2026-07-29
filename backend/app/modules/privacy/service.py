@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.branding import CONSENT_TEXT_VERSION
 from app.core.errors import ApiError
+from app.modules.daily_meal_planning.models import DailyMealPlan, Meal
 from app.modules.foods.models import Food
 from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
 from app.modules.nutrition_assessment.models import Assessment
@@ -174,6 +175,14 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                 selectinload(Recipe.steps),
             )
             .order_by(Recipe.created_at)
+        )
+    )
+    daily_plans = list(
+        session.scalars(
+            select(DailyMealPlan)
+            .where(DailyMealPlan.owner_profile_id == profile_id)
+            .options(selectinload(DailyMealPlan.meals).selectinload(Meal.entries))
+            .order_by(DailyMealPlan.plan_date, DailyMealPlan.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -412,6 +421,50 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for recipe in recipes
         ],
+        "daily_meal_plans": [
+            {
+                "id": plan.id,
+                "plan_date": plan.plan_date,
+                "assessment_id": plan.assessment_id,
+                "name": plan.name,
+                "notes": plan.notes,
+                "is_archived": plan.is_archived,
+                "archived_at": plan.archived_at,
+                "created_at": plan.created_at,
+                "updated_at": plan.updated_at,
+                "meals": [
+                    {
+                        "id": meal.id,
+                        "meal_type": meal.meal_type,
+                        "custom_name": meal.custom_name,
+                        "planned_time": meal.planned_time,
+                        "position": meal.position,
+                        "notes": meal.notes,
+                        "created_at": meal.created_at,
+                        "updated_at": meal.updated_at,
+                        "entries": [
+                            {
+                                "id": entry.id,
+                                "entry_type": entry.entry_type,
+                                "recipe_id": entry.recipe_id,
+                                "food_id": entry.food_id,
+                                "recipe_portion_count": entry.recipe_portion_count,
+                                "food_quantity": entry.food_quantity,
+                                "food_unit_code": entry.food_unit_code,
+                                "food_measure_id": entry.food_measure_id,
+                                "position": entry.position,
+                                "note": entry.note,
+                                "created_at": entry.created_at,
+                                "updated_at": entry.updated_at,
+                            }
+                            for entry in meal.entries
+                        ],
+                    }
+                    for meal in plan.meals
+                ],
+            }
+            for plan in daily_plans
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -476,6 +529,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
     recipe_count = session.scalar(
         select(func.count()).select_from(Recipe).where(Recipe.owner_profile_id == profile_id)
     )
+    daily_plan_count = session.scalar(
+        select(func.count())
+        .select_from(DailyMealPlan)
+        .where(DailyMealPlan.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -484,14 +542,16 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(assessment_count or 0)
         + int(food_count or 0)
         + int(recipe_count or 0)
+        + int(daily_plan_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
     )
     confirmation = secrets.token_hex(8)
     try:
-        # RESTRICT protects Foods referenced by recipes. Remove the owned
-        # recipe graph first; the remaining profile graph then cascades safely.
+        # Plan entries and recipe ingredients protect their source records.
+        session.execute(delete(DailyMealPlan).where(DailyMealPlan.owner_profile_id == profile_id))
+        session.flush()
         session.execute(delete(Recipe).where(Recipe.owner_profile_id == profile_id))
         session.flush()
         session.execute(delete(Food).where(Food.owner_profile_id == profile_id))
@@ -567,6 +627,21 @@ def delete_profile_data_and_assessments(session: Session, profile_id: UUID) -> D
 
 
 def delete_all_recipes(session: Session, profile_id: UUID) -> DeletionResponse:
+    from app.modules.daily_meal_planning.models import MealEntry
+
+    plan_reference = session.scalar(
+        select(MealEntry.id)
+        .join(Meal)
+        .join(DailyMealPlan)
+        .where(DailyMealPlan.owner_profile_id == profile_id, MealEntry.recipe_id.is_not(None))
+        .limit(1)
+    )
+    if plan_reference is not None:
+        raise ApiError(
+            code="RECIPES_REFERENCED_BY_DAILY_PLANS",
+            message="Tagespläne verwenden noch Rezepte. Entferne zuerst diese Planeinträge.",
+            status_code=409,
+        )
     confirmation = secrets.token_hex(8)
     count = session.scalar(
         select(func.count()).select_from(Recipe).where(Recipe.owner_profile_id == profile_id)
@@ -599,6 +674,21 @@ def delete_all_foods(session: Session, profile_id: UUID) -> DeletionResponse:
         raise ApiError(
             code="FOODS_REFERENCED_BY_RECIPES",
             message="Lösche zuerst deine Rezepte, da sie Lebensmittel verwenden.",
+            status_code=409,
+        )
+    from app.modules.daily_meal_planning.models import MealEntry
+
+    plan_reference = session.scalar(
+        select(MealEntry.id)
+        .join(Meal)
+        .join(DailyMealPlan)
+        .where(DailyMealPlan.owner_profile_id == profile_id, MealEntry.food_id.is_not(None))
+        .limit(1)
+    )
+    if plan_reference is not None:
+        raise ApiError(
+            code="FOODS_REFERENCED_BY_DAILY_PLANS",
+            message="Tagespläne verwenden noch Lebensmittel. Entferne zuerst diese Planeinträge.",
             status_code=409,
         )
     confirmation = secrets.token_hex(8)
