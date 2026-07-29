@@ -136,6 +136,30 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
         "required": False,
     },
     {
+        "code": "shopping_list_management",
+        "description_de": (
+            "Erstellung und Verwaltung manueller oder aus Plänen abgeleiteter Einkaufslisten."
+        ),
+        "data_categories": [
+            "shopping-list metadata",
+            "food references and quantities",
+            "plan-source snapshots",
+            "Pantry comparison snapshots",
+            "free-text items and notes",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; no shopping-list form cache in the MVP",
+        "retention_period": "Until complete profile deletion",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Einkaufslisten werden bei vollständiger Profillöschung entfernt; "
+            "Archivieren ist keine Löschung."
+        ),
+        "required": False,
+    },
+    {
         "code": "technical_security_logging",
         "description_de": (
             "Minimierte technische Protokolle zur Fehler- und Sicherheitsanalyse ohne Inhaltsdaten."

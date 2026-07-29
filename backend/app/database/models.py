@@ -21,6 +21,7 @@ from app.modules.profiles.models import (
 )
 from app.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from app.modules.reference_data.models import ApplicationRuleSet, ReferenceSet, ReferenceValue
+from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem, ShoppingListItemSource
 
 __all__ = [
     "ActivityProfile",
@@ -51,5 +52,8 @@ __all__ = [
     "ReferenceSet",
     "ReferenceValue",
     "SafetyFlag",
+    "ShoppingList",
+    "ShoppingListItem",
+    "ShoppingListItemSource",
     "SportActivity",
 ]

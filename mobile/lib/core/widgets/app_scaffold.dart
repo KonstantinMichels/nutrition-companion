@@ -111,6 +111,12 @@ final class _NavigationDrawer extends StatelessWidget {
       _destination(context, Icons.inventory_2_outlined, 'Vorrat', '/pantry'),
       _destination(
         context,
+        Icons.shopping_cart_outlined,
+        'Einkauf',
+        '/shopping-lists',
+      ),
+      _destination(
+        context,
         Icons.person_outline,
         'Profil bearbeiten',
         '/profile',
