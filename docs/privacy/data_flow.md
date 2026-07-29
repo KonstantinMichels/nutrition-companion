@@ -184,3 +184,14 @@ Es gibt keinen externen Empfänger, keine Analyse, keinen Vergleichscache und ke
 # Purchase to Pantry
 
 Die App sendet die ausdrücklich ausgewählten Artikel zunächst zur transienten Vorschau. Erst die Bestätigung schreibt atomar Pantry-Bestände, Bewegungen und lokale Verknüpfungen. Es gibt keine externe Übertragung.
+
+# Pantry Recipe Availability
+
+```text
+eigene Rezept-ID + Portionszahl + Anzeigeoptionen
+-> eigene FastAPI -> aktuelle Recipe-Core-Zutaten + aktive Pantry-Lose
+-> deterministische Decimal-Berechnung -> flüchtige Flutter-Anzeige
+```
+
+Es gibt keinen externen Empfänger, keinen Ergebnisdatensatz, keine Reservierung und keine
+Bestandsbewegung. Protokolliert werden keine Rezept-, Food- oder Mengenwerte.

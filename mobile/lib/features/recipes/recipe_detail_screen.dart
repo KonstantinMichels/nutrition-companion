@@ -8,6 +8,7 @@ import '../../core/formatting/german_decimal.dart';
 import 'recipe_list_screen.dart';
 import 'recipe_models.dart';
 import 'recipe_comparison_section.dart';
+import 'recipe_availability_section.dart';
 
 final recipeDetailProvider = FutureProvider.autoDispose
     .family<RecipeItem, String>(
@@ -139,6 +140,7 @@ final class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               ),
               const Divider(),
               RecipeComparisonSection(recipeId: widget.id),
+              RecipeAvailabilitySection(recipeId: widget.id),
               const SizedBox(height: 16),
               if (!recipe.archived) ...[
                 FilledButton(

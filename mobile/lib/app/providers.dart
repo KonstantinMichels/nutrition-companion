@@ -8,6 +8,7 @@ import '../features/onboarding/draft_repository.dart';
 import '../features/foods/food_repository.dart';
 import '../features/recipes/recipe_repository.dart';
 import '../features/recipes/recipe_comparison_repository.dart';
+import '../features/recipes/recipe_availability_repository.dart';
 import '../features/daily_plans/daily_plan_draft_repository.dart';
 import '../features/daily_plans/daily_plan_repository.dart';
 import '../features/weekly_plans/weekly_plan_repository.dart';
@@ -48,6 +49,11 @@ final recipeRepositoryProvider = Provider<RecipeRepository>(
 final recipeComparisonRepositoryProvider = Provider<RecipeComparisonRepository>(
   (ref) => RecipeComparisonRepository(ref.watch(apiClientProvider)),
 );
+
+final recipeAvailabilityRepositoryProvider =
+    Provider<RecipeAvailabilityRepository>(
+      (ref) => RecipeAvailabilityRepository(ref.watch(apiClientProvider)),
+    );
 
 final dailyPlanRepositoryProvider = Provider<DailyPlanRepository>(
   (ref) => DailyPlanRepository(ref.watch(apiClientProvider)),

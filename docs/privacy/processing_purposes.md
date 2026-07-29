@@ -4,6 +4,10 @@
 manual food stock. It is optional service storage and introduces no new consent checkbox
 in this architecture; the legal basis still requires qualified review.
 
+The same purpose includes the user-requested, transient comparison of current recipe requirements
+with current Pantry stock. Derived availability is not persisted, exported, shared externally, or
+used for automated food-safety decisions and introduces no additional consent checkbox.
+
 The existing `daily_meal_planning` purpose includes manual weekly organization and the
 on-demand aggregation of daily plans. This adds no automated decision and needs no
 redundant consent.
