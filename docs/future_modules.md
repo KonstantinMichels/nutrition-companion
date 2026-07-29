@@ -98,7 +98,6 @@ Production must never fall back to the development resolver.
 ## When to reconsider deployment topology
 
 Separate services are not a roadmap goal. Reconsider only if there is evidence of an independently scaling workload, materially different security isolation, a separately operated team or a hard availability boundary. Even then, first define ownership, transaction changes, failure behavior and privacy impact. A queue, cache, generic plugin framework or additional database should not be introduced merely because a future feature could use one.
-# Nächster Schritt: `feat/recipe-core`
+# Implementiert: `feat/recipe-core`
 
-Recipe Core soll Lebensmittel per ID referenzieren, Mengen über g/ml oder vorhandene Haushaltsmaße normalisieren und bekannte Nährwerte dezimalgenau skalieren. Unbekannte Nährwerte dürfen nicht als Null aggregiert werden; historische Nährwert-Snapshots sind im Rezeptdesign zu berücksichtigen. Rezepte sind aktuell nicht implementiert.
-
+Recipe Core referenziert Lebensmittel per ID, normalisiert g/ml und vorhandene Haushaltsmaße und aggregiert bekannte Nährwerte dezimalgenau mit sichtbarer Abdeckung. Barcode-Produkte können nach dem Food-Import als Fertiggericht in einen Rezeptentwurf übernommen werden. Nächster Schritt ist `feat/recipe-target-comparison`; Zielvergleiche müssen eine konkrete unveränderliche Assessment-Version referenzieren.

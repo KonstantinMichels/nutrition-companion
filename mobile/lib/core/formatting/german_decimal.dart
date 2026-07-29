@@ -24,4 +24,16 @@ abstract final class GermanDecimal {
         locale: 'de_DE',
         decimalDigits: decimals,
       ).format(value);
+
+  /// Formats an API decimal exactly, without converting it through `double`.
+  /// Trailing fractional zeroes are removed and German decimal commas are used.
+  static String formatString(Object? input) {
+    if (input == null) return '';
+    final raw = input.toString().trim().replaceAll(',', '.');
+    final match = RegExp(r'^([+-]?\d+)(?:\.(\d+))?$').firstMatch(raw);
+    if (match == null) return input.toString();
+    final integer = match.group(1)!;
+    final fraction = (match.group(2) ?? '').replaceFirst(RegExp(r'0+$'), '');
+    return fraction.isEmpty ? integer : '$integer,$fraction';
+  }
 }

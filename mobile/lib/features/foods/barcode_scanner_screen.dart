@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../app/providers.dart';
+import '../../core/formatting/german_decimal.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/widgets/app_scaffold.dart';
 import 'food_list_screen.dart';
@@ -157,7 +158,9 @@ final class _BarcodeScannerScreenState
         for (final nutrient in product.nutrients)
           ListTile(
             title: Text(_nutrientName(nutrient['nutrient_code'].toString())),
-            trailing: Text('${nutrient['amount']} ${nutrient['unit']}'),
+            trailing: Text(
+              '${GermanDecimal.formatString(nutrient['amount'])} ${nutrient['unit']}',
+            ),
           ),
         if (missing.isNotEmpty) ...[
           Text(
@@ -175,9 +178,16 @@ final class _BarcodeScannerScreenState
         FilledButton.icon(
           onPressed: importing || (missing.isNotEmpty && !confirmIncomplete)
               ? null
-              : _import,
+              : () => _import(),
           icon: const Icon(Icons.download_done),
           label: Text(importing ? 'Wird gespeichert …' : 'Produkt übernehmen'),
+        ),
+        OutlinedButton.icon(
+          onPressed: importing || (missing.isNotEmpty && !confirmIncomplete)
+              ? null
+              : () => _import(asPreparedDish: true),
+          icon: const Icon(Icons.restaurant_menu),
+          label: const Text('Als Fertiggericht übernehmen'),
         ),
         TextButton(
           onPressed: _scanAgain,
@@ -210,7 +220,10 @@ final class _BarcodeScannerScreenState
     }
   }
 
-  Future<void> _import({bool confirmDuplicate = false}) async {
+  Future<void> _import({
+    bool confirmDuplicate = false,
+    bool asPreparedDish = false,
+  }) async {
     if (importing || preview == null) return;
     setState(() => importing = true);
     try {
@@ -222,7 +235,13 @@ final class _BarcodeScannerScreenState
             confirmDuplicate: confirmDuplicate,
           );
       ref.invalidate(foodListProvider);
-      if (mounted) context.go('/foods/${food.id}');
+      if (mounted) {
+        context.go(
+          asPreparedDish
+              ? '/recipes/new?foodId=${food.id}'
+              : '/foods/${food.id}',
+        );
+      }
     } on AppException catch (exception) {
       if (!mounted) return;
       if (exception.code == 'FOOD_DUPLICATE_WARNING' && !confirmDuplicate) {
@@ -245,7 +264,7 @@ final class _BarcodeScannerScreenState
         );
         if (proceed == true) {
           setState(() => importing = false);
-          await _import(confirmDuplicate: true);
+          await _import(confirmDuplicate: true, asPreparedDish: asPreparedDish);
           return;
         }
       } else {

@@ -1,3 +1,5 @@
+import '../../core/formatting/german_decimal.dart';
+
 final class FoodNutrient {
   const FoodNutrient({
     required this.code,
@@ -9,12 +11,26 @@ final class FoodNutrient {
   factory FoodNutrient.fromJson(Map<String, dynamic> json) => FoodNutrient(
     code: json['nutrient_code'].toString(),
     name: json['display_name_de'].toString(),
-    amount: json['amount'].toString(),
+    amount: GermanDecimal.formatString(json['amount']),
     unit: json['unit'].toString(),
     derived: json['is_derived'] == true,
   );
   final String code, name, amount, unit;
   final bool derived;
+}
+
+final class FoodMeasure {
+  const FoodMeasure({
+    required this.id,
+    required this.name,
+    required this.unitCode,
+  });
+  factory FoodMeasure.fromJson(Map<String, dynamic> json) => FoodMeasure(
+    id: json['id'].toString(),
+    name: json['name'].toString(),
+    unitCode: json['unit_code'].toString(),
+  );
+  final String id, name, unitCode;
 }
 
 final class FoodItem {
@@ -29,6 +45,7 @@ final class FoodItem {
     required this.archived,
     required this.quality,
     required this.nutrients,
+    required this.measures,
     this.description,
   });
   factory FoodItem.fromJson(Map<String, dynamic> json) => FoodItem(
@@ -46,11 +63,16 @@ final class FoodItem {
         .whereType<Map>()
         .map((e) => FoodNutrient.fromJson(Map<String, dynamic>.from(e)))
         .toList(),
+    measures: (json['measures'] as List? ?? const [])
+        .whereType<Map>()
+        .map((e) => FoodMeasure.fromJson(Map<String, dynamic>.from(e)))
+        .toList(),
   );
   final String id, name, referenceUnit, sourceType, quality;
   final String? brand, description, category, sourceName;
   final bool archived;
   final List<FoodNutrient> nutrients;
+  final List<FoodMeasure> measures;
 }
 
 final class BarcodePreview {

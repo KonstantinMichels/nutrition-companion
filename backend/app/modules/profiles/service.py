@@ -37,7 +37,7 @@ def require_profile(session: Session, profile_id: UUID) -> Profile:
 
 
 def update_profile(session: Session, profile_id: UUID, payload: ProfileUpdate) -> Profile:
-    profile = repository.get_profile(session, profile_id)
+    profile = repository.get_profile_record(session, profile_id)
     values = payload.model_dump(exclude={"measurements"})
     if profile is None:
         profile = Profile(id=profile_id, **values)
@@ -46,6 +46,7 @@ def update_profile(session: Session, profile_id: UUID, payload: ProfileUpdate) -
         for key, value in values.items():
             setattr(profile, key, value)
         profile.measurements.clear()
+    profile.is_configured = True
 
     profile.measurements.extend(
         Measurement(profile_id=profile_id, **measurement.model_dump())

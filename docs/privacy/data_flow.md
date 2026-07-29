@@ -143,3 +143,7 @@ The Compose Uvicorn access log is disabled so this allowlisted application log i
 Android-App → eigene FastAPI → PostgreSQL. Lebensmitteldaten verlassen diesen lokalen/selbst betriebenen Datenfluss nicht. Der Export wird nur auf ausdrückliche Aktion erzeugt.
 
 Beim ausdrücklich gestarteten Barcode-Scan gilt abweichend: Android-App → eigene FastAPI → Open Food Facts. Übertragen werden Barcode, technische HTTP-Metadaten und die IP-Adresse des Backendservers. Die Produktantwort wird vor dem Speichern angezeigt. Manuell eingegebene Lebensmittel und Profildaten werden nicht an Open Food Facts übertragen.
+
+# Recipe Core
+
+Ausgewählte profilgebundene Foods → Rezeptentwurf → eigene FastAPI → PostgreSQL. Gespeichertes Rezept und aktuelle Food-Werte → deterministische Decimal-Aggregation → App. Recipe Core hat keinen externen Netzwerkfluss. Beim Barcode-Fertiggericht wird Open Food Facts ausschließlich im getrennten Food-Vorschau-/Importfluss kontaktiert; danach wird die lokale Food-ID an einen bearbeitbaren Rezeptentwurf übergeben.

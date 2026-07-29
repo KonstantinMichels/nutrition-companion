@@ -13,6 +13,11 @@
 | Delete onboarding draft | No | No | No | Draft only |
 | Delete local assessment cache | No | No | No | Cache only |
 | Delete complete profile | Yes because profile/consent cease to exist | Yes | Yes | Draft, cache and local profile/consent context |
+| Delete profile and assessments | Stops until a new profile is configured | Personal profile content only; internal library-owner anchor remains | Yes | Draft and assessment cache |
+| Delete all recipes | No | No | No | No |
+| Delete all foods | No | No | No | No |
+
+Foods cannot be bulk-deleted while recipes reference them. The UI instructs the user to delete recipes first. “Delete all data” performs that dependency-safe ordering automatically. The internal owner anchor retained by a profile-only reset contains placeholder values and is not returned as an existing configured profile; it exists solely so Foods and Recipes remain assigned to the same local development identity.
 
 The German UI must explain these differences and require explicit confirmation for destructive operations. A successful response must not contain the former profile ID or any body/health values.
 
@@ -49,6 +54,8 @@ Database transaction removes, in dependency-safe order or through verified casca
 - nutrition goal;
 - dietary restrictions;
 - health screening;
+- foods, food nutrients and food measures;
+- recipes, recipe ingredients and recipe steps;
 - consent records as appropriate for the local MVP;
 - privacy-action records that are linked and not covered by an approved minimal exception; and
 - the profile.

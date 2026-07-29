@@ -14,7 +14,7 @@ from app.modules.profiles.models import (
 )
 
 
-def get_profile(session: Session, profile_id: UUID) -> Profile | None:
+def get_profile_record(session: Session, profile_id: UUID) -> Profile | None:
     statement = (
         select(Profile)
         .where(Profile.id == profile_id)
@@ -27,6 +27,11 @@ def get_profile(session: Session, profile_id: UUID) -> Profile | None:
         )
     )
     return session.scalar(statement)
+
+
+def get_profile(session: Session, profile_id: UUID) -> Profile | None:
+    profile = get_profile_record(session, profile_id)
+    return profile if profile is not None and profile.is_configured else None
 
 
 def get_activity(session: Session, profile_id: UUID) -> ActivityProfile | None:

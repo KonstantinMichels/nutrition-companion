@@ -91,6 +91,27 @@ Common statuses:
 | GET | `/api/v1/privacy/export` | Yes | — | On-demand complete JSON export |
 | DELETE | `/api/v1/profile` | Yes | `DeletionConfirmation` | Hard-delete current profile graph |
 | DELETE | `/api/v1/privacy/local-profile-data` | Yes | `DeletionConfirmation` | Alias for complete-profile server deletion; mobile then purges local keys |
+| DELETE | `/api/v1/privacy/profile-and-assessments` | Yes | `DeletionConfirmation` | Reset personal profile/assessment data while preserving Foods and Recipes |
+| DELETE | `/api/v1/privacy/recipes` | Yes | `DeletionConfirmation` | Permanently delete all owned recipes |
+| DELETE | `/api/v1/privacy/foods` | Yes | `DeletionConfirmation` | Permanently delete all owned Foods when no recipes reference them |
+| DELETE | `/api/v1/privacy/all-data` | Yes | `DeletionConfirmation` | Permanently delete profile, assessments, recipes, Foods and consents |
+| GET | `/api/v1/recipes` | Yes | `query`, `tag`, `include_archived`, `page`, `page_size` | Searchable, paginated recipe list with current aggregates |
+| POST | `/api/v1/recipes` | Yes | `RecipeWrite` | Create a recipe from owned active Food references |
+| GET | `/api/v1/recipes/{recipe_id}` | Yes | Path UUID | Recipe, ingredients, steps, coverage, totals and quality |
+| PUT | `/api/v1/recipes/{recipe_id}` | Yes | `RecipeWrite` | Replace editable recipe content atomically |
+| GET | `/api/v1/recipes/{recipe_id}/scale` | Yes | `servings` | Non-persistent scaled ingredient preview |
+| POST | `/api/v1/recipes/{recipe_id}/duplicate` | Yes | — | Create an editable owned copy |
+| DELETE | `/api/v1/recipes/{recipe_id}` | Yes | — | Archive, but do not erase, a recipe |
+| DELETE | `/api/v1/recipes/{recipe_id}/permanent` | Yes | — | Permanently delete the owned recipe graph |
+| POST | `/api/v1/recipes/{recipe_id}/restore` | Yes | — | Restore an archived recipe |
+
+## Recipe Core
+
+`RecipeWrite` requires a name, positive `servings` and at least one ingredient. Each ingredient references an owned active `food_id`, a positive quantity and either a direct base unit (`g`/`ml`) or an existing `food_measure_id`. Steps are ordered by array position. Tags come from the versioned Recipe Core catalog; `confirm_duplicate` explicitly permits a normalized same-name duplicate.
+
+Responses calculate nutrients on demand from the current referenced Food values. Each nutrient reports total, per-serving and—when recipe weight is available—per-100-g amounts plus known/relevant counts, coverage, missing ingredients and derived-input status. Missing values remain missing; a known zero remains zero. `weight.status` explains whether per-100-g calculation uses entered finished weight, complete theoretical weight or is unavailable. `quality` reports coverage and estimated conversions without claiming verification or medical suitability.
+
+Archived recipes are hidden by default and become read-only until restored. Archived Foods remain readable for an existing recipe but cannot be newly attached. All routes enforce current-profile ownership. Archive is reversible; the separately confirmed permanent-delete action removes only that recipe and its ingredients/steps, not the referenced Foods. Complete profile deletion removes all recipes through the privacy deletion flow.
 
 ## Health
 

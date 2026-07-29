@@ -10,6 +10,8 @@ import '../assessment_history/history_screen.dart';
 import '../home/home_controller.dart';
 import '../onboarding/onboarding_controller.dart';
 import '../profile/profile_screen.dart';
+import '../foods/food_list_screen.dart';
+import '../recipes/recipe_list_screen.dart';
 import 'privacy_repository.dart';
 
 final class PrivacyScreen extends ConsumerStatefulWidget {
@@ -150,13 +152,47 @@ final class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
                   },
                 ),
               ),
+              ListTile(
+                leading: const Icon(Icons.restaurant_menu),
+                title: const Text('Alle Rezepte löschen'),
+                subtitle: const Text(
+                  'Lebensmittel und persönliche Profildaten bleiben erhalten.',
+                ),
+                onTap: () => _confirmAction(
+                  title: 'Alle Rezepte endgültig löschen?',
+                  explanation:
+                      'Alle Rezepte samt Zutatenlisten und Zubereitungsschritten werden dauerhaft gelöscht. Die verwendeten Lebensmittel bleiben erhalten.',
+                  confirmLabel: 'Rezepte löschen',
+                  action: () =>
+                      ref.read(privacyRepositoryProvider).deleteRecipes(),
+                  success: 'Alle Rezepte wurden gelöscht.',
+                  after: () => ref.invalidate(recipeListProvider),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.local_grocery_store_outlined),
+                title: const Text('Alle Lebensmittel löschen'),
+                subtitle: const Text(
+                  'Profil und Einschätzungen bleiben erhalten. Verwendete Lebensmittel erfordern vorher das Löschen der Rezepte.',
+                ),
+                onTap: () => _confirmAction(
+                  title: 'Alle Lebensmittel endgültig löschen?',
+                  explanation:
+                      'Alle Lebensmittel, Nährwerte und Maße werden dauerhaft gelöscht. Falls Rezepte darauf verweisen, wird die Aktion sicher abgebrochen.',
+                  confirmLabel: 'Lebensmittel löschen',
+                  action: () =>
+                      ref.read(privacyRepositoryProvider).deleteFoods(),
+                  success: 'Alle Lebensmittel wurden gelöscht.',
+                  after: () => ref.invalidate(foodListProvider),
+                ),
+              ),
               Card(
                 color: Theme.of(context).colorScheme.errorContainer,
                 child: ListTile(
                   leading: const Icon(Icons.delete_forever_outlined),
-                  title: const Text('Vollständiges Profil löschen'),
+                  title: const Text('Alles löschen'),
                   subtitle: const Text(
-                    'Löscht Profil, Messungen, Aktivität, Ziele, Einschränkungen, Screening, Einschätzungen, Hinweise, Einwilligungen und lokale App-Daten.',
+                    'Löscht Profil, Einschätzungen, Rezepte, Lebensmittel, Einwilligungen und lokale App-Daten.',
                   ),
                   onTap: _deleteProfile,
                 ),
@@ -202,8 +238,8 @@ final class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
 
   Future<void> _deleteProfile() async {
     final confirmed = await _confirmation(
-      'Vollständiges Profil endgültig löschen?',
-      'Alle Profildaten, Messungen, Aktivitäten, Ziele, Einschränkungen, Screening-Antworten, Einschätzungen, Sicherheitsmarkierungen, Einwilligungen und lokalen App-Daten werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
+      'Wirklich alle Daten endgültig löschen?',
+      'Profil, Messungen, Aktivitäten, Ziele, Einschränkungen, Screening-Antworten, Einschätzungen, Rezepte, Lebensmittel, Einwilligungen und lokale App-Daten werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
       'Alles endgültig löschen',
       destructive: true,
     );

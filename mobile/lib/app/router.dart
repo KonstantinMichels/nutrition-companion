@@ -13,6 +13,9 @@ import '../features/foods/food_list_screen.dart';
 import '../features/foods/food_detail_screen.dart';
 import '../features/foods/food_form_screen.dart';
 import '../features/foods/barcode_scanner_screen.dart';
+import '../features/recipes/recipe_detail_screen.dart';
+import '../features/recipes/recipe_form_screen.dart';
+import '../features/recipes/recipe_list_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -66,6 +69,25 @@ final appRouter = GoRouter(
       path: '/foods/:id/edit',
       builder: (context, state) =>
           FoodFormScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/recipes',
+      builder: (context, state) => const RecipeListScreen(),
+    ),
+    GoRoute(
+      path: '/recipes/new',
+      builder: (context, state) =>
+          RecipeFormScreen(initialFoodId: state.uri.queryParameters['foodId']),
+    ),
+    GoRoute(
+      path: '/recipes/:id',
+      builder: (context, state) =>
+          RecipeDetailScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/recipes/:id/edit',
+      builder: (context, state) =>
+          RecipeFormScreen(id: state.pathParameters['id']!),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

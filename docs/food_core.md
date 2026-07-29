@@ -20,7 +20,7 @@ Alle manuellen Lebensmittel gehören zum aktuellen Profil. Listen, Detail, Ände
 
 ## Recipe Core
 
-Das spätere Recipe Core kann Food-IDs referenzieren und `scale_nutrients` sowie `convert_measure_to_base_quantity` wiederverwenden. Unbekannte Werte bleiben dabei unbekannt. Historische Snapshots sind bewusst noch nicht implementiert.
+Recipe Core referenziert Food-IDs und verwendet dieselbe Mengen- und Nährwertnormalisierung. Unbekannte Werte bleiben unbekannt; Abdeckung und geschätzte Umrechnungen werden ausgewiesen. Bestehende Rezepte dürfen archivierte Foods weiter lesen, neue Referenzen darauf sind gesperrt. Eine dauerhafte Food-Löschung ist bei Rezeptreferenzen nicht zulässig. Barcode-Produkte lassen sich nach dem bestätigten Food-Import wahlweise als Lebensmittel oder vorbefülltes Fertiggericht weiterführen.
 
 ## Barcode und Open Food Facts
 

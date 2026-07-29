@@ -181,3 +181,7 @@ The MVP does not collect legal name, postal address, phone number, email address
 Profilgebundene, manuell eingegebene Lebensmittelnamen, Marken, Beschreibungen, Bezugsbasis, optionale Dichte, Nährwerte und Haushaltsmaße einschließlich Quellen- und Archivmetadaten. Manuell eingegebene Lebensmittel werden nicht an externe Dienste übermittelt.
 
 Bei Barcode-Importen zusätzlich: Barcode, Open-Food-Facts-Quellstand und importierte Produktdaten. Der Barcode wird für die vom Nutzer ausgelöste Suche an Open Food Facts übertragen; Profil- und Bewertungsdaten werden nicht mitgesendet.
+
+# Recipe Core
+
+Rezepte speichern profilgebundene Metadaten, Portionen, optionale Zeiten/Quelle/Notizen/Endgewicht, Tags, geordnete Food- und optionale FoodMeasure-Referenzen, Mengen, Zubereitungshinweise und Schritte. Berechnete Nährwertsummen und Qualitätsangaben entstehen beim Abruf und werden nicht als eigener Snapshot gespeichert. Der Export enthält den Recipe-Graph; die vollständige Profillöschung entfernt ihn dauerhaft. Archivierung bewahrt ihn bis dahin auf.
