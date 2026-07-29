@@ -192,6 +192,14 @@ final class _DailyPlanScreenState extends ConsumerState<DailyPlanScreen> {
       else
         _comparisons(value),
       const SizedBox(height: 12),
+      FilledButton.tonalIcon(
+        key: const Key('daily-pantry-aware-shopping'),
+        onPressed: () => context.push(
+          '/pantry-aware-shopping?sourceType=daily_plan&sourceId=${value.id}',
+        ),
+        icon: const Icon(Icons.shopping_cart_outlined),
+        label: const Text('Einkaufsbedarf abgleichen'),
+      ),
       if (!value.archived)
         FilledButton.icon(
           onPressed: () => context.go(

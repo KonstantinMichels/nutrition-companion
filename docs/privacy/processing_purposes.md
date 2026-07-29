@@ -8,6 +8,10 @@ The same purpose includes the user-requested, transient comparison of current re
 with current Pantry stock. Derived availability is not persisted, exported, shared externally, or
 used for automated food-safety decisions and introduces no additional consent checkbox.
 
+`shopping_list_management` umfasst außerdem den ausdrücklich gestarteten Abgleich aktueller
+Rezept-/Planbedarfe mit Pantry und offenen Listen sowie persistierte Source-Identitäten und
+Apply-Auditmetadaten. Vorschauen bleiben transient; es gibt keine neue Einwilligungscheckbox.
+
 The existing `daily_meal_planning` purpose includes manual weekly organization and the
 on-demand aggregation of daily plans. This adds no automated decision and needs no
 redundant consent.

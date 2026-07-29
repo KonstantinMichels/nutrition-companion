@@ -76,3 +76,8 @@ Aktive und archivierte Lebensmittel bleiben bis zur vollständigen Profillöschu
 # Purchase-to-Pantry-Daten
 
 Erfolgreiche Übergaben bleiben bis zur vollständigen Profillöschung erhalten. Vorschauen werden nicht persistiert.
+
+# Pantry-aware-Shopping-Daten
+
+Operation-Audits und angewandte Source-Snapshots bleiben bis zur vollständigen Profillöschung.
+Vorschauen und Preview-Token werden nicht persistiert.

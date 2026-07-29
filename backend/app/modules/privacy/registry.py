@@ -145,6 +145,8 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
             "food references and quantities",
             "plan-source snapshots",
             "Pantry comparison snapshots",
+            "Pantry-aware source identities and operation audit metadata",
+            "open shopping-list commitment comparison",
             "free-text items and notes",
         ],
         "may_include_special_category_data": True,

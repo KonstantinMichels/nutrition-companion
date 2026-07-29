@@ -126,6 +126,11 @@ Common statuses:
 | POST | `/api/v1/recipes/{recipe_id}/restore` | Yes | — | Restore an archived recipe |
 | GET | `/api/v1/recipes/{recipe_id}/target-comparison` | Yes | Optional `assessment_id`, `portion_count` | Grouped on-demand personal target comparison |
 | GET | `/api/v1/recipes/{recipe_id}/pantry-availability` | Yes | `portion_count`, optional ingredients, date mode | Live comparison against active owned Pantry lots |
+| GET | `/api/v1/pantry-aware-shopping/eligible-lists` | Yes | — | Eligible and disabled target-list choices |
+| POST | `/api/v1/pantry-aware-shopping/preview` | Yes | Source, options and target decision | Non-persistent Pantry/open-list reconciliation |
+| POST | `/api/v1/pantry-aware-shopping/apply` | Yes | Preview request/token and client operation ID | Atomic idempotent update of one target list |
+| POST | `/api/v1/shopping-lists/{id}/pantry-aware-preview` | Yes | Reconciliation options | Preview current linked requirements |
+| POST | `/api/v1/shopping-lists/{id}/pantry-aware-apply` | Yes | Preview request/token and client operation ID | Apply list reconciliation |
 | GET | `/api/v1/recipes/pantry-availability` | Yes | Search, archive/state filters, pagination | Compact live availability summaries |
 | GET | `/api/v1/assessments/comparable` | Yes | — | Lightweight owned assessment selector with usability state |
 

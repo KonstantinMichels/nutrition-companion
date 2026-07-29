@@ -111,3 +111,7 @@ Health Score or medical interpretation.
 
 The next planned branch is `feat/weekly-meal-planning`: week organization and overview, copying or
 moving meals between dates, and weekly aggregation. It is not implemented here.
+
+Aktive Tagespläne können inzwischen als Pantry-aware-Shopping-Quelle verwendet werden. Direkte
+Food-Einträge und Rezeptzutaten behalten stabile Meal-Entry-Identitäten; der Plan selbst wird nicht
+verändert.

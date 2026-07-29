@@ -1,0 +1,1 @@
+"""Pantry-aware Shopping orchestration."""

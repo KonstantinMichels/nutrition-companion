@@ -24,3 +24,6 @@ Die API bietet die Detailberechnung unter
 `GET /api/v1/recipes/pantry-availability`. Beide Endpunkte erzwingen die Profilzugehörigkeit. Es gibt
 keine neue Tabelle, Migration, Exportentität oder Löschreihenfolge. Der nächste Ausbau ist
 `feat/pantry-aware-shopping`.
+
+Dieser Folgeausbau verwendet dieselbe Rezeptskalierung und Datumssemantik, ergänzt aber offene
+Einkaufslisten und aktualisiert nach ausdrücklicher Vorschau genau eine Zielliste.

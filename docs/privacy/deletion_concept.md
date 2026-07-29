@@ -142,3 +142,9 @@ Die vollständige Profillöschung löscht eigene Lebensmittel sowie Nährwerte u
 # Purchase to Pantry
 
 Vollständige Profillöschung entfernt zuerst Übergabe-Verknüpfungen und danach Shopping- und Pantry-Daten in derselben Transaktion. Archivierung einer Liste oder eines Pantry-Bestands erhält die Historie.
+
+# Pantry-aware Shopping
+
+Vollständige Profillöschung entfernt zuerst Pantry-aware Operation-Audits und anschließend die
+Shopping-Listen samt Source-Links. Das Archivieren oder Löschen einer Quelle entfernt bestehende
+Shopping-Snapshots nicht stillschweigend, verändert aber spätere Abgleiche.
