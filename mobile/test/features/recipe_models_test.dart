@@ -23,10 +23,7 @@ void main() {
           'is_complete': true,
         },
       ],
-      'quality': {
-        'quality_level': 'basic_complete',
-        'warnings': <Object>[],
-      },
+      'quality': {'quality_level': 'basic_complete', 'warnings': <Object>[]},
       'weight': {'status': 'unavailable'},
     });
 

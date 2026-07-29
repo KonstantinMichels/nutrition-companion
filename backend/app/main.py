@@ -30,6 +30,7 @@ from app.modules.profiles.router import router as profiles_router
 from app.modules.recipe_target_comparison.router import router as comparison_router
 from app.modules.recipes.router import router as recipes_router
 from app.modules.reference_data.router import router as reference_data_router
+from app.modules.shopping_lists.router import router as shopping_lists_router
 from app.modules.weekly_meal_planning.router import router as weekly_plans_router
 
 settings = get_settings()
@@ -57,7 +58,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.parsed_cors_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Accept", "X-Request-ID"],
 )
 
@@ -71,6 +72,7 @@ app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(daily_plans_router)
 app.include_router(pantry_router)
+app.include_router(shopping_lists_router)
 app.include_router(weekly_plans_router)
 app.include_router(comparison_router)
 app.include_router(assessment_router)

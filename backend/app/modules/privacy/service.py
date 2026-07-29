@@ -34,6 +34,7 @@ from app.modules.profiles.models import (
     NutritionGoal,
 )
 from app.modules.recipes.models import Recipe, RecipeIngredient
+from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem
 
 REQUIRED_ASSESSMENT_PURPOSE = "nutrition_assessment_calculation"
 
@@ -205,6 +206,14 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             select(PantryMovement)
             .where(PantryMovement.owner_profile_id == profile_id)
             .order_by(PantryMovement.created_at)
+        )
+    )
+    shopping_lists = list(
+        session.scalars(
+            select(ShoppingList)
+            .where(ShoppingList.owner_profile_id == profile_id)
+            .options(selectinload(ShoppingList.items).selectinload(ShoppingListItem.sources))
+            .order_by(ShoppingList.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -549,6 +558,54 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for item in pantry_movements
         ],
+        "shopping_lists": [
+            {
+                "id": shopping.id,
+                "name": shopping.name,
+                "source_type": shopping.source_type,
+                "source_daily_plan_id": shopping.source_daily_plan_id,
+                "source_week_start": shopping.source_week_start,
+                "source_week_end": shopping.source_week_end,
+                "pantry_considered": shopping.pantry_considered,
+                "status": shopping.status,
+                "is_archived": shopping.is_archived,
+                "notes": shopping.notes,
+                "version": shopping.version,
+                "items": [
+                    {
+                        "id": item.id,
+                        "item_type": item.item_type,
+                        "origin_type": item.origin_type,
+                        "food_id": item.food_id,
+                        "food_name_snapshot": item.food_name_snapshot,
+                        "manual_name": item.manual_name,
+                        "category_code": item.category_code,
+                        "required_quantity": item.required_quantity,
+                        "pantry_available_quantity": item.pantry_available_quantity,
+                        "suggested_purchase_quantity": item.suggested_purchase_quantity,
+                        "purchase_quantity": item.purchase_quantity,
+                        "manual_quantity": item.manual_quantity,
+                        "manual_unit_label": item.manual_unit_label,
+                        "quantity_overridden": item.quantity_overridden,
+                        "is_checked": item.is_checked,
+                        "note": item.note,
+                        "sources": [
+                            {
+                                "plan_date": source.plan_date,
+                                "meal_name": source.meal_name_snapshot,
+                                "recipe_name": source.recipe_name_snapshot,
+                                "food_id": source.food_id,
+                                "quantity": source.quantity,
+                                "unit": source.unit,
+                            }
+                            for source in item.sources
+                        ],
+                    }
+                    for item in shopping.items
+                ],
+            }
+            for shopping in shopping_lists
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -623,6 +680,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         .select_from(PantryStockLot)
         .where(PantryStockLot.owner_profile_id == profile_id)
     )
+    shopping_count = session.scalar(
+        select(func.count())
+        .select_from(ShoppingList)
+        .where(ShoppingList.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -633,12 +695,16 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(recipe_count or 0)
         + int(daily_plan_count or 0)
         + int(pantry_count or 0)
+        + int(shopping_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
     )
     confirmation = secrets.token_hex(8)
     try:
+        # Shopping snapshots protect plans, recipes and foods, so remove them first.
+        session.execute(delete(ShoppingList).where(ShoppingList.owner_profile_id == profile_id))
+        session.flush()
         # Plan entries and recipe ingredients protect their source records.
         session.execute(delete(DailyMealPlan).where(DailyMealPlan.owner_profile_id == profile_id))
         session.flush()

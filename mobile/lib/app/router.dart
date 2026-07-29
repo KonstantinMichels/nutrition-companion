@@ -23,6 +23,9 @@ import '../features/pantry/pantry_add_screen.dart';
 import '../features/pantry/pantry_detail_screen.dart';
 import '../features/pantry/pantry_locations_screen.dart';
 import '../features/pantry/pantry_screen.dart';
+import '../features/shopping_lists/shopping_list_detail_screen.dart';
+import '../features/shopping_lists/shopping_list_generate_screen.dart';
+import '../features/shopping_lists/shopping_lists_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -30,6 +33,19 @@ final appRouter = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),
+    GoRoute(
+      path: '/shopping-lists',
+      builder: (context, state) => const ShoppingListsScreen(),
+    ),
+    GoRoute(
+      path: '/shopping-lists/generate',
+      builder: (context, state) => const ShoppingListGenerateScreen(),
+    ),
+    GoRoute(
+      path: '/shopping-lists/:id',
+      builder: (context, state) =>
+          ShoppingListDetailScreen(id: state.pathParameters['id']!),
+    ),
     GoRoute(
       path: '/pantry/add',
       builder: (context, state) => const PantryAddScreen(),
