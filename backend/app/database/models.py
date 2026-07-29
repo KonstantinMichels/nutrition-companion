@@ -17,6 +17,7 @@ from app.modules.profiles.models import (
     Profile,
     SportActivity,
 )
+from app.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from app.modules.reference_data.models import ApplicationRuleSet, ReferenceSet, ReferenceValue
 
 __all__ = [
@@ -36,6 +37,9 @@ __all__ = [
     "PrivacyAction",
     "ProcessingPurpose",
     "Profile",
+    "Recipe",
+    "RecipeIngredient",
+    "RecipeStep",
     "ReferenceSet",
     "ReferenceValue",
     "SafetyFlag",

@@ -26,5 +26,12 @@ void main() {
     test('formats using German decimal separator', () {
       expect(GermanDecimal.format(82.5), contains(','));
     });
+
+    test('removes API scale zeroes without losing meaningful decimals', () {
+      expect(GermanDecimal.formatString('360.000000000'), '360');
+      expect(GermanDecimal.formatString('2.500000'), '2,5');
+      expect(GermanDecimal.formatString('0.010200'), '0,0102');
+      expect(GermanDecimal.formatString('already text'), 'already text');
+    });
   });
 }

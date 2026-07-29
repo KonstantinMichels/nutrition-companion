@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.modules.foods.models import Food
     from app.modules.nutrition_assessment.models import Assessment
     from app.modules.privacy.models import ConsentRecord
+    from app.modules.recipes.models import Recipe
 
 
 class Profile(Base):
@@ -27,6 +28,7 @@ class Profile(Base):
     dietary_preference: Mapped[str] = mapped_column(String(32), nullable=False)
     preferred_meals_per_day: Mapped[int | None] = mapped_column(Integer)
     preferred_meal_timing: Mapped[str | None] = mapped_column(String(200))
+    is_configured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
@@ -54,6 +56,9 @@ class Profile(Base):
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
     )
     foods: Mapped[list[Food]] = relationship(
+        back_populates="owner", cascade="all, delete-orphan", passive_deletes=True
+    )
+    recipes: Mapped[list[Recipe]] = relationship(
         back_populates="owner", cascade="all, delete-orphan", passive_deletes=True
     )
 

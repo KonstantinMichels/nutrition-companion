@@ -63,6 +63,11 @@ final class FoodDetailScreen extends ConsumerWidget {
                 onPressed: () => context.go('/foods/$id/edit'),
                 child: const Text('Bearbeiten'),
               ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.restaurant_menu),
+                onPressed: () => context.go('/recipes/new?foodId=$id'),
+                label: const Text('Als Gericht übernehmen'),
+              ),
               OutlinedButton(
                 onPressed: () => _archive(context, ref),
                 child: const Text('Archivieren'),

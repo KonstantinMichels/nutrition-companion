@@ -140,6 +140,23 @@ final class PrivacyRepository implements AssessmentConsentStatusReader {
     await _store.clearAppData();
   }
 
+  Future<void> deleteProfileAndAssessments() async {
+    await _api.delete(
+      '/api/v1/privacy/profile-and-assessments',
+      data: {'confirm': true},
+    );
+    await clearCache();
+    await clearDraft();
+  }
+
+  Future<void> deleteRecipes() async {
+    await _api.delete('/api/v1/privacy/recipes', data: {'confirm': true});
+  }
+
+  Future<void> deleteFoods() async {
+    await _api.delete('/api/v1/privacy/foods', data: {'confirm': true});
+  }
+
   Future<void> clearDraft() => _store.delete(SensitiveKeys.onboardingDraft);
   Future<void> clearCache() => _store.delete(SensitiveKeys.latestAssessment);
 }

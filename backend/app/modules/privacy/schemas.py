@@ -53,7 +53,13 @@ class PrivacyExportResponse(BaseModel):
 
 class DeletionResponse(BaseModel):
     deleted: bool
-    scope: Literal["assessment_history", "complete_profile"]
+    scope: Literal[
+        "assessment_history",
+        "profile_and_assessments",
+        "recipes",
+        "foods",
+        "complete_profile",
+    ]
     confirmation_code: str
     message_de: str
 

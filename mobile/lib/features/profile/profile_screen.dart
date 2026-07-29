@@ -128,7 +128,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
   }
 
   TextEditingController _controller(Object? value) =>
-      TextEditingController(text: value?.toString() ?? '');
+      TextEditingController(text: GermanDecimal.formatString(value));
 
   @override
   void dispose() {
@@ -223,7 +223,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
                       ),
                     ),
                     subtitle: Text(
-                      '${raw['value'] ?? '–'} ${raw['unit'] ?? ''}\n'
+                      '${raw['value'] == null ? '–' : GermanDecimal.formatString(raw['value'])} ${raw['unit'] ?? ''}\n'
                       'Datum: ${raw['measured_at'] ?? 'nicht angegeben'}, Quelle: ${_measurementSource(raw['source_type']?.toString() ?? '')}',
                     ),
                   ),
@@ -341,7 +341,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
           icon: const Icon(Icons.calculate_outlined),
           label: const Text('Neue Einschätzung erstellen'),
         ),
-        _heading('Profil löschen'),
+        _heading('Profil und Einschätzungen löschen'),
         Card(
           color: Theme.of(context).colorScheme.errorContainer,
           child: Padding(
@@ -350,7 +350,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Löscht das vollständige Profil, alle Einschätzungen, Einwilligungen und lokalen App-Daten dauerhaft.',
+                  'Löscht nur deine persönlichen Profil-, Gesundheits- und Einschätzungsdaten. Lebensmittel und Rezepte bleiben erhalten.',
                 ),
                 const SizedBox(height: 12),
                 FilledButton.icon(
@@ -368,7 +368,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   label: Text(
                     deleting
                         ? 'Profil wird gelöscht …'
-                        : 'Profil vollständig löschen',
+                        : 'Profil und Einschätzungen löschen',
                   ),
                 ),
               ],
@@ -385,9 +385,9 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
         await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Vollständiges Profil endgültig löschen?'),
+            title: const Text('Profil und Einschätzungen löschen?'),
             content: const Text(
-              'Alle Profildaten, Messungen, Aktivitäten, Ziele, Einschränkungen, Screening-Antworten, Einschätzungen, Sicherheitsmarkierungen, Einwilligungen und lokalen App-Daten werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
+              'Persönliche Profildaten, Messungen, Aktivitäten, Ziele, Einschränkungen, Screening-Antworten und Einschätzungen werden dauerhaft gelöscht. Lebensmittel und Rezepte bleiben erhalten.',
             ),
             actions: [
               TextButton(
@@ -399,7 +399,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   backgroundColor: Theme.of(context).colorScheme.error,
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Alles endgültig löschen'),
+                child: const Text('Profilinhalte löschen'),
               ),
             ],
           ),
@@ -412,7 +412,7 @@ final class _ProfileFormState extends ConsumerState<_ProfileForm> {
       message = null;
     });
     try {
-      await ref.read(privacyRepositoryProvider).deleteProfile();
+      await ref.read(privacyRepositoryProvider).deleteProfileAndAssessments();
       ref.invalidate(profileBundleProvider);
       ref.invalidate(assessmentHistoryProvider);
       ref.invalidate(homeControllerProvider);

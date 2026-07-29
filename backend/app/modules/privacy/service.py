@@ -7,7 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.branding import CONSENT_TEXT_VERSION
@@ -24,6 +24,14 @@ from app.modules.privacy.models import (
 )
 from app.modules.privacy.schemas import ConsentCreate, DeletionResponse, PrivacyExportResponse
 from app.modules.profiles import repository as profile_repository
+from app.modules.profiles.models import (
+    ActivityProfile,
+    DietaryRestriction,
+    HealthScreening,
+    Measurement,
+    NutritionGoal,
+)
+from app.modules.recipes.models import Recipe, RecipeIngredient
 
 REQUIRED_ASSESSMENT_PURPOSE = "nutrition_assessment_calculation"
 
@@ -154,6 +162,18 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .where(Food.owner_profile_id == profile_id)
             .options(selectinload(Food.nutrients), selectinload(Food.measures))
             .order_by(Food.created_at)
+        )
+    )
+    recipes = list(
+        session.scalars(
+            select(Recipe)
+            .where(Recipe.owner_profile_id == profile_id)
+            .options(
+                selectinload(Recipe.ingredients).selectinload(RecipeIngredient.food),
+                selectinload(Recipe.ingredients).selectinload(RecipeIngredient.food_measure),
+                selectinload(Recipe.steps),
+            )
+            .order_by(Recipe.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -347,6 +367,51 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for food in foods
         ],
+        "recipes": [
+            {
+                "id": recipe.id,
+                "name": recipe.name,
+                "description": recipe.description,
+                "servings": recipe.servings,
+                "preparation_time_minutes": recipe.preparation_time_minutes,
+                "cooking_time_minutes": recipe.cooking_time_minutes,
+                "resting_time_minutes": recipe.resting_time_minutes,
+                "finished_weight_g": recipe.finished_weight_g,
+                "source_type": recipe.source_type,
+                "source_name": recipe.source_name,
+                "source_url": recipe.source_url,
+                "notes": recipe.notes,
+                "tags": recipe.tags,
+                "is_archived": recipe.is_archived,
+                "archived_at": recipe.archived_at,
+                "created_at": recipe.created_at,
+                "updated_at": recipe.updated_at,
+                "ingredients": [
+                    {
+                        "food_id": item.food_id,
+                        "food_name": item.food.name,
+                        "position": item.position,
+                        "quantity": item.quantity,
+                        "unit_code": item.unit_code,
+                        "food_measure_id": item.food_measure_id,
+                        "normalized_quantity": item.normalized_quantity,
+                        "normalized_unit": item.normalized_unit,
+                        "preparation_note": item.preparation_note,
+                        "is_optional": item.is_optional,
+                    }
+                    for item in recipe.ingredients
+                ],
+                "steps": [
+                    {
+                        "position": step.position,
+                        "instruction": step.instruction,
+                        "optional_duration_minutes": step.optional_duration_minutes,
+                    }
+                    for step in recipe.steps
+                ],
+            }
+            for recipe in recipes
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -395,7 +460,7 @@ def delete_assessment_history(session: Session, profile_id: UUID) -> DeletionRes
 
 
 def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionResponse:
-    profile = profile_repository.get_profile(session, profile_id)
+    profile = profile_repository.get_profile_record(session, profile_id)
     if profile is None:
         raise ApiError(
             code="PROFILE_NOT_FOUND",
@@ -408,6 +473,9 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
     food_count = session.scalar(
         select(func.count()).select_from(Food).where(Food.owner_profile_id == profile_id)
     )
+    recipe_count = session.scalar(
+        select(func.count()).select_from(Recipe).where(Recipe.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -415,12 +483,19 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + len(profile.consent_records)
         + int(assessment_count or 0)
         + int(food_count or 0)
+        + int(recipe_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
     )
     confirmation = secrets.token_hex(8)
     try:
+        # RESTRICT protects Foods referenced by recipes. Remove the owned
+        # recipe graph first; the remaining profile graph then cascades safely.
+        session.execute(delete(Recipe).where(Recipe.owner_profile_id == profile_id))
+        session.flush()
+        session.execute(delete(Food).where(Food.owner_profile_id == profile_id))
+        session.flush()
         session.delete(profile)
         session.flush()
         # Deliberately omit the former profile UUID from post-deletion audit data.
@@ -444,4 +519,104 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
             "Das Profil und die zugehörigen aktiven Daten wurden dauerhaft gelöscht. "
             "Lösche nun auch die lokalen verschlüsselten App-Daten."
         ),
+    )
+
+
+def delete_profile_data_and_assessments(session: Session, profile_id: UUID) -> DeletionResponse:
+    profile = profile_repository.get_profile_record(session, profile_id)
+    if profile is None or not profile.is_configured:
+        raise ApiError(
+            code="PROFILE_NOT_FOUND", message="Es wurde kein Profil gefunden.", status_code=404
+        )
+    confirmation = secrets.token_hex(8)
+    try:
+        for model in (
+            Assessment,
+            Measurement,
+            DietaryRestriction,
+            ActivityProfile,
+            NutritionGoal,
+            HealthScreening,
+        ):
+            session.execute(delete(model).where(model.profile_id == profile_id))
+        profile.birth_date = datetime(1970, 1, 1, tzinfo=UTC).date()
+        profile.physiological_category = "reference_category_a"
+        profile.height_cm = Decimal("101")
+        profile.current_weight_kg = Decimal("26")
+        profile.dietary_preference = "other"
+        profile.preferred_meals_per_day = None
+        profile.preferred_meal_timing = None
+        profile.is_configured = False
+        session.add(
+            DeletionRecord(
+                deletion_scope="profile_and_assessments",
+                deleted_record_count=0,
+                confirmation_code=confirmation,
+            )
+        )
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return DeletionResponse(
+        deleted=True,
+        scope="profile_and_assessments",
+        confirmation_code=confirmation,
+        message_de="Profildaten und Einschätzungen wurden dauerhaft gelöscht.",
+    )
+
+
+def delete_all_recipes(session: Session, profile_id: UUID) -> DeletionResponse:
+    confirmation = secrets.token_hex(8)
+    count = session.scalar(
+        select(func.count()).select_from(Recipe).where(Recipe.owner_profile_id == profile_id)
+    )
+    session.execute(delete(Recipe).where(Recipe.owner_profile_id == profile_id))
+    session.add(
+        DeletionRecord(
+            deletion_scope="recipes",
+            deleted_record_count=int(count or 0),
+            confirmation_code=confirmation,
+        )
+    )
+    session.commit()
+    return DeletionResponse(
+        deleted=True,
+        scope="recipes",
+        confirmation_code=confirmation,
+        message_de="Alle Rezepte wurden dauerhaft gelöscht.",
+    )
+
+
+def delete_all_foods(session: Session, profile_id: UUID) -> DeletionResponse:
+    reference_count = session.scalar(
+        select(func.count())
+        .select_from(RecipeIngredient)
+        .join(Recipe, Recipe.id == RecipeIngredient.recipe_id)
+        .where(Recipe.owner_profile_id == profile_id)
+    )
+    if reference_count:
+        raise ApiError(
+            code="FOODS_REFERENCED_BY_RECIPES",
+            message="Lösche zuerst deine Rezepte, da sie Lebensmittel verwenden.",
+            status_code=409,
+        )
+    confirmation = secrets.token_hex(8)
+    count = session.scalar(
+        select(func.count()).select_from(Food).where(Food.owner_profile_id == profile_id)
+    )
+    session.execute(delete(Food).where(Food.owner_profile_id == profile_id))
+    session.add(
+        DeletionRecord(
+            deletion_scope="foods",
+            deleted_record_count=int(count or 0),
+            confirmation_code=confirmation,
+        )
+    )
+    session.commit()
+    return DeletionResponse(
+        deleted=True,
+        scope="foods",
+        confirmation_code=confirmation,
+        message_de="Alle Lebensmittel wurden dauerhaft gelöscht.",
     )

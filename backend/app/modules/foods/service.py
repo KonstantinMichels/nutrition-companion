@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApiError
@@ -254,6 +255,20 @@ def permanently_delete_food(session: Session, profile_id: UUID, food_id: UUID) -
     """Permanently delete an owned food and its dependent values."""
 
     food = require_food(session, profile_id, food_id)
+    # Import locally to keep Food Core independent at module import time while
+    # still giving callers a stable domain conflict instead of a database 500.
+    from app.modules.recipes.models import RecipeIngredient
+
+    recipe_reference = session.scalar(
+        select(RecipeIngredient.id).where(RecipeIngredient.food_id == food.id).limit(1)
+    )
+    if recipe_reference is not None:
+        raise _error(
+            "FOOD_REFERENCED_BY_RECIPE",
+            "Dieses Lebensmittel wird noch in einem Rezept verwendet und kann nicht "
+            "dauerhaft gelöscht werden.",
+            409,
+        )
     deleted_id = food.id
     try:
         session.delete(food)
@@ -276,6 +291,12 @@ def _base_quantity(food: Food, quantity: Decimal, unit: str) -> Decimal:
     if unit == "g" and food.reference_unit == "ml":
         return quantity / food.density_g_per_ml
     raise _error("INCOMPATIBLE_UNIT", "Diese Einheit ist nicht kompatibel.")
+
+
+def normalize_base_quantity(food: Food, quantity: Decimal, unit: str) -> Decimal:
+    """Normalize a direct g/ml quantity to the food's reference unit."""
+
+    return _base_quantity(food, quantity, unit)
 
 
 def scale_nutrients(food: Food, quantity: Decimal, unit: str) -> dict[str, Decimal]:

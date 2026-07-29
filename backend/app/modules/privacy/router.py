@@ -70,6 +70,34 @@ def delete_profile(
     return service.delete_complete_profile(session, profile_id)
 
 
+@router.delete("/api/v1/privacy/profile-and-assessments", response_model=DeletionResponse)
+def delete_profile_and_assessments(
+    _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession
+) -> object:
+    return service.delete_profile_data_and_assessments(session, profile_id)
+
+
+@router.delete("/api/v1/privacy/recipes", response_model=DeletionResponse)
+def delete_recipes(
+    _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession
+) -> object:
+    return service.delete_all_recipes(session, profile_id)
+
+
+@router.delete("/api/v1/privacy/foods", response_model=DeletionResponse)
+def delete_foods(
+    _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession
+) -> object:
+    return service.delete_all_foods(session, profile_id)
+
+
+@router.delete("/api/v1/privacy/all-data", response_model=DeletionResponse)
+def delete_all_data(
+    _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession
+) -> object:
+    return service.delete_complete_profile(session, profile_id)
+
+
 @router.delete("/api/v1/privacy/local-profile-data", response_model=DeletionResponse)
 def delete_profile_via_privacy_path(
     _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession
