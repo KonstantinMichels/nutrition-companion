@@ -61,3 +61,14 @@ def list_assessments(
         select(func.count()).select_from(Assessment).where(Assessment.profile_id == profile_id)
     )
     return items, int(total or 0)
+
+
+def list_assessments_with_metrics(session: Session, profile_id: UUID) -> list[Assessment]:
+    return list(
+        session.scalars(
+            select(Assessment)
+            .where(Assessment.profile_id == profile_id)
+            .options(*_DETAIL_OPTIONS)
+            .order_by(Assessment.calculated_at.desc(), Assessment.id.desc())
+        )
+    )

@@ -147,3 +147,15 @@ Beim ausdrücklich gestarteten Barcode-Scan gilt abweichend: Android-App → eig
 # Recipe Core
 
 Ausgewählte profilgebundene Foods → Rezeptentwurf → eigene FastAPI → PostgreSQL. Gespeichertes Rezept und aktuelle Food-Werte → deterministische Decimal-Aggregation → App. Recipe Core hat keinen externen Netzwerkfluss. Beim Barcode-Fertiggericht wird Open Food Facts ausschließlich im getrennten Food-Vorschau-/Importfluss kontaktiert; danach wird die lokale Food-ID an einen bearbeitbaren Rezeptentwurf übergeben.
+
+# Recipe Target Comparison
+
+```text
+eigene Rezept-ID + eigene Assessment-ID + Portionszahl
+-> eigene FastAPI
+-> aktuelle Recipe-Core-Berechnung + unveränderte gespeicherte Zielwerte
+-> deterministischer Vergleich
+-> flüchtige Flutter-Anzeige
+```
+
+Es gibt keinen externen Empfänger, keine Analyse, keinen Vergleichscache und keinen neuen persistenten Ergebnisdatensatz. Protokolliert werden weiterhin nur Route, Status, Dauer und zufällige Request-ID, nicht Rezeptname, Zielwerte oder Vergleichsantwort.

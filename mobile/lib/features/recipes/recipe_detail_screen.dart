@@ -7,6 +7,7 @@ import '../../core/widgets/states.dart';
 import '../../core/formatting/german_decimal.dart';
 import 'recipe_list_screen.dart';
 import 'recipe_models.dart';
+import 'recipe_comparison_section.dart';
 
 final recipeDetailProvider = FutureProvider.autoDispose
     .family<RecipeItem, String>(
@@ -136,6 +137,8 @@ final class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     ? 'Pro 100 g: Nicht verfügbar'
                     : 'Pro 100 g verfügbar',
               ),
+              const Divider(),
+              RecipeComparisonSection(recipeId: widget.id),
               const SizedBox(height: 16),
               if (!recipe.archived) ...[
                 FilledButton(

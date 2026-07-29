@@ -25,6 +25,7 @@ from app.modules.foods.router import router as foods_router
 from app.modules.nutrition_assessment.router import router as assessment_router
 from app.modules.privacy.router import router as privacy_router
 from app.modules.profiles.router import router as profiles_router
+from app.modules.recipe_target_comparison.router import router as comparison_router
 from app.modules.recipes.router import router as recipes_router
 from app.modules.reference_data.router import router as reference_data_router
 
@@ -65,6 +66,7 @@ app.add_exception_handler(Exception, unexpected_error_handler)
 app.include_router(profiles_router)
 app.include_router(privacy_router)
 app.include_router(reference_data_router)
+app.include_router(comparison_router)
 app.include_router(assessment_router)
 app.include_router(foods_router)
 app.include_router(recipes_router)

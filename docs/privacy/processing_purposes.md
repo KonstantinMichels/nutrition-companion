@@ -32,6 +32,8 @@
 
 ### `nutrition_assessment_calculation`
 
+Die nutzerinitiierte Recipe-Target-Comparison verwendet eine bereits gespeicherte unveränderliche Einschätzung für den transparenten Vergleich mit einem eigenen Rezept. Sie berechnet keine neue Einschätzung, persistiert kein Ergebnis und übermittelt keine Werte an Dritte. Diese kompatible abgeleitete Nutzung ist in der Produkt-/Datenschutzinformation transparent auszuweisen; die rechtliche Einordnung bleibt vor Produktion professionell zu prüfen.
+
 | Attribute | Value |
 |---|---|
 | German description | „Verarbeitung deiner Angaben, um geschätzte Ernährungszielbereiche, Erklärungen und Sicherheits-Hinweise zu berechnen. Die Auswertung ist keine Diagnose oder Behandlung.“ |

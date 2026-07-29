@@ -185,3 +185,7 @@ Bei Barcode-Importen zusätzlich: Barcode, Open-Food-Facts-Quellstand und import
 # Recipe Core
 
 Rezepte speichern profilgebundene Metadaten, Portionen, optionale Zeiten/Quelle/Notizen/Endgewicht, Tags, geordnete Food- und optionale FoodMeasure-Referenzen, Mengen, Zubereitungshinweise und Schritte. Berechnete Nährwertsummen und Qualitätsangaben entstehen beim Abruf und werden nicht als eigener Snapshot gespeichert. Der Export enthält den Recipe-Graph; die vollständige Profillöschung entfernt ihn dauerhaft. Archivierung bewahrt ihn bis dahin auf.
+
+# Recipe Target Comparison
+
+Verarbeitet auf ausdrückliches Öffnen eine eigene Rezept-ID, eine eigene unveränderliche Assessment-Version, eine sitzungsbezogene Portionszahl sowie daraus abgeleitete bekannte Mengen, Prozente, Datenabdeckung und neutrale Erklärungen. Vergleichsergebnisse und Auswahlzustand werden weder serverseitig noch lokal persistiert und bilden deshalb keinen zusätzlichen Export- oder Löschdatensatz.
