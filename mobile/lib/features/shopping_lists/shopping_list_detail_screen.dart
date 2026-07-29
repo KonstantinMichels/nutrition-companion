@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../core/formatting/german_decimal.dart';
 import '../../core/widgets/app_scaffold.dart';
@@ -47,6 +48,11 @@ class _State extends ConsumerState<ShoppingListDetailScreen> {
                   const PopupMenuItem(
                     value: 'refresh',
                     child: Text('Aus Plan aktualisieren'),
+                  ),
+                if (!data.summary.archived && data.items.isNotEmpty)
+                  const PopupMenuItem(
+                    value: 'pantry-handoff',
+                    child: Text('In Vorrat übernehmen'),
                   ),
                 PopupMenuItem(
                   value: data.summary.status == 'completed'
@@ -141,6 +147,11 @@ class _State extends ConsumerState<ShoppingListDetailScreen> {
             ),
           if (i.sourceStatus == 'no_longer_required')
             const Text('Nicht mehr aus dem aktuellen Plan benötigt'),
+          if (i.pantryTransferred > 0)
+            Text(
+              'In Vorrat übernommen: ${_quantity(i.pantryTransferred, i.unit)} · '
+              '${i.pantryHandoffState == 'completed' ? 'Abgeschlossen' : 'Teilweise übernommen'}',
+            ),
         ],
       ),
       trailing: IconButton(
@@ -247,7 +258,9 @@ class _State extends ConsumerState<ShoppingListDetailScreen> {
 
   Future<void> _action(String action, ShoppingListDetail d) async {
     final repo = ref.read(shoppingListRepositoryProvider);
-    if (action == 'refresh') {
+    if (action == 'pantry-handoff') {
+      await context.push('/shopping-lists/${widget.id}/pantry-handoff');
+    } else if (action == 'refresh') {
       final p = await repo.refreshPreview(widget.id);
       if (!mounted) return;
       final apply = await showDialog<bool>(

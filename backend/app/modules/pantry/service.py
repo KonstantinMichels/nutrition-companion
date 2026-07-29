@@ -307,6 +307,7 @@ def _movement(
     note: str | None = None,
     target_location_id: UUID | None = None,
     related_id: UUID | None = None,
+    source_type: str = "manual",
 ) -> PantryMovement:
     return PantryMovement(
         owner_profile_id=profile_id,
@@ -320,7 +321,7 @@ def _movement(
         entered_unit_code=unit,
         food_measure_id=measure_id,
         conversion_estimated=estimated,
-        source_type="manual",
+        source_type=source_type,
         note=note,
         target_location_id=target_location_id,
         related_stock_lot_id=related_id,
@@ -328,7 +329,14 @@ def _movement(
     )
 
 
-def create_stock(session: Session, profile_id: UUID, payload: StockCreate) -> dict[str, Any]:
+def create_stock(
+    session: Session,
+    profile_id: UUID,
+    payload: StockCreate,
+    *,
+    commit: bool = True,
+    source_type: str = "manual",
+) -> dict[str, Any]:
     existing = _operation_lot(session, profile_id, payload.client_operation_id)
     if existing:
         return detail(session, profile_id, existing)
@@ -371,9 +379,13 @@ def create_stock(session: Session, profile_id: UUID, payload: StockCreate) -> di
             measure_id=payload.food_measure_id,
             estimated=estimated,
             note=payload.note,
+            source_type=source_type,
         )
     )
-    _commit(session)
+    if commit:
+        _commit(session)
+    else:
+        session.flush()
     return detail(session, profile_id, lot.id)
 
 
@@ -473,7 +485,14 @@ def update_stock(
 
 
 def operate(
-    session: Session, profile_id: UUID, lot_id: UUID, payload: QuantityOperation, kind: str
+    session: Session,
+    profile_id: UUID,
+    lot_id: UUID,
+    payload: QuantityOperation,
+    kind: str,
+    *,
+    commit: bool = True,
+    source_type: str = "manual",
 ) -> dict[str, Any]:
     existing = _operation_lot(session, profile_id, payload.client_operation_id)
     if existing:
@@ -516,9 +535,13 @@ def operate(
             measure_id=payload.food_measure_id,
             estimated=estimated,
             note=payload.note,
+            source_type=source_type,
         )
     )
-    _commit(session)
+    if commit:
+        _commit(session)
+    else:
+        session.flush()
     return detail(session, profile_id, item.id)
 
 

@@ -133,6 +133,12 @@ class ShoppingListItem(Base):
     source_status: Mapped[str] = mapped_column(String(32), nullable=False, default="current")
     warning_codes: Mapped[list[str]] = mapped_column(JSON_DOCUMENT, nullable=False, default=list)
     note: Mapped[str | None] = mapped_column(String(1000))
+    pantry_handoff_state: Mapped[str] = mapped_column(
+        String(24), nullable=False, default="not_started"
+    )
+    pantry_transferred_quantity: Mapped[Decimal] = mapped_column(
+        Numeric(30, 15), nullable=False, default=Decimal(0)
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now

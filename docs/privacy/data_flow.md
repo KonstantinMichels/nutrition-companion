@@ -181,3 +181,6 @@ eigene Rezept-ID + eigene Assessment-ID + Portionszahl
 ```
 
 Es gibt keinen externen Empfänger, keine Analyse, keinen Vergleichscache und keinen neuen persistenten Ergebnisdatensatz. Protokolliert werden weiterhin nur Route, Status, Dauer und zufällige Request-ID, nicht Rezeptname, Zielwerte oder Vergleichsantwort.
+# Purchase to Pantry
+
+Die App sendet die ausdrücklich ausgewählten Artikel zunächst zur transienten Vorschau. Erst die Bestätigung schreibt atomar Pantry-Bestände, Bewegungen und lokale Verknüpfungen. Es gibt keine externe Übertragung.

@@ -160,6 +160,26 @@ PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
         "required": False,
     },
     {
+        "code": "purchase_to_pantry_management",
+        "description_de": "Ausdrücklich bestätigte Übernahme gekaufter Lebensmittel in den Vorrat.",
+        "data_categories": [
+            "shopping source",
+            "actual purchase quantities",
+            "Pantry destinations",
+            "handoff linkage",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; preview data remains transient",
+        "retention_period": "Until complete profile deletion",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Übergaben und Verknüpfungen werden bei vollständiger Profillöschung entfernt."
+        ),
+        "required": False,
+    },
+    {
         "code": "technical_security_logging",
         "description_de": (
             "Minimierte technische Protokolle zur Fehler- und Sicherheitsanalyse ohne Inhaltsdaten."

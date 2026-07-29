@@ -57,4 +57,31 @@ final class ShoppingListRepository {
     '/api/v1/shopping-lists/$id/refresh',
     data: {'preview_version': version},
   );
+  Future<Map<String, dynamic>> handoffEligibility(String id) async =>
+      Map<String, dynamic>.from(
+        await _api.get('/api/v1/shopping-lists/$id/pantry-handoff-eligibility')
+            as Map,
+      );
+  Future<Map<String, dynamic>> handoffPreview(
+    String id,
+    Map<String, dynamic> data,
+  ) async => Map<String, dynamic>.from(
+    await _api.post(
+          '/api/v1/shopping-lists/$id/pantry-handoff-preview',
+          data: data,
+        )
+        as Map,
+  );
+  Future<Map<String, dynamic>> applyHandoff(
+    String id,
+    Map<String, dynamic> data,
+  ) async => Map<String, dynamic>.from(
+    await _api.post('/api/v1/shopping-lists/$id/pantry-handoff', data: data)
+        as Map,
+  );
+  Future<List<Map<String, dynamic>>> handoffHistory(String id) async =>
+      (await _api.get('/api/v1/shopping-lists/$id/pantry-handoffs') as List)
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
 }

@@ -27,6 +27,7 @@ from app.modules.nutrition_assessment.router import router as assessment_router
 from app.modules.pantry.router import router as pantry_router
 from app.modules.privacy.router import router as privacy_router
 from app.modules.profiles.router import router as profiles_router
+from app.modules.purchase_to_pantry.router import router as purchase_to_pantry_router
 from app.modules.recipe_target_comparison.router import router as comparison_router
 from app.modules.recipes.router import router as recipes_router
 from app.modules.reference_data.router import router as reference_data_router
@@ -73,6 +74,7 @@ app.include_router(reference_data_router)
 app.include_router(daily_plans_router)
 app.include_router(pantry_router)
 app.include_router(shopping_lists_router)
+app.include_router(purchase_to_pantry_router)
 app.include_router(weekly_plans_router)
 app.include_router(comparison_router)
 app.include_router(assessment_router)

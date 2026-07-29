@@ -172,7 +172,9 @@ final class _PantryDetailScreenState extends ConsumerState<PantryDetailScreen> {
                   ),
                   title: Text(_movement(item.type)),
                   subtitle: Text(
-                    '${item.delta} ${item.unit} · ${item.before} → ${item.after} ${item.unit}\n${DateFormatters.dateTime(item.createdAt)}${item.note == null ? '' : ' · ${item.note}'}',
+                    '${item.delta} ${item.unit} · ${item.before} → ${item.after} ${item.unit}\n'
+                    '${item.sourceType == 'shopping_list_purchase' ? 'Aus Einkaufsliste übernommen · ' : ''}'
+                    '${DateFormatters.dateTime(item.createdAt)}${item.note == null ? '' : ' · ${item.note}'}',
                   ),
                 ),
               )

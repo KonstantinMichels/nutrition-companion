@@ -36,10 +36,13 @@ final class ShoppingItem {
     this.available,
     this.suggested,
     this.sourceStatus = 'current',
+    this.pantryHandoffState = 'not_started',
+    this.pantryTransferred = 0,
   });
-  final String id, name, category, origin, sourceStatus;
+  final String id, name, category, origin, sourceStatus, pantryHandoffState;
   final bool checked;
   final num? quantity, required, available, suggested;
+  final num pantryTransferred;
   final String? unit;
   factory ShoppingItem.fromJson(Map<String, dynamic> json) => ShoppingItem(
     id: json['id'].toString(),
@@ -56,6 +59,9 @@ final class ShoppingItem {
     available: _number(json['pantry_available_quantity']),
     suggested: _number(json['suggested_purchase_quantity']),
     sourceStatus: json['source_status']?.toString() ?? 'current',
+    pantryHandoffState:
+        json['pantry_handoff_state']?.toString() ?? 'not_started',
+    pantryTransferred: _number(json['pantry_transferred_quantity']) ?? 0,
   );
 }
 

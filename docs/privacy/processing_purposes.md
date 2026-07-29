@@ -198,3 +198,6 @@ Refusal must remain possible. Do not bundle analytics, marketing, research, mode
 ### Technical enforcement versus unresolved legal model
 
 The current API accepts and enforces only `nutrition_assessment_calculation` consent. `nutrition_profile_storage` and `assessment_history` are required product operations but are marked `consent_required = false` in the machine registry because the code does not separately gate them. That is a description of implementation, **not** a conclusion that consent is unnecessary. Qualified review must assign an Article 6 basis and, where applicable, an Article 9 condition to each purpose, then decide whether to change the controls, wording or registry flags.
+# Purchase to Pantry
+
+`purchase_to_pantry_management` deckt die vom Nutzer gestartete Übernahme von Kaufmengen und Zielen ab. Sie benötigt keine zusätzliche Einwilligungscheckbox und endet mit vollständiger Profillöschung.

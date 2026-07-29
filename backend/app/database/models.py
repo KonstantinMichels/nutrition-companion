@@ -19,6 +19,11 @@ from app.modules.profiles.models import (
     Profile,
     SportActivity,
 )
+from app.modules.purchase_to_pantry.models import (
+    PurchaseToPantryDestination,
+    PurchaseToPantryHandoff,
+    PurchaseToPantryHandoffItem,
+)
 from app.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from app.modules.reference_data.models import ApplicationRuleSet, ReferenceSet, ReferenceValue
 from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem, ShoppingListItemSource
@@ -46,6 +51,9 @@ __all__ = [
     "PrivacyAction",
     "ProcessingPurpose",
     "Profile",
+    "PurchaseToPantryDestination",
+    "PurchaseToPantryHandoff",
+    "PurchaseToPantryHandoffItem",
     "Recipe",
     "RecipeIngredient",
     "RecipeStep",

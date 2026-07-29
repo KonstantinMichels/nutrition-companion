@@ -206,3 +206,6 @@ Rezepte speichern profilgebundene Metadaten, Portionen, optionale Zeiten/Quelle/
 # Recipe Target Comparison
 
 Verarbeitet auf ausdrückliches Öffnen eine eigene Rezept-ID, eine eigene unveränderliche Assessment-Version, eine sitzungsbezogene Portionszahl sowie daraus abgeleitete bekannte Mengen, Prozente, Datenabdeckung und neutrale Erklärungen. Vergleichsergebnisse und Auswahlzustand werden weder serverseitig noch lokal persistiert und bilden deshalb keinen zusätzlichen Export- oder Löschdatensatz.
+# Purchase to Pantry
+
+Gespeichert werden Übergabe-Batches, Shopping- und Food-Referenzen, geplante und tatsächliche Mengen, Ziel-Lagerorte, Pantry-Lot-/Bewegungsreferenzen, getrennte Datumsangaben, Notizen und die ausdrückliche Abschlussentscheidung.

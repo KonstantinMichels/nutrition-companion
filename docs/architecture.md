@@ -233,3 +233,6 @@ The authoritative release gate is [privacy/production_privacy_checklist.md](priv
 # Food Core module
 
 `app.modules.foods` is a modular-monolith sibling of profiles, privacy and nutrition assessment. Router → service → repository separates HTTP, domain validation/conversions/quality, and SQLAlchemy access. The code nutrient catalog is authoritative; persisted foods reference stable codes and use `NUMERIC`/`Decimal` throughout.
+# Purchase-to-Pantry-Abhängigkeit
+
+`Purchase to Pantry → Shopping List Core → Pantry Core → Food Core` beschreibt die fachliche Orchestrierung: Das Übergabemodul verwendet die öffentlichen Normalisierungs- und Bestandsoperationen, während Shopping List, Pantry und Food Core nicht von ihm abhängen. Shopping List bleibt Quelle der Kaufabsicht, Pantry Quelle des Bestands. Abhaken mutiert Pantry nicht.

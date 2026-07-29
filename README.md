@@ -1,5 +1,7 @@
 # Nutrition Companion
 
+Purchase to Pantry ermöglicht die ausdrücklich bestätigte, nachvollziehbare Übernahme gekaufter Einkaufslistenartikel in den Vorrat. Abhaken allein verändert keinen Bestand; Details stehen in `docs/purchase_to_pantry.md`.
+
 **Vorrat** provides manual Pantry Core inventory with storage locations, separate stock
 lots, decimal-safe quantities, date information, traceable movements, and availability
 grouping. See [Pantry Core](docs/pantry_core.md).
