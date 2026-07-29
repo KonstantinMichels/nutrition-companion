@@ -27,3 +27,6 @@ keine neue Tabelle, Migration, Exportentität oder Löschreihenfolge. Der nächs
 
 Dieser Folgeausbau verwendet dieselbe Rezeptskalierung und Datumssemantik, ergänzt aber offene
 Einkaufslisten und aktualisiert nach ausdrücklicher Vorschau genau eine Zielliste.
+
+The optimizer aggregates the same canonical ingredient requirements across its transient draft.
+This is a temporary calculation only: availability is never reserved or deducted.

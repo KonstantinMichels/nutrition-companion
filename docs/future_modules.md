@@ -131,8 +131,9 @@ nächste erwartete Branch ist `feat/meal-plan-automation-foundation`. Dieser Aus
 Planungsbedingungen, Kandidateneignung, deterministische Bewertung und erklärbare Entwürfe
 vorbereiten. Er darf ohne Review nichts speichern, keinen Vorrat reservieren und keine
 Black-Box-Ernährungsentscheidung treffen.
-# Meal-plan optimizer
+# Progress Tracking Core
 
-A future optimizer may replace the current deterministic greedy selection strategy while retaining
-the same hard eligibility, explainability, transient preview, freshness and explicit-apply
-contracts. It is intentionally outside the automation-foundation scope.
+The next expected branch is `feat/progress-tracking-core`. It may add body-weight observations,
+optional body measurements, trends, target progress, rolling averages, measurement-quality
+metadata and privacy-aware history as groundwork for later energy-needs calibration. It is not yet
+implemented.

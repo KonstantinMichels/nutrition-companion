@@ -43,5 +43,6 @@ drafts stay in memory and are cleared by navigation/process termination. This is
 not medical advice, an intake record, an optimizer, an AI recommendation or an autonomous Pantry
 or shopping mutation.
 
-The next planned branch may add an optimizer behind the same eligibility, explanation and explicit
-application boundaries; this foundation intentionally does not introduce one.
+The optional CP-SAT optimizer now sits behind the same eligibility, explanation and explicit
+application boundaries. The greedy foundation remains independently available as baseline and
+fallback; see `meal_plan_automation_optimizer.md`.

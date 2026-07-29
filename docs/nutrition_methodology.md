@@ -419,3 +419,8 @@ planning aid, preserves target kinds (range, minimum, maximum or reference) and 
 reference value into a medical limit. Safety-blocked assessments cannot be automated. Candidate
 scores are explainable suitability signals, not health claims or guarantees of nutritional
 optimality.
+
+The optional optimizer uses a discrete mathematical model reflecting selected constraints and
+weights. `Optimal` means optimal only for that model—not medically optimal. Deviations are planning
+heuristics; maximums are not goals, incomplete recipe data limits reliability, and allergy,
+intolerance and explicit exclusions are never relaxed.

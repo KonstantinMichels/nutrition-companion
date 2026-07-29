@@ -75,6 +75,44 @@ class AutomationPreferences(Base):
     scoring_weights: Mapped[dict[str, str]] = mapped_column(
         JSON_DOCUMENT, nullable=False, default=dict
     )
+    optimizer_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    default_generation_engine: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="optimizer_strict"
+    )
+    solver_time_limit_day_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+    solver_time_limit_week_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=20)
+    solver_relative_gap_limit: Mapped[Decimal] = mapped_column(
+        Numeric(8, 6), nullable=False, default=Decimal("0.02")
+    )
+    solver_candidate_limit_per_slot: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=40
+    )
+    maximum_recipe_repetitions_per_day: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=2
+    )
+    strict_energy_target: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    strict_protein_minimum: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    strict_fiber_minimum: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    strict_fat_range: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    strict_saturated_fat_maximum: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    strict_daily_preparation_time: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    maximum_daily_preparation_time_minutes: Mapped[int | None] = mapped_column(Integer)
+    maximum_weekly_unique_shopping_items: Mapped[int | None] = mapped_column(Integer)
+    constraint_relaxation_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    relaxable_constraint_priorities: Mapped[dict[str, int]] = mapped_column(
+        JSON_DOCUMENT, nullable=False, default=dict
+    )
+    objective_weights: Mapped[dict[str, str]] = mapped_column(
+        JSON_DOCUMENT, nullable=False, default=dict
+    )
+    meal_prep_preference: Mapped[str] = mapped_column(String(24), nullable=False, default="neutral")
+    compare_with_greedy: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
@@ -150,5 +188,18 @@ class AutomationApplication(Base):
     applied_references: Mapped[list[dict[str, str]]] = mapped_column(JSON_DOCUMENT, nullable=False)
     applied_slot_count: Mapped[int] = mapped_column(Integer, nullable=False)
     client_operation_id: Mapped[UUID] = mapped_column(nullable=False)
+    generation_engine: Mapped[str] = mapped_column(String(40), nullable=False, default="greedy")
+    solver_status: Mapped[str | None] = mapped_column(String(40))
+    solver_version: Mapped[str | None] = mapped_column(String(40))
+    objective_value: Mapped[Decimal | None] = mapped_column(Numeric(30, 6))
+    relative_gap: Mapped[Decimal | None] = mapped_column(Numeric(12, 8))
+    relaxation_used: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    relaxation_summary: Mapped[list[dict[str, str]]] = mapped_column(
+        JSON_DOCUMENT, nullable=False, default=list
+    )
+    objective_summary: Mapped[list[dict[str, str]]] = mapped_column(
+        JSON_DOCUMENT, nullable=False, default=list
+    )
+    greedy_comparison_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

@@ -223,3 +223,8 @@ Persistiert werden stabile Source-Identität und -Version, angewandter Mengensna
 Ziellistenreferenz, Datumsmodus, Other-List-Option, Client-Operations-ID, Ergebniszählwerte und
 Zeitpunkte. Vorschau-Token, aktuelle Pantry-Ableitungen und globale Zusatzbedarfe werden nicht als
 dauerhafte Wahrheit gespeichert. Export und vollständige Löschung umfassen die persistierten Daten.
+
+Optimizer preferences contain engine, bounded solver settings, strict toggles, relaxation priorities
+and objective weights. Applied audits contain compact engine/status/version, objective/gap and
+relaxation summaries. Solver models, candidate matrices, coefficients, temporary budgets and
+preview tokens are transient and excluded from export.

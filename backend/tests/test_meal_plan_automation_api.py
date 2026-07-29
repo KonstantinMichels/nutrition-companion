@@ -68,6 +68,11 @@ def test_generate_is_transient_and_apply_is_idempotent(client, seeded_database, 
     draft = client.post("/api/v1/meal-plan-automation/generate", json=generation)
     assert draft.status_code == 200, draft.text
     body = draft.json()
+    assert body["engine"] == "optimizer"
+    assert body["solver"]["status"] in {"optimal", "feasible"}
+    assert body["solver"]["version"] == "9.14.6206"
+    assert body["solver"]["num_search_workers"] == 1
+    assert body["candidate_summary"]["solver_candidate_count"] > 0
     assert body["days"][0]["proposed_meals"][0]["recipe_id"] == recipe["id"]
     assert client.get("/api/v1/daily-meal-plans/by-date/2026-08-03").status_code == 404
     operation = str(uuid4())
@@ -85,5 +90,7 @@ def test_generate_is_transient_and_apply_is_idempotent(client, seeded_database, 
     history = client.get("/api/v1/meal-plan-automation/applications").json()
     assert len(history) == 1
     assert history[0]["client_operation_id"] == operation
+    assert history[0]["generation_engine"] == "optimizer"
+    assert history[0]["solver_status"] == body["solver"]["status"]
     plan = client.get("/api/v1/daily-meal-plans/by-date/2026-08-03").json()
     assert plan["quality"]["meal_count"] == 2

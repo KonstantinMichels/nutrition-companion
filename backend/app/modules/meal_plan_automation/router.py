@@ -66,6 +66,13 @@ def recalculate(payload: GenerateRequest, profile_id: CurrentProfileId, session:
     return draft_service.generate(session, profile_id, payload)
 
 
+@router.post("/optimize")
+def optimize(payload: GenerateRequest, profile_id: CurrentProfileId, session: Db) -> dict:
+    if payload.generation_engine in {None, "greedy"}:
+        payload = payload.model_copy(update={"generation_engine": "optimizer_strict"})
+    return draft_service.generate(session, profile_id, payload)
+
+
 @router.post("/regenerate-slot")
 def regenerate(payload: GenerateRequest, profile_id: CurrentProfileId, session: Db) -> dict:
     return draft_service.generate(session, profile_id, payload)

@@ -59,4 +59,7 @@ Pantry ist nicht reserviert; parallele Vorschauen können veralten. Offene Liste
 Planungsannahmen, checked bedeutet nicht gekauft, und bestätigte Handoffs hängen von Nutzereingaben
 ab. Nicht unterstützt sind Ersatzprodukte, Paketgrößen, Preise, Händler, Freitextberechnung,
 Pantry-Abzug oder automatische Planung. Der nächste Ausbau ist
-`feat/meal-plan-automation-foundation`.
+`feat/progress-tracking-core`.
+
+Optimization reads remaining active canonical shopping commitments after partial Pantry handoffs to
+estimate additional shortages. It never updates, completes or creates a Shopping List.

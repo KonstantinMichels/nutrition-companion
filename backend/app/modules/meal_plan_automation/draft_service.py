@@ -24,6 +24,7 @@ from app.modules.meal_plan_automation.models import AutomationApplication
 from app.modules.meal_plan_automation.schemas import ApplyRequest, GenerateRequest
 from app.modules.meal_plan_automation.service import get
 from app.modules.pantry import service as pantry_service
+from app.modules.profiles import repository as profile_repository
 from app.modules.recipe_target_comparison.service import _resolve_assessment
 from app.modules.recipes import repository as recipe_repository
 from app.modules.recipes.engine.calculation import calculate_recipe
@@ -50,7 +51,7 @@ def _token(value: object) -> str:
     ).hexdigest()
 
 
-def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, Any]:
+def _generate_greedy(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, Any]:
     pref = get(session, owner, req.preferences_id)
     if pref.is_archived:
         raise error("AUTOMATION_PREFERENCES_ARCHIVED", "Die Einstellungen sind archiviert.", 409)
@@ -76,6 +77,13 @@ def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, A
     )
     pantry = {r["food_id"]: r for r in pantry_service.availability(session, owner)}
     weights = {k: Decimal(v) for k, v in pref.scoring_weights.items()}
+    profile = profile_repository.get_profile_record(session, owner)
+    hard_food_exclusions = {
+        restriction.value.strip().casefold()
+        for restriction in (profile.restrictions if profile is not None else [])
+        if restriction.restriction_type in {"allergy", "intolerance", "excluded_food"}
+        and (restriction.hard_exclusion or restriction.restriction_type == "allergy")
+    }
     energy_target = assessment.summary.get("energy_target", {})
     if not isinstance(energy_target, dict) or not energy_target.get("available"):
         raise error(
@@ -102,6 +110,12 @@ def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, A
             pref.enabled_recipe_tag_codes
         ):
             reasons.append("AUTOMATION_REQUIRED_TAG_MISSING")
+        if any(
+            ingredient.food.normalized_name.casefold() in hard_food_exclusions
+            or ingredient.food.name.strip().casefold() in hard_food_exclusions
+            for ingredient in recipe.ingredients
+        ):
+            reasons.append("AUTOMATION_NON_RELAXABLE_FOOD_EXCLUSION")
         total_time = (
             sum(
                 v or 0
@@ -365,6 +379,7 @@ def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, A
         ),
     }
     return {
+        "engine": "greedy",
         "scope": req.scope,
         "date_from": _dates(req)[0],
         "date_to": _dates(req)[-1],
@@ -402,6 +417,24 @@ def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, A
     }
 
 
+def generate(session: Session, owner: UUID, req: GenerateRequest) -> dict[str, Any]:
+    pref = get(session, owner, req.preferences_id)
+    engine = req.generation_engine or pref.default_generation_engine
+    if engine == "greedy":
+        return _generate_greedy(session, owner, req)
+    if not pref.optimizer_enabled:
+        raise error(
+            "AUTOMATION_OPTIMIZER_UNAVAILABLE",
+            "Die gemeinsame Optimierung ist in diesem Einstellungsprofil deaktiviert.",
+            409,
+        )
+    from app.modules.meal_plan_automation import optimizer_service
+
+    return optimizer_service.generate(
+        session, owner, req.model_copy(update={"generation_engine": engine}), pref
+    )
+
+
 def apply(session: Session, owner: UUID, payload: ApplyRequest) -> dict[str, Any]:
     existing = session.scalar(
         select(AutomationApplication).where(
@@ -421,6 +454,13 @@ def apply(session: Session, owner: UUID, payload: ApplyRequest) -> dict[str, Any
         raise error(
             "AUTOMATION_DRAFT_STALE",
             "Der Entwurf ist nicht mehr aktuell. Bitte neu berechnen.",
+            409,
+        )
+    solver = draft.get("solver")
+    if solver and solver.get("relaxation_used") and not payload.relaxation_confirmed:
+        raise error(
+            "AUTOMATION_OPTIMIZER_RELAXATION_CONFIRMATION_REQUIRED",
+            "Bitte bestätige die angezeigten Regel-Lockerungen ausdrücklich.",
             409,
         )
     selected = set(payload.selected_slot_keys)
@@ -497,6 +537,15 @@ def apply(session: Session, owner: UUID, payload: ApplyRequest) -> dict[str, Any
             applied_references=applied,
             applied_slot_count=len(applied),
             client_operation_id=payload.client_operation_id,
+            generation_engine=draft.get("engine", "greedy"),
+            solver_status=solver.get("status") if solver else None,
+            solver_version=solver.get("version") if solver else None,
+            objective_value=solver.get("objective_value") if solver else None,
+            relative_gap=solver.get("relative_gap") if solver else None,
+            relaxation_used=bool(solver and solver.get("relaxation_used")),
+            relaxation_summary=draft.get("relaxations", []),
+            objective_summary=draft.get("objective_breakdown", []),
+            greedy_comparison_enabled=draft.get("greedy_comparison") is not None,
         )
         session.add(audit)
         session.commit()

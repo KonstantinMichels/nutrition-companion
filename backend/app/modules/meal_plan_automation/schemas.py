@@ -20,6 +20,19 @@ DEFAULT_WEIGHTS = {
         "data_quality": "1",
     }.items()
 }
+DEFAULT_OBJECTIVE_WEIGHTS = {
+    key: Decimal(value)
+    for key, value in {
+        "nutrition_fit": "3",
+        "pantry_usage": "2",
+        "shopping_effort": "2",
+        "preparation_time": "1",
+        "variety": "2",
+        "meal_prep": "1",
+        "recipe_preference": "1",
+        "data_quality": "1",
+    }.items()
+}
 
 
 class SlotWrite(BaseModel):
@@ -70,13 +83,40 @@ class PreferencesWrite(BaseModel):
     excluded_recipe_tag_codes: list[str] = Field(default_factory=list)
     excluded_recipe_ids: list[UUID] = Field(default_factory=list)
     scoring_weights: dict[str, Decimal] = Field(default_factory=lambda: dict(DEFAULT_WEIGHTS))
+    optimizer_enabled: bool = True
+    default_generation_engine: Literal[
+        "greedy", "optimizer_strict", "optimizer_explainable_relaxation"
+    ] = "optimizer_strict"
+    solver_time_limit_day_seconds: int = Field(5, ge=1, le=15)
+    solver_time_limit_week_seconds: int = Field(20, ge=5, le=60)
+    solver_relative_gap_limit: Decimal = Field(Decimal("0.02"), ge=0, le=Decimal("0.25"))
+    solver_candidate_limit_per_slot: int = Field(40, ge=5, le=80)
+    maximum_recipe_repetitions_per_day: int = Field(2, ge=1, le=8)
+    strict_energy_target: bool = False
+    strict_protein_minimum: bool = False
+    strict_fiber_minimum: bool = False
+    strict_fat_range: bool = False
+    strict_saturated_fat_maximum: bool = False
+    strict_daily_preparation_time: bool = False
+    maximum_daily_preparation_time_minutes: int | None = Field(None, ge=0, le=1440)
+    maximum_weekly_unique_shopping_items: int | None = Field(None, ge=0, le=200)
+    constraint_relaxation_enabled: bool = False
+    relaxable_constraint_priorities: dict[str, int] = Field(default_factory=dict)
+    objective_weights: dict[str, Decimal] = Field(
+        default_factory=lambda: dict(DEFAULT_OBJECTIVE_WEIGHTS)
+    )
+    meal_prep_preference: Literal["neutral", "prefer_reuse", "prefer_variety"] = "neutral"
+    compare_with_greedy: bool = True
     slots: list[SlotWrite] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def valid(self) -> PreferencesWrite:
         if self.assessment_selection_mode == "explicit" and self.selected_assessment_id is None:
             raise ValueError("Assessment erforderlich.")
-        if any(v < 0 or v > 10 for v in self.scoring_weights.values()):
+        if any(
+            v < 0 or v > 10
+            for v in (*self.scoring_weights.values(), *self.objective_weights.values())
+        ):
             raise ValueError("Gewichte müssen zwischen 0 und 10 liegen.")
         return self
 
@@ -93,6 +133,12 @@ class GenerateRequest(BaseModel):
     portion_overrides: dict[str, Decimal] = Field(default_factory=dict)
     locked_slot_keys: list[str] = Field(default_factory=list)
     removed_slot_keys: list[str] = Field(default_factory=list)
+    generation_engine: (
+        Literal["greedy", "optimizer_strict", "optimizer_explainable_relaxation"] | None
+    ) = None
+    reoptimization_scope: Literal["slot", "day", "unlocked", "all"] = "all"
+    reoptimization_slot_key: str | None = None
+    relaxed_draft_confirmed: bool = False
 
 
 class ApplyRequest(BaseModel):
@@ -102,3 +148,4 @@ class ApplyRequest(BaseModel):
     selected_slot_keys: list[str] = Field(default_factory=list)
     create_missing_plans: bool = False
     application_mode: Literal["all_or_nothing", "apply_non_conflicting"] = "all_or_nothing"
+    relaxation_confirmed: bool = False

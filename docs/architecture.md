@@ -243,3 +243,8 @@ The authoritative release gate is [privacy/production_privacy_checklist.md](priv
 The `meal_plan_automation` backend module separates persistent preferences/application audits from
 the pure deterministic scoring engine and transient draft orchestration. See
 `meal_plan_automation_foundation.md` for boundaries and data flow.
+
+The optimizer depends inward on that foundation, Nutrition Assessment, Recipe Core, Daily/Weekly
+Planning, Pantry availability and Pantry-aware Shopping. OR-Tools is isolated behind
+`MealPlanSolver`; the foundation runs without CP-SAT. Daily Meal Plans remain the source of truth,
+while Pantry and Shopping Lists are read-only optimization inputs.

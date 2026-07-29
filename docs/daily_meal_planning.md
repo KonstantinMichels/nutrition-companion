@@ -115,3 +115,6 @@ moving meals between dates, and weekly aggregation. It is not implemented here.
 Aktive Tagespläne können inzwischen als Pantry-aware-Shopping-Quelle verwendet werden. Direkte
 Food-Einträge und Rezeptzutaten behalten stabile Meal-Entry-Identitäten; der Plan selbst wird nicht
 verändert.
+
+Greedy or optimized drafts can add only free meal slots after explicit review. Existing entries
+contribute fixed nutrients and remain unchanged; Daily Meal Plans stay the source of truth.

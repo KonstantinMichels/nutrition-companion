@@ -1,5 +1,8 @@
 # Nutrition Companion
 
+Meal planning supports a fast deterministic greedy draft and an optional local-backend OR-Tools
+CP-SAT optimizer. Both produce review-only drafts and require explicit application.
+
 Pantry-aware Shopping gleicht Rezept-, Tages- und Wochenbedarf ausdrücklich mit aktuellem Vorrat
 und offenen Einkaufslisten ab, bevor genau eine Zielliste aktualisiert wird. Bestände werden nicht
 reserviert oder verändert; siehe [Pantry-aware Shopping](docs/pantry_aware_shopping.md).
