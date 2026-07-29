@@ -26,6 +26,7 @@ import '../features/pantry/pantry_screen.dart';
 import '../features/shopping_lists/shopping_list_detail_screen.dart';
 import '../features/shopping_lists/shopping_list_generate_screen.dart';
 import '../features/shopping_lists/shopping_lists_screen.dart';
+import '../features/shopping_lists/purchase_to_pantry_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -45,6 +46,11 @@ final appRouter = GoRouter(
       path: '/shopping-lists/:id',
       builder: (context, state) =>
           ShoppingListDetailScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/shopping-lists/:id/pantry-handoff',
+      builder: (context, state) =>
+          PurchaseToPantryScreen(listId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/pantry/add',

@@ -532,3 +532,6 @@ times. Remaining values carry exact/uncertain status appropriate to minimum, max
 reference semantics. Common errors include `DAILY_PLAN_NOT_FOUND`, `DAILY_PLAN_ALREADY_EXISTS`,
 `DAILY_PLAN_ARCHIVED`, `TARGET_DATE_ALREADY_HAS_PLAN`, `ENTRY_SOURCE_ARCHIVED`,
 `ENTRY_NORMALIZATION_FAILED`, `ASSESSMENT_NOT_FOUND` and `ASSESSMENT_NOT_COMPARABLE`.
+# Purchase to Pantry
+
+Unter `/api/v1/shopping-lists/{id}` stehen `pantry-handoff-eligibility`, `pantry-handoff-preview`, `pantry-handoff`, `pantry-handoffs` sowie artikelbezogene Historie zur Verfügung. Apply verlangt Vorschau-Token und Client-Operations-ID.

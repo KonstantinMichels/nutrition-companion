@@ -73,3 +73,6 @@ Review this schedule at least annually in production and whenever a purpose, ven
 # Food Core
 
 Aktive und archivierte Lebensmittel bleiben bis zur vollständigen Profillöschung erhalten. Archivierung ist keine Datenschutzlöschung.
+# Purchase-to-Pantry-Daten
+
+Erfolgreiche Übergaben bleiben bis zur vollständigen Profillöschung erhalten. Vorschauen werden nicht persistiert.

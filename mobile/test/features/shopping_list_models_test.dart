@@ -45,4 +45,21 @@ void main() {
 
     expect(item.quantity, 2.5);
   });
+
+  test(
+    'shopping-list model keeps Pantry handoff state separate from checked state',
+    () {
+      final item = ShoppingItem.fromJson({
+        'id': 'item-1',
+        'name': 'Kartoffeln',
+        'is_checked': false,
+        'pantry_handoff_state': 'partial',
+        'pantry_transferred_quantity': '800.000000000000000',
+      });
+
+      expect(item.checked, isFalse);
+      expect(item.pantryHandoffState, 'partial');
+      expect(item.pantryTransferred, 800);
+    },
+  );
 }

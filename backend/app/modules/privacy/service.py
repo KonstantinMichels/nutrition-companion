@@ -33,6 +33,10 @@ from app.modules.profiles.models import (
     Measurement,
     NutritionGoal,
 )
+from app.modules.purchase_to_pantry.models import (
+    PurchaseToPantryHandoff,
+    PurchaseToPantryHandoffItem,
+)
 from app.modules.recipes.models import Recipe, RecipeIngredient
 from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem
 
@@ -214,6 +218,18 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .where(ShoppingList.owner_profile_id == profile_id)
             .options(selectinload(ShoppingList.items).selectinload(ShoppingListItem.sources))
             .order_by(ShoppingList.created_at)
+        )
+    )
+    purchase_handoffs = list(
+        session.scalars(
+            select(PurchaseToPantryHandoff)
+            .where(PurchaseToPantryHandoff.owner_profile_id == profile_id)
+            .options(
+                selectinload(PurchaseToPantryHandoff.items).selectinload(
+                    PurchaseToPantryHandoffItem.destinations
+                )
+            )
+            .order_by(PurchaseToPantryHandoff.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -606,6 +622,48 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for shopping in shopping_lists
         ],
+        "purchase_to_pantry_handoffs": [
+            {
+                "id": handoff.id,
+                "shopping_list_id": handoff.shopping_list_id,
+                "shopping_list_name": handoff.shopping_list_name_snapshot,
+                "status": handoff.status,
+                "completed_at": handoff.completed_at,
+                "items": [
+                    {
+                        "shopping_list_item_id": item.shopping_list_item_id,
+                        "shopping_item_name": item.shopping_item_name_snapshot,
+                        "food_id": item.food_id,
+                        "planned_purchase_quantity": item.planned_purchase_quantity,
+                        "planned_purchase_unit": item.planned_purchase_unit,
+                        "actual_transferred_quantity": item.actual_transferred_quantity,
+                        "canonical_unit": item.canonical_unit,
+                        "marked_completed": item.mark_item_handoff_completed,
+                        "destinations": [
+                            {
+                                "destination_type": destination.destination_type,
+                                "pantry_location_id": destination.pantry_location_id,
+                                "target_stock_lot_id": destination.target_stock_lot_id,
+                                "created_stock_lot_id": destination.created_stock_lot_id,
+                                "pantry_movement_id": destination.pantry_movement_id,
+                                "entered_quantity": destination.entered_quantity,
+                                "entered_unit_code": destination.entered_unit_code,
+                                "normalized_quantity": destination.normalized_quantity,
+                                "normalized_unit": destination.normalized_unit,
+                                "purchase_date": destination.purchase_date,
+                                "opened_date": destination.opened_date,
+                                "best_before_date": destination.best_before_date,
+                                "use_by_date": destination.use_by_date,
+                                "note": destination.note,
+                            }
+                            for destination in item.destinations
+                        ],
+                    }
+                    for item in handoff.items
+                ],
+            }
+            for handoff in purchase_handoffs
+        ],
     }
     session.commit()
     return PrivacyExportResponse(
@@ -685,6 +743,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         .select_from(ShoppingList)
         .where(ShoppingList.owner_profile_id == profile_id)
     )
+    handoff_count = session.scalar(
+        select(func.count())
+        .select_from(PurchaseToPantryHandoff)
+        .where(PurchaseToPantryHandoff.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -696,12 +759,20 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(daily_plan_count or 0)
         + int(pantry_count or 0)
         + int(shopping_count or 0)
+        + int(handoff_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
     )
     confirmation = secrets.token_hex(8)
     try:
+        # Handoff links protect shopping and Pantry records, so remove them first.
+        session.execute(
+            delete(PurchaseToPantryHandoff).where(
+                PurchaseToPantryHandoff.owner_profile_id == profile_id
+            )
+        )
+        session.flush()
         # Shopping snapshots protect plans, recipes and foods, so remove them first.
         session.execute(delete(ShoppingList).where(ShoppingList.owner_profile_id == profile_id))
         session.flush()

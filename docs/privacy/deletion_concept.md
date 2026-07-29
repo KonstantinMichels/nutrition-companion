@@ -139,3 +139,6 @@ to a new entry.
 # Food Core
 
 Die vollständige Profillöschung löscht eigene Lebensmittel sowie Nährwerte und Maße dauerhaft per Datenbank-Cascade. Die App muss anschließend lokale verschlüsselte Profildaten leeren. `DELETE /foods/{id}` archiviert dagegen nur. Die getrennte, in der App ausdrücklich bestätigte Aktion `DELETE /foods/{id}/permanent` löscht ein einzelnes eigenes Lebensmittel samt abhängigen Werten unwiderruflich.
+# Purchase to Pantry
+
+Vollständige Profillöschung entfernt zuerst Übergabe-Verknüpfungen und danach Shopping- und Pantry-Daten in derselben Transaktion. Archivierung einer Liste oder eines Pantry-Bestands erhält die Historie.

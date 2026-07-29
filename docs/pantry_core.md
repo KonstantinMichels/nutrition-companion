@@ -46,3 +46,6 @@ deduction, consumption synchronization, barcode stocking, receipt scanning, pric
 tracking, reminder, notification, shared household, safety assessment, shopping list,
 or recipe recommendation exists. The next expected feature is
 `feat/shopping-list-core`.
+# Herkunft aus Einkaufslisten
+
+Bestände aus ausdrücklich bestätigten Übergaben verwenden die generische Bewegungsquelle `shopping_list_purchase`. Pantry bleibt für Mengen und Bewegungen autoritativ; Listenhaken oder Listenabschluss erzeugen keine Bewegung.

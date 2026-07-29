@@ -14,6 +14,8 @@ Die MVP-Kategorien sind Obst & Gemüse, Milchprodukte, Fleisch & Fisch, Backware
 
 Abschließen bedeutet nur, dass die Liste organisatorisch erledigt ist. Es bestätigt weder Kauf noch Verzehr und erzeugt keine Pantry-Bewegung. Preise, Händler, Reservierungen, automatische Pantry-Verbuchung und wiederkehrende Listen sind nicht Teil dieses Features.
 
+Eine Pantry-Übernahme ist ausschließlich über den separaten, bestätigten Purchase-to-Pantry-Ablauf möglich. Dabei bleiben Haken, Abschlussstatus und geplante Einkaufsmenge unverändert; die tatsächlich übertragene Menge und der Übergabestatus werden zusätzlich angezeigt.
+
 ## API
 
 Die API liegt unter `/api/v1/shopping-lists` und unterstützt Übersicht, Detail, manuelle Erstellung, `generation-preview`, `generate`, Item-CRUD, Sortierung, Abhaken, zweistufigen Refresh, Abschluss/Wiederöffnung sowie Archivierung/Wiederherstellung. Alle Zugriffe sind auf das aktive Profil beschränkt. Shopping-Listen sind im Datenschutzexport enthalten und werden bei vollständiger Profillöschung vor ihren referenzierten Plänen, Rezepten und Lebensmitteln gelöscht.

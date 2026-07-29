@@ -112,6 +112,7 @@ final class PantryMovement {
     required this.note,
     required this.createdAt,
     required this.estimated,
+    required this.sourceType,
   });
   factory PantryMovement.fromJson(Map<String, dynamic> json) => PantryMovement(
     type: json['movement_type'].toString(),
@@ -122,8 +123,9 @@ final class PantryMovement {
     note: json['note']?.toString(),
     createdAt: DateTime.parse(json['created_at'].toString()),
     estimated: json['conversion_estimated'] == true,
+    sourceType: json['source_type']?.toString() ?? 'manual',
   );
-  final String type, delta, unit, before, after;
+  final String type, delta, unit, before, after, sourceType;
   final String? note;
   final DateTime createdAt;
   final bool estimated;

@@ -495,6 +495,8 @@ def _item_dict(i: ShoppingListItem) -> dict[str, Any]:
         "source_status": i.source_status,
         "warning_codes": i.warning_codes,
         "note": i.note,
+        "pantry_handoff_state": i.pantry_handoff_state,
+        "pantry_transferred_quantity": i.pantry_transferred_quantity,
         "sources": [
             {
                 "source_date": s.plan_date,
