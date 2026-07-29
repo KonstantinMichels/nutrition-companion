@@ -412,3 +412,10 @@ nutrients remain unknown and can make relations or remaining amounts indetermina
 are lower bounds. Minimums, maximums, ranges and reference values retain distinct semantics. The
 wording does not diagnose deficiency or excess, and the system generates no automatic diet
 recommendation, optimization or medical interpretation.
+# Automated meal-plan drafts
+
+Automation reuses stored assessment targets and recipe calculations. It presents target fit as a
+planning aid, preserves target kinds (range, minimum, maximum or reference) and never converts a
+reference value into a medical limit. Safety-blocked assessments cannot be automated. Candidate
+scores are explainable suitability signals, not health claims or guarantees of nutritional
+optimality.

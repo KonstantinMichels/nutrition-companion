@@ -23,6 +23,7 @@ from app.core.logging import configure_logging, request_log_middleware
 from app.core.security import assert_safe_runtime_configuration
 from app.modules.daily_meal_planning.router import router as daily_plans_router
 from app.modules.foods.router import router as foods_router
+from app.modules.meal_plan_automation.router import router as automation_router
 from app.modules.nutrition_assessment.router import router as assessment_router
 from app.modules.pantry.router import router as pantry_router
 from app.modules.pantry_aware_shopping.router import router as pantry_aware_shopping_router
@@ -77,6 +78,7 @@ app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(daily_plans_router)
 app.include_router(pantry_router)
+app.include_router(automation_router)
 app.include_router(pantry_aware_shopping_router)
 app.include_router(shopping_lists_router)
 app.include_router(purchase_to_pantry_router)

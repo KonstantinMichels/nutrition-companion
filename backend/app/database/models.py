@@ -2,6 +2,11 @@
 
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
 from app.modules.foods.models import Food, FoodMeasure, FoodNutrient
+from app.modules.meal_plan_automation.models import (
+    AutomationApplication,
+    AutomationMealSlot,
+    AutomationPreferences,
+)
 from app.modules.nutrition_assessment.models import Assessment, AssessmentMetric, SafetyFlag
 from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
@@ -34,6 +39,9 @@ __all__ = [
     "ApplicationRuleSet",
     "Assessment",
     "AssessmentMetric",
+    "AutomationApplication",
+    "AutomationMealSlot",
+    "AutomationPreferences",
     "ConsentRecord",
     "DailyMealPlan",
     "DeletionRecord",

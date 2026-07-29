@@ -15,6 +15,10 @@ from app.core.errors import ApiError
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal
 from app.modules.foods.models import Food
 from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
+from app.modules.meal_plan_automation.models import (
+    AutomationApplication,
+    AutomationPreferences,
+)
 from app.modules.nutrition_assessment.models import Assessment
 from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
@@ -238,6 +242,21 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             select(PantryAwareShoppingOperation)
             .where(PantryAwareShoppingOperation.owner_profile_id == profile_id)
             .order_by(PantryAwareShoppingOperation.created_at)
+        )
+    )
+    automation_preferences = list(
+        session.scalars(
+            select(AutomationPreferences)
+            .where(AutomationPreferences.owner_profile_id == profile_id)
+            .options(selectinload(AutomationPreferences.slots))
+            .order_by(AutomationPreferences.created_at)
+        )
+    )
+    automation_applications = list(
+        session.scalars(
+            select(AutomationApplication)
+            .where(AutomationApplication.owner_profile_id == profile_id)
+            .order_by(AutomationApplication.created_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -520,6 +539,51 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             }
             for plan in daily_plans
         ],
+        "meal_plan_automation_preferences": [
+            {
+                "id": item.id,
+                "name": item.name,
+                "is_default": item.is_default,
+                "assessment_selection_mode": item.assessment_selection_mode,
+                "selected_assessment_id": item.selected_assessment_id,
+                "generation_scope_default": item.generation_scope_default,
+                "pantry_preference": item.pantry_preference,
+                "shopping_effort_preference": item.shopping_effort_preference,
+                "maximum_recipe_repetitions_per_week": (item.maximum_recipe_repetitions_per_week),
+                "minimum_days_between_same_recipe": item.minimum_days_between_same_recipe,
+                "maximum_preparation_time_minutes": item.maximum_preparation_time_minutes,
+                "scoring_weights": item.scoring_weights,
+                "is_archived": item.is_archived,
+                "slots": [
+                    {
+                        "slot_code": slot.slot_code,
+                        "meal_type": slot.meal_type,
+                        "default_time": slot.default_time,
+                        "is_enabled": slot.is_enabled,
+                        "portion_minimum": slot.portion_minimum,
+                        "portion_maximum": slot.portion_maximum,
+                        "portion_step": slot.portion_step,
+                    }
+                    for slot in item.slots
+                ],
+            }
+            for item in automation_preferences
+        ],
+        "meal_plan_automation_applications": [
+            {
+                "id": item.id,
+                "scope": item.scope,
+                "date_from": item.date_from,
+                "date_to": item.date_to,
+                "automation_preferences_id": item.automation_preferences_id,
+                "assessment_ids": item.assessment_ids,
+                "applied_references": item.applied_references,
+                "applied_slot_count": item.applied_slot_count,
+                "client_operation_id": item.client_operation_id,
+                "created_at": item.created_at,
+            }
+            for item in automation_applications
+        ],
         "pantry_locations": [
             {
                 "id": item.id,
@@ -781,6 +845,11 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         .select_from(PantryAwareShoppingOperation)
         .where(PantryAwareShoppingOperation.owner_profile_id == profile_id)
     )
+    automation_count = session.scalar(
+        select(func.count())
+        .select_from(AutomationPreferences)
+        .where(AutomationPreferences.owner_profile_id == profile_id)
+    )
     approximate_count = (
         1
         + len(profile.measurements)
@@ -794,12 +863,24 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         + int(shopping_count or 0)
         + int(handoff_count or 0)
         + int(pantry_aware_count or 0)
+        + int(automation_count or 0)
         + (1 if profile.activity_profile else 0)
         + (1 if profile.goal else 0)
         + (1 if profile.health_screening else 0)
     )
     confirmation = secrets.token_hex(8)
     try:
+        session.execute(
+            delete(AutomationApplication).where(
+                AutomationApplication.owner_profile_id == profile_id
+            )
+        )
+        session.execute(
+            delete(AutomationPreferences).where(
+                AutomationPreferences.owner_profile_id == profile_id
+            )
+        )
+        session.flush()
         # Handoff links protect shopping and Pantry records, so remove them first.
         session.execute(
             delete(PantryAwareShoppingOperation).where(

@@ -28,6 +28,7 @@ import '../features/shopping_lists/shopping_list_generate_screen.dart';
 import '../features/shopping_lists/shopping_lists_screen.dart';
 import '../features/shopping_lists/purchase_to_pantry_screen.dart';
 import '../features/shopping_lists/pantry_aware_shopping_screen.dart';
+import '../features/meal_plan_automation/automation_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -35,6 +36,13 @@ final appRouter = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),
+    GoRoute(
+      path: '/meal-plan-automation',
+      builder: (context, state) => AutomationScreen(
+        initialScope: state.uri.queryParameters['scope'] ?? 'single_day',
+        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      ),
+    ),
     GoRoute(
       path: '/shopping-lists',
       builder: (context, state) => const ShoppingListsScreen(),
