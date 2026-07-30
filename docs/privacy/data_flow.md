@@ -1,5 +1,7 @@
 # Personal-data flows
 
+Progress-Eingabe → lokale FastAPI-Instanz → profilgebundene PostgreSQL-Beobachtung → flüchtige Trendberechnung → chartfertige Antwort. Es gibt keinen externen Empfänger und keine Analytics.
+
 Pantry inputs flow from the Android form to the first-party FastAPI inventory service
 and PostgreSQL. Food Core supplies local conversion metadata. No external service,
 analytics recipient, or third-country transfer receives Pantry data.

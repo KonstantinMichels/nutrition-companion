@@ -1,5 +1,7 @@
 # Deletion concept
 
+Ein Progress-`DELETE` entfernt genau die profilgebundene Beobachtung dauerhaft und ohne Archiv. Vollständige Profillöschung entfernt alle Progress-Tabellen per Cascade. Eine einzelne Progress-Löschung verändert keine Assessments, Rezepte oder Pläne.
+
 Complete profile deletion removes Pantry movements, lots, and locations before Food
 records so restrictive source references cannot become orphaned. Archiving Pantry or
 Food records never silently deletes inventory history.

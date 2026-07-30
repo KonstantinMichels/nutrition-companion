@@ -1,5 +1,9 @@
 # REST API
 
+## Progress Tracking
+
+`/api/v1/progress` bietet `overview`, CRUD für Gewicht, Körpermaße und Körperzusammensetzung sowie Ziele mit Abschluss und Abbruch. Historien sind paginiert; die Übersicht liefert chartfertige Roh-, Tagesrepräsentanten- und Rolling-Average-Werte. Decimal-Werte werden als Strings ausgegeben.
+
 ## Pantry Core
 
 `/api/v1/pantry` exposes summary, location CRUD/archive/restore, paginated lots,

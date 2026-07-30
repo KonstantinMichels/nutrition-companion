@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import Any, cast
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -26,6 +27,7 @@ from app.modules.nutrition_assessment.schemas import (
 from app.modules.privacy.service import require_assessment_consent
 from app.modules.profiles import repository as profile_repository
 from app.modules.profiles.models import Profile
+from app.modules.progress_tracking.models import BodyWeightObservation
 from app.modules.reference_data import repository as reference_repository
 
 
@@ -262,6 +264,23 @@ def create_assessment(
     )
     try:
         session.add(assessment)
+        session.flush()
+        local_timestamp = result.calculated_at.astimezone(ZoneInfo("Europe/Berlin"))
+        session.add(
+            BodyWeightObservation(
+                owner_profile_id=profile_id,
+                observed_on=local_timestamp.date(),
+                observed_time=local_timestamp.time().replace(tzinfo=None),
+                normalized_weight_kg=engine_input.weight_kg,
+                entered_weight=engine_input.weight_kg,
+                entered_unit="kg",
+                source_type="assessment",
+                source_assessment_id=assessment.id,
+                measurement_context="unspecified",
+                note=None,
+                unusual_change_confirmed=False,
+            )
+        )
         session.commit()
         # Return exactly the precision persisted by the database, including on the
         # first POST response rather than the pre-flush in-memory Decimal objects.

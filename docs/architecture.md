@@ -1,5 +1,9 @@
 # Architecture
 
+## Progress Tracking Core
+
+`Flutter → Progress API → Application Service → Observation/Goal Storage + pure Trend Engine`. Beobachtungen sind die Quelle der Wahrheit, Trends entstehen bei Abruf. Immutable Assessments und Planungsziele werden nicht verändert; dynamische Energiekalibrierung bleibt nachgelagert.
+
 Pantry Core depends on Food Core (`Pantry Core → Food Core`) for unit, density, and
 FoodMeasure normalization. Food, Recipe, Daily Planning, and Weekly Planning do not
 depend on Pantry Core. A later Shopping List Core may read plan requirements and Pantry

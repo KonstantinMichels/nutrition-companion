@@ -1,5 +1,7 @@
 # Future modules
 
+Nächster erwarteter Branch ist `feat/dynamic-energy-calibration`. Er soll nur bei ausreichender Abdeckung konservative, unsichere Korrekturen vorschlagen. Bestätigte Änderungen müssen einen neuen unveränderlichen Datensatz erzeugen; historische Assessments werden nie umgeschrieben. Dies ist noch nicht implementiert.
+
 The next expected branch is `feat/shopping-list-core`. It will collect requirements
 from selected daily or weekly plans, normalize quantities, compare them with Pantry
 availability, calculate missing amounts, and allow manual entries while keeping planned

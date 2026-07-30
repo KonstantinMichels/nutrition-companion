@@ -4,6 +4,31 @@ PROCESSING_PURPOSE_REGISTRY_VERSION = "mvp_v1"
 
 PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
     {
+        "code": "progress_tracking",
+        "description_de": (
+            "Speicherung freiwilliger Körpermessungen und Fortschrittsziele sowie "
+            "transparente, bei Abruf berechnete Trends."
+        ),
+        "data_categories": [
+            "weight observations",
+            "body measurements",
+            "body composition observations",
+            "private notes",
+            "progress goals",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; Formularentwürfe verschlüsselt auf dem Gerät",
+        "retention_period": "Bis zur individuellen Löschung oder Profillöschung",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Einzelne Messungen werden dauerhaft gelöscht; bei vollständiger "
+            "Profillöschung werden alle Fortschrittsdaten entfernt."
+        ),
+        "required": False,
+    },
+    {
         "code": "nutrition_profile_storage",
         "description_de": (
             "Speicherung deines Ernährungs- und Körperprofils für von dir gestartete Auswertungen."
