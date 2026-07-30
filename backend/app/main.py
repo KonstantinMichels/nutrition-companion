@@ -32,6 +32,7 @@ from app.modules.pantry_recipe_availability.router import (
 )
 from app.modules.privacy.router import router as privacy_router
 from app.modules.profiles.router import router as profiles_router
+from app.modules.progress_tracking.router import router as progress_router
 from app.modules.purchase_to_pantry.router import router as purchase_to_pantry_router
 from app.modules.recipe_target_comparison.router import router as comparison_router
 from app.modules.recipes.router import router as recipes_router
@@ -74,6 +75,7 @@ app.add_exception_handler(StarletteHTTPException, http_error_handler)  # type: i
 app.add_exception_handler(Exception, unexpected_error_handler)
 
 app.include_router(profiles_router)
+app.include_router(progress_router)
 app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(daily_plans_router)

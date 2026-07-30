@@ -29,12 +29,17 @@ import '../features/shopping_lists/shopping_lists_screen.dart';
 import '../features/shopping_lists/purchase_to_pantry_screen.dart';
 import '../features/shopping_lists/pantry_aware_shopping_screen.dart';
 import '../features/meal_plan_automation/automation_screen.dart';
+import '../features/progress/progress_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/progress',
+      builder: (context, state) => const ProgressScreen(),
+    ),
     GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),
     GoRoute(
       path: '/meal-plan-automation',

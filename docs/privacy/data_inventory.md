@@ -1,5 +1,7 @@
 # Personal-data inventory
 
+Progress Tracking umfasst Original- und normalisierte Gewichte, lokale Tage/Uhrzeiten, Messsituationen, private Notizen, getrennte Körperumfänge, Körperzusammensetzung samt Methode und historische Ziele. Trends sind flüchtige Ableitungen.
+
 Pantry data includes profile-owned storage locations, Food references, current and
 entered quantities, dates, free-text notes, archive/depletion state, and immutable
 movement history with before/after balances and operation identifiers.

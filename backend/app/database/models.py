@@ -25,6 +25,12 @@ from app.modules.profiles.models import (
     Profile,
     SportActivity,
 )
+from app.modules.progress_tracking.models import (
+    BodyCompositionObservation,
+    BodyMeasurementObservation,
+    BodyWeightObservation,
+    ProgressGoal,
+)
 from app.modules.purchase_to_pantry.models import (
     PurchaseToPantryDestination,
     PurchaseToPantryHandoff,
@@ -42,6 +48,9 @@ __all__ = [
     "AutomationApplication",
     "AutomationMealSlot",
     "AutomationPreferences",
+    "BodyCompositionObservation",
+    "BodyMeasurementObservation",
+    "BodyWeightObservation",
     "ConsentRecord",
     "DailyMealPlan",
     "DeletionRecord",
@@ -61,6 +70,7 @@ __all__ = [
     "PrivacyAction",
     "ProcessingPurpose",
     "Profile",
+    "ProgressGoal",
     "PurchaseToPantryDestination",
     "PurchaseToPantryHandoff",
     "PurchaseToPantryHandoffItem",

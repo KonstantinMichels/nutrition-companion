@@ -1,5 +1,7 @@
 # Retention policy
 
+Progress-Beobachtungen bleiben bis zur individuellen dauerhaften Löschung oder Profillöschung. Ziele bleiben historisch bis zur Profillöschung. Trends und Charts werden nicht gespeichert.
+
 Pantry lots and movement history remain until complete profile deletion. Archive and
 depletion are operational states, not privacy deletion. No Pantry draft/cache is
 persisted on the device in this MVP.

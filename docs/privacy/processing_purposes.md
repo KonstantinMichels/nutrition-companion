@@ -1,5 +1,7 @@
 # Processing-purpose registry
 
+`progress_tracking` dient freiwilliger Speicherung und Darstellung sensibler Messungen und Ziele sowie transparenter Trendberechnung. Die bestehende Gesundheitsdaten-Einwilligungsarchitektur wird ohne unnötige wiederholte Prompts genutzt; rechtliche Prüfung bleibt erforderlich.
+
 `pantry_management` covers user-requested storage, organization, and traceability of
 manual food stock. It is optional service storage and introduces no new consent checkbox
 in this architecture; the legal basis still requires qualified review.

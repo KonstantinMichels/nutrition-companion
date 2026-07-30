@@ -16,6 +16,7 @@ from app.modules.nutrition_assessment.models import Assessment
 from app.modules.privacy import service as privacy_service
 from app.modules.privacy.models import ConsentRecord
 from app.modules.profiles.models import Profile
+from app.modules.progress_tracking.models import BodyWeightObservation
 from app.modules.reference_data.models import ReferenceSet
 from tests.conftest import ApiClient
 
@@ -114,6 +115,11 @@ def test_assessment_creation_persistence_history_and_idempotency(
     assert duplicate.json()["id"] == body["id"]
     count = db_session.scalar(select(func.count()).select_from(Assessment))
     assert count == 1
+    progress_observations = list(db_session.scalars(select(BodyWeightObservation)))
+    assert len(progress_observations) == 1
+    assert progress_observations[0].normalized_weight_kg == Decimal("82.50000000")
+    assert progress_observations[0].source_type == "assessment"
+    assert progress_observations[0].source_assessment_id == UUID(body["id"])
 
     latest = client.get("/api/v1/assessments/latest")
     assert latest.status_code == 200

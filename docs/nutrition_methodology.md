@@ -1,5 +1,9 @@
 # Nutrition methodology
 
+## Fortschrittsmessungen
+
+Messwerte sind Nutzereingaben. Kurzfristige Gewichtsänderungen können viele Ursachen haben. Rolling Averages reduzieren sichtbare Tagesvariabilität, zeigen aber weder Ursache noch Körperzusammensetzung. Lineare Trends sind beschreibend; Messmethoden sind nur eingeschränkt vergleichbar. Es erfolgen keine Diagnose und keine automatische Zieländerung.
+
 ## Weekly planning interpretation
 
 Weekly totals represent planned quantities from available active daily plans. Missing

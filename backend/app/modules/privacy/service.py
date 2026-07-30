@@ -38,6 +38,12 @@ from app.modules.profiles.models import (
     Measurement,
     NutritionGoal,
 )
+from app.modules.progress_tracking.models import (
+    BodyCompositionObservation,
+    BodyMeasurementObservation,
+    BodyWeightObservation,
+    ProgressGoal,
+)
 from app.modules.purchase_to_pantry.models import (
     PurchaseToPantryHandoff,
     PurchaseToPantryHandoffItem,
@@ -259,6 +265,34 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .order_by(AutomationApplication.created_at)
         )
     )
+    progress_weights = list(
+        session.scalars(
+            select(BodyWeightObservation)
+            .where(BodyWeightObservation.owner_profile_id == profile_id)
+            .order_by(BodyWeightObservation.observed_on, BodyWeightObservation.created_at)
+        )
+    )
+    progress_measurements = list(
+        session.scalars(
+            select(BodyMeasurementObservation)
+            .where(BodyMeasurementObservation.owner_profile_id == profile_id)
+            .order_by(BodyMeasurementObservation.observed_on, BodyMeasurementObservation.created_at)
+        )
+    )
+    progress_composition = list(
+        session.scalars(
+            select(BodyCompositionObservation)
+            .where(BodyCompositionObservation.owner_profile_id == profile_id)
+            .order_by(BodyCompositionObservation.observed_on, BodyCompositionObservation.created_at)
+        )
+    )
+    progress_goals = list(
+        session.scalars(
+            select(ProgressGoal)
+            .where(ProgressGoal.owner_profile_id == profile_id)
+            .order_by(ProgressGoal.created_at)
+        )
+    )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
     session.flush()
     privacy_actions = list(
@@ -286,6 +320,28 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             "updated_at": profile.updated_at,
         },
         "measurements": [_measurement_dict(item) for item in profile.measurements],
+        "progress_tracking": {
+            "notice_de": (
+                "Messwerte sind Nutzereingaben. Trends werden bei Abruf berechnet und nicht "
+                "als eigener Verlauf gespeichert."
+            ),
+            "weight_observations": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in progress_weights
+            ],
+            "body_measurements": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in progress_measurements
+            ],
+            "body_composition": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in progress_composition
+            ],
+            "goals": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in progress_goals
+            ],
+        },
         "activity": None
         if activity is None
         else {

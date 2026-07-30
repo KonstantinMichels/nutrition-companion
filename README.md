@@ -1,5 +1,7 @@
 # Nutrition Companion
 
+Enthält ein datenschutzorientiertes [Progress Tracking](docs/progress_tracking_core.md) für manuelle Messungen, transparente Trends und explizite Ziele.
+
 Meal planning supports a fast deterministic greedy draft and an optional local-backend OR-Tools
 CP-SAT optimizer. Both produce review-only drafts and require explicit application.
 
