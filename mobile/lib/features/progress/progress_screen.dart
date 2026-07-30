@@ -8,6 +8,7 @@ import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
 import 'progress_repository.dart';
 import 'progress_presentation.dart';
+import 'energy_calibration_screen.dart';
 
 final class ProgressScreen extends ConsumerStatefulWidget {
   const ProgressScreen({super.key});
@@ -221,6 +222,21 @@ final class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                     ),
                     subtitle: const Text(
                       'Rohwerte und berechnete Trends bleiben klar getrennt. Fehlende Tage werden nicht interpoliert.',
+                    ),
+                  ),
+                ),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.tune),
+                    title: const Text('Energie-Ziel kalibrieren'),
+                    subtitle: const Text(
+                      'Gewichtsverlauf prüfen und eine konservative Anpassung bewusst bestätigen.',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const EnergyCalibrationScreen(),
+                      ),
                     ),
                   ),
                 ),

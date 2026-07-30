@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -98,6 +98,25 @@ class NutritionEngine:
             supported_scope=supported,
             requested_weekly_rate_kg=data.goal.requested_weekly_rate_kg,
         )
+        if (
+            goal_energy.energy_range is not None
+            and data.energy_calibration_adjustment_kcal_per_day is not None
+        ):
+            adjustment = data.energy_calibration_adjustment_kcal_per_day
+            goal_energy = replace(
+                goal_energy,
+                energy_range=EnergyRange(
+                    lower=goal_energy.energy_range.lower + adjustment,
+                    midpoint=goal_energy.energy_range.midpoint + adjustment,
+                    upper=goal_energy.energy_range.upper + adjustment,
+                ),
+                method_id=f"{goal_energy.method_id}_plus_confirmed_energy_calibration",
+                explanation_de=(
+                    goal_energy.explanation_de
+                    + " Die bestätigte, konservative Kalibrierungsanpassung wurde auf den "
+                    "gesamten Zielbereich verschoben."
+                ),
+            )
         metrics.append(self._goal_energy_metric(goal_energy, maintenance, calculated_at))
         safety_flags.extend(self._goal_safety_flags(goal_energy))
 

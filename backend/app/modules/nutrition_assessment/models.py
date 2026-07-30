@@ -40,6 +40,21 @@ class Assessment(Base):
     engine_version: Mapped[str] = mapped_column(String(64), nullable=False)
     calculated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     summary: Mapped[dict[str, object]] = mapped_column(JSON_DOCUMENT, nullable=False)
+    derived_from_assessment_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("assessments.id", ondelete="SET NULL")
+    )
+    derivation_type: Mapped[str | None] = mapped_column(String(40))
+    energy_calibration_record_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey(
+            "energy_calibration_records.id",
+            ondelete="SET NULL",
+            use_alter=True,
+            name="fk_assessment_energy_calibration",
+        )
+    )
+    energy_calibration_adjustment_kcal_per_day: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 4)
+    )
 
     profile: Mapped[Profile] = relationship(back_populates="assessments")
     metrics: Mapped[list[AssessmentMetric]] = relationship(

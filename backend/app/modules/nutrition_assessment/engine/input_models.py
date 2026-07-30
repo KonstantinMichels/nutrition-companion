@@ -205,6 +205,7 @@ class AssessmentInput:
     measured_resting_energy_expenditure: Measurement | None = None
     health_screening: HealthScreening = field(default_factory=HealthScreening)
     dietary_preference: DietaryPreference = DietaryPreference.MIXED
+    energy_calibration_adjustment_kcal_per_day: Decimal | None = None
 
     def __init__(
         self,
@@ -223,6 +224,7 @@ class AssessmentInput:
         measured_resting_energy_expenditure: Measurement | None = None,
         health_screening: HealthScreening | None = None,
         dietary_preference: DietaryPreference | str = DietaryPreference.MIXED,
+        energy_calibration_adjustment_kcal_per_day: DecimalLike | None = None,
     ) -> None:
         if isinstance(age_years, bool) or not isinstance(age_years, int):
             raise TypeError("age_years must be an integer")
@@ -252,6 +254,16 @@ class AssessmentInput:
         )
         object.__setattr__(self, "health_screening", health_screening or HealthScreening())
         object.__setattr__(self, "dietary_preference", DietaryPreference(dietary_preference))
+        object.__setattr__(
+            self,
+            "energy_calibration_adjustment_kcal_per_day",
+            None
+            if energy_calibration_adjustment_kcal_per_day is None
+            else as_decimal(
+                energy_calibration_adjustment_kcal_per_day,
+                field="energy_calibration_adjustment_kcal_per_day",
+            ),
+        )
 
     @property
     def total_weekly_exercise_minutes(self) -> Decimal:
@@ -316,4 +328,9 @@ class AssessmentInput:
                 for name in self.health_screening.__dataclass_fields__
             },
             "dietary_preference": self.dietary_preference.value,
+            "energy_calibration_adjustment_kcal_per_day": (
+                str(self.energy_calibration_adjustment_kcal_per_day)
+                if self.energy_calibration_adjustment_kcal_per_day is not None
+                else None
+            ),
         }

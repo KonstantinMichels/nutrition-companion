@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, time, timedelta
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from itertools import pairwise
 from statistics import median
 
@@ -93,6 +93,20 @@ def linear_trend(points: list[WeightPoint]) -> dict:
         / denominator
     )
     weekly = slope * Decimal(7)
+    # OLS uncertainty is exposed for downstream calibration. 1.96 is a
+    # deliberately documented normal approximation; no causal claim is made.
+    residual_sum = sum(
+        ((y - (ybar + slope * (x - xbar))) ** 2 for x, y in zip(xs, ys, strict=True)),
+        Decimal(0),
+    )
+    with localcontext() as context:
+        context.prec = 28
+        slope_se = (
+            (residual_sum / Decimal(len(points) - 2) / denominator).sqrt()
+            if len(points) > 2 and denominator > 0
+            else None
+        )
+    bound = slope_se * Decimal("1.96") if slope_se is not None else None
     covered = int(xs[-1])
     quality = (
         "limited"
@@ -113,6 +127,9 @@ def linear_trend(points: list[WeightPoint]) -> dict:
         "direction": direction,
         "kg_per_day": slope,
         "kg_per_week": weekly,
+        "slope_standard_error_kg_per_day": slope_se,
+        "slope_lower_95_kg_per_day": slope - bound if bound is not None else None,
+        "slope_upper_95_kg_per_day": slope + bound if bound is not None else None,
         "quality_level": quality,
         "observation_count": len(points),
         "covered_days": covered,
