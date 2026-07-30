@@ -130,7 +130,7 @@ def seeded_purposes(db_session: Session) -> None:
 @pytest.fixture
 def seeded_database(db_session: Session) -> None:
     counts = seed_all(db_session)
-    assert counts["processing_purposes"] == 15
+    assert counts["processing_purposes"] == 16
 
 
 @pytest.fixture

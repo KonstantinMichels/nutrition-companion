@@ -32,6 +32,7 @@ from app.modules.foods import service as food_service
 from app.modules.foods.models import Food
 from app.modules.nutrition_assessment import repository as assessment_repository
 from app.modules.nutrition_assessment.models import Assessment
+from app.modules.recipe_target_comparison.engine import TargetDescriptor
 from app.modules.recipe_target_comparison.target_extraction import extract_targets, is_usable
 from app.modules.recipes import repository as recipe_repository
 from app.modules.recipes.engine.calculation import calculate_recipe
@@ -93,6 +94,11 @@ def _apply_structure(
         session, profile_id, payload.assessment_id, payload.use_latest_assessment
     )
     plan.assessment_id = None if selected is None else selected.id
+    if plan.training_day_adjustment is not None and (
+        plan.training_day_adjustment.adjustment_date != payload.plan_date
+        or plan.training_day_adjustment.source_assessment_id != plan.assessment_id
+    ):
+        plan.training_day_adjustment_id = None
     plan.meals.clear()
     for meal_position, source_meal in enumerate(payload.meals):
         meal = Meal(
@@ -264,10 +270,12 @@ def _response(
     result_warnings = cast(list[dict[str, object]], result["warnings"])
     comparisons: list[dict[str, object]] = []
     comparison_warnings: list[dict[str, object]] = []
+    adjustment = None if plan is None else plan.training_day_adjustment
+    targets = extract_targets(assessment) if assessment is not None else []
+    if adjustment is not None and assessment is not None:
+        targets = _adjusted_targets(targets, adjustment)
     if assessment is not None:
-        comparisons, comparison_warnings = compare_targets(
-            daily_totals, extract_targets(assessment)
-        )
+        comparisons, comparison_warnings = compare_targets(daily_totals, targets)
     else:
         result_warnings.append(
             {
@@ -316,8 +324,53 @@ def _response(
                 "Assessments sowie die aktuellen Nährwertdaten der enthaltenen Lebensmittel "
                 "und Rezepte.",
             ],
+            "target_basis": {
+                "baseline_assessment_id": None if assessment is None else assessment.id,
+                "baseline_energy_target_kcal": (
+                    None if adjustment is None else adjustment.baseline_energy_target_kcal
+                ),
+                "training_day_adjustment_id": None if adjustment is None else adjustment.id,
+                "training_adjustment_strategy": None if adjustment is None else adjustment.strategy,
+                "training_adjustment_energy_delta_kcal": (
+                    None if adjustment is None else adjustment.energy_delta_kcal
+                ),
+                "effective_energy_target_kcal": (
+                    None if adjustment is None else adjustment.adjusted_energy_target_kcal
+                ),
+                "description_de": (
+                    "Unverändertes Basisziel"
+                    if adjustment is None
+                    else "Für diesen Tag ausdrücklich verknüpfte temporäre Zielanpassung"
+                ),
+            },
         }
     )
+
+
+def _adjusted_targets(targets: list[TargetDescriptor], adjustment: Any) -> list[TargetDescriptor]:
+    output: list[TargetDescriptor] = []
+    for target in targets:
+        if target.nutrient_code == "energy_kcal":
+            delta = adjustment.energy_delta_kcal
+        elif target.nutrient_code == "carbohydrate":
+            delta = adjustment.carbohydrate_delta_g
+        else:
+            output.append(target)
+            continue
+        output.append(
+            TargetDescriptor(
+                nutrient_code=target.nutrient_code,
+                display_name_de=target.display_name_de,
+                target_kind=target.target_kind,
+                value=None if target.value is None else target.value + delta,
+                minimum=None if target.minimum is None else target.minimum + delta,
+                maximum=None if target.maximum is None else target.maximum + delta,
+                unit=target.unit,
+                category=target.category,
+                display_order=target.display_order,
+            )
+        )
+    return output
 
 
 def _model_inputs(plan: DailyMealPlan) -> tuple[MealInput, ...]:

@@ -139,6 +139,9 @@ class GenerateRequest(BaseModel):
     reoptimization_scope: Literal["slot", "day", "unlocked", "all"] = "all"
     reoptimization_slot_key: str | None = None
     relaxed_draft_confirmed: bool = False
+    training_adjustment_mode: Literal["ignore", "active_by_date", "linked_daily_plans"] = (
+        "active_by_date"
+    )
 
 
 class ApplyRequest(BaseModel):

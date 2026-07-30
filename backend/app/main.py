@@ -39,6 +39,9 @@ from app.modules.recipe_target_comparison.router import router as comparison_rou
 from app.modules.recipes.router import router as recipes_router
 from app.modules.reference_data.router import router as reference_data_router
 from app.modules.shopping_lists.router import router as shopping_lists_router
+from app.modules.training_day_adjustments.router import adjustments as training_adjustments_router
+from app.modules.training_day_adjustments.router import preferences as training_preferences_router
+from app.modules.training_day_adjustments.router import sessions as training_sessions_router
 from app.modules.weekly_meal_planning.router import router as weekly_plans_router
 
 settings = get_settings()
@@ -77,6 +80,9 @@ app.add_exception_handler(Exception, unexpected_error_handler)
 
 app.include_router(profiles_router)
 app.include_router(progress_router)
+app.include_router(training_sessions_router)
+app.include_router(training_preferences_router)
+app.include_router(training_adjustments_router)
 app.include_router(energy_calibration_router)
 app.include_router(privacy_router)
 app.include_router(reference_data_router)

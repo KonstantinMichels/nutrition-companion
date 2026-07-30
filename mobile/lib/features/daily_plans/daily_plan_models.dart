@@ -175,6 +175,7 @@ final class DailyPlan {
     required this.comparisons,
     required this.warnings,
     required this.quality,
+    required this.targetBasis,
   });
   factory DailyPlan.fromJson(Map<String, dynamic> json) {
     final plan = Map<String, dynamic>.from(json['plan'] as Map);
@@ -207,6 +208,9 @@ final class DailyPlan {
           .map((item) => item['explanation_de'].toString())
           .toList(),
       quality: (json['quality'] as Map)['quality_level'].toString(),
+      targetBasis: Map<String, dynamic>.from(
+        (json['target_basis'] as Map?) ?? const {},
+      ),
     );
   }
   final String? id, name, notes, assessmentId;
@@ -217,6 +221,7 @@ final class DailyPlan {
   final List<DailyComparison> comparisons;
   final List<String> warnings;
   final String quality;
+  final Map<String, dynamic> targetBasis;
   int get entryCount => meals.fold(0, (sum, meal) => sum + meal.entries.length);
 }
 

@@ -202,6 +202,7 @@ class DailyPlanResponse(BaseModel):
     warnings: list[WarningResponse]
     calculated_at: datetime
     notices: list[str]
+    target_basis: dict[str, object]
 
 
 class DailyPlanListItem(BaseModel):

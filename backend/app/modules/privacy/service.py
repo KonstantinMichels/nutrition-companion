@@ -8,6 +8,7 @@ from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import delete, func, select
+from sqlalchemy import update as sa_update
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.branding import CONSENT_TEXT_VERSION
@@ -51,6 +52,11 @@ from app.modules.purchase_to_pantry.models import (
 )
 from app.modules.recipes.models import Recipe, RecipeIngredient
 from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem
+from app.modules.training_day_adjustments.models import (
+    TrainingAdjustmentBatch,
+    TrainingAdjustmentPreference,
+    TrainingSession,
+)
 
 REQUIRED_ASSESSMENT_PURPOSE = "nutrition_assessment_calculation"
 
@@ -301,6 +307,29 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .order_by(EnergyCalibrationRecord.created_at)
         )
     )
+    training_sessions = list(
+        db_item
+        for db_item in session.scalars(
+            select(TrainingSession)
+            .where(TrainingSession.owner_profile_id == profile_id)
+            .order_by(TrainingSession.session_date, TrainingSession.created_at)
+        )
+    )
+    training_preferences = list(
+        session.scalars(
+            select(TrainingAdjustmentPreference).where(
+                TrainingAdjustmentPreference.owner_profile_id == profile_id
+            )
+        )
+    )
+    training_batches = list(
+        session.scalars(
+            select(TrainingAdjustmentBatch)
+            .where(TrainingAdjustmentBatch.owner_profile_id == profile_id)
+            .options(selectinload(TrainingAdjustmentBatch.adjustments))
+            .order_by(TrainingAdjustmentBatch.created_at)
+        )
+    )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
     session.flush()
     privacy_actions = list(
@@ -352,6 +381,32 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             "goals": [
                 {column.name: getattr(item, column.name) for column in item.__table__.columns}
                 for item in progress_goals
+            ],
+        },
+        "training_day_target_adjustments": {
+            "notice_de": (
+                "Trainingseinheiten und Zielanpassungen sind Planungsangaben. "
+                "Sie belegen keine tatsächlich absolvierte Belastung."
+            ),
+            "sessions": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in training_sessions
+            ],
+            "preferences": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in training_preferences
+            ],
+            "batches": [
+                {
+                    **{
+                        column.name: getattr(item, column.name) for column in item.__table__.columns
+                    },
+                    "daily_adjustments": [
+                        {column.name: getattr(day, column.name) for column in day.__table__.columns}
+                        for day in item.adjustments
+                    ],
+                }
+                for item in training_batches
             ],
         },
         "activity": None
@@ -1160,4 +1215,41 @@ def delete_all_foods(session: Session, profile_id: UUID) -> DeletionResponse:
         scope="foods",
         confirmation_code=confirmation,
         message_de="Alle Lebensmittel wurden dauerhaft gelöscht.",
+    )
+
+
+def delete_training_day_data(session: Session, profile_id: UUID) -> DeletionResponse:
+    if profile_repository.get_profile(session, profile_id) is None:
+        raise ApiError("PROFILE_NOT_FOUND", "Es sind keine Profildaten gespeichert.", 404)
+    try:
+        session.execute(
+            sa_update(DailyMealPlan)
+            .where(DailyMealPlan.owner_profile_id == profile_id)
+            .values(training_day_adjustment_id=None)
+        )
+        session.execute(
+            delete(TrainingAdjustmentBatch).where(
+                TrainingAdjustmentBatch.owner_profile_id == profile_id
+            )
+        )
+        session.execute(
+            delete(TrainingAdjustmentPreference).where(
+                TrainingAdjustmentPreference.owner_profile_id == profile_id
+            )
+        )
+        session.execute(
+            delete(TrainingSession).where(TrainingSession.owner_profile_id == profile_id)
+        )
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return DeletionResponse(
+        deleted=True,
+        scope="training_day_data",
+        confirmation_code=secrets.token_hex(8),
+        message_de=(
+            "Trainings- und Tagesanpassungsdaten wurden dauerhaft gelöscht. "
+            "Assessments, Mahlzeiten und Lebensmitteldaten bleiben erhalten."
+        ),
     )

@@ -30,6 +30,7 @@ import '../features/shopping_lists/purchase_to_pantry_screen.dart';
 import '../features/shopping_lists/pantry_aware_shopping_screen.dart';
 import '../features/meal_plan_automation/automation_screen.dart';
 import '../features/progress/progress_screen.dart';
+import '../features/training/training_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -39,6 +40,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/progress',
       builder: (context, state) => const ProgressScreen(),
+    ),
+    GoRoute(
+      path: '/training',
+      builder: (context, state) => TrainingScreen(
+        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      ),
     ),
     GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),
     GoRoute(
