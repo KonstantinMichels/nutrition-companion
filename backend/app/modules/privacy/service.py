@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.branding import CONSENT_TEXT_VERSION
 from app.core.errors import ApiError
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal
+from app.modules.energy_calibration.models import EnergyCalibrationRecord
 from app.modules.foods.models import Food
 from app.modules.foods.nutrient_catalog import NUTRIENT_BY_CODE
 from app.modules.meal_plan_automation.models import (
@@ -293,6 +294,13 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .order_by(ProgressGoal.created_at)
         )
     )
+    energy_calibrations = list(
+        session.scalars(
+            select(EnergyCalibrationRecord)
+            .where(EnergyCalibrationRecord.owner_profile_id == profile_id)
+            .order_by(EnergyCalibrationRecord.created_at)
+        )
+    )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
     session.flush()
     privacy_actions = list(
@@ -328,6 +336,10 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             "weight_observations": [
                 {column.name: getattr(item, column.name) for column in item.__table__.columns}
                 for item in progress_weights
+            ],
+            "energy_calibrations": [
+                {column.name: getattr(item, column.name) for column in item.__table__.columns}
+                for item in energy_calibrations
             ],
             "body_measurements": [
                 {column.name: getattr(item, column.name) for column in item.__table__.columns}

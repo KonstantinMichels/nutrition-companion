@@ -1,6 +1,7 @@
 """Import all ORM models so Alembic sees one complete metadata graph."""
 
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
+from app.modules.energy_calibration.models import EnergyCalibrationRecord
 from app.modules.foods.models import Food, FoodMeasure, FoodNutrient
 from app.modules.meal_plan_automation.models import (
     AutomationApplication,
@@ -55,6 +56,7 @@ __all__ = [
     "DailyMealPlan",
     "DeletionRecord",
     "DietaryRestriction",
+    "EnergyCalibrationRecord",
     "Food",
     "FoodMeasure",
     "FoodNutrient",

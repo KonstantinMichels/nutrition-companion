@@ -4,6 +4,29 @@ PROCESSING_PURPOSE_REGISTRY_VERSION = "mvp_v1"
 
 PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
     {
+        "code": "dynamic_energy_calibration",
+        "description_de": (
+            "Von dir gestartete, konservative Kalibrierung eines Energie-Ziels aus "
+            "Gewichtsverlauf, Einschätzung und expliziten Kontextangaben."
+        ),
+        "data_categories": [
+            "weight observation references",
+            "assessment snapshot",
+            "adherence and context stability",
+            "calibration proposal and decision",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; Vorschauen werden nicht gespeichert",
+        "retention_period": "Bis zur Einschätzungsverlaufs- oder Profillöschung",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Kalibrierungen werden mit dem Einschätzungsverlauf oder Profil dauerhaft gelöscht."
+        ),
+        "required": False,
+    },
+    {
         "code": "progress_tracking",
         "description_de": (
             "Speicherung freiwilliger Körpermessungen und Fortschrittsziele sowie "
