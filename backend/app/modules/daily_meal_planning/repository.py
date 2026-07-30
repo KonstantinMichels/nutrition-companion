@@ -10,6 +10,7 @@ from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntr
 from app.modules.foods.models import Food
 from app.modules.nutrition_assessment.models import Assessment
 from app.modules.recipes.models import Recipe, RecipeIngredient
+from app.modules.training_day_adjustments.models import TrainingDayTargetAdjustment
 
 LOAD = (
     selectinload(DailyMealPlan.meals)
@@ -40,6 +41,9 @@ LOAD = (
     .selectinload(Meal.entries)
     .selectinload(MealEntry.food_measure),
     selectinload(DailyMealPlan.assessment).selectinload(Assessment.metrics),
+    selectinload(DailyMealPlan.training_day_adjustment).selectinload(
+        TrainingDayTargetAdjustment.batch
+    ),
 )
 
 

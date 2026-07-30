@@ -85,4 +85,7 @@ final class DailyPlanRepository {
           as Map,
     ),
   );
+
+  Future<void> unlinkTrainingAdjustment(String planId) =>
+      _api.delete('/api/v1/training-day-adjustments/daily-plan/$planId/link');
 }

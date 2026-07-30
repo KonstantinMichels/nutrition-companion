@@ -98,6 +98,15 @@ def delete_all_data(
     return service.delete_complete_profile(session, profile_id)
 
 
+@router.delete("/api/v1/privacy/training-day-data", response_model=DeletionResponse)
+def delete_training_day_data(
+    _confirmation: DeletionConfirmation,
+    profile_id: CurrentProfileId,
+    session: DbSession,
+) -> object:
+    return service.delete_training_day_data(session, profile_id)
+
+
 @router.delete("/api/v1/privacy/local-profile-data", response_model=DeletionResponse)
 def delete_profile_via_privacy_path(
     _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession

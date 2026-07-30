@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/formatting/date_formatters.dart';
+import '../../core/formatting/german_decimal.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
 import 'daily_plan_models.dart';
@@ -14,6 +15,11 @@ final class DailyPlanScreen extends ConsumerStatefulWidget {
   final DateTime? initialDate;
   @override
   ConsumerState<DailyPlanScreen> createState() => _DailyPlanScreenState();
+}
+
+String _signedTarget(Object? value) {
+  final number = double.tryParse(value?.toString() ?? '') ?? 0;
+  return '${number > 0 ? '+' : ''}${GermanDecimal.format(number, decimals: 0)}';
 }
 
 final class _DailyPlanScreenState extends ConsumerState<DailyPlanScreen> {
@@ -175,6 +181,7 @@ final class _DailyPlanScreenState extends ConsumerState<DailyPlanScreen> {
       ),
       const SizedBox(height: 12),
       _summary(value),
+      _trainingTarget(value),
       for (final meal in value.meals) _meal(meal),
       if (value.warnings.isNotEmpty)
         ExpansionTile(
@@ -255,6 +262,65 @@ final class _DailyPlanScreenState extends ConsumerState<DailyPlanScreen> {
               Text(
                 '${item.name}: ${item.amount ?? 'Nicht verfügbar'}${item.amount == null ? '' : ' ${item.unit}'}${item.complete ? '' : ' · Daten unvollständig'}',
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _trainingTarget(DailyPlan value) {
+    final basis = value.targetBasis;
+    if (basis['training_day_adjustment_id'] == null) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.fitness_center),
+          title: const Text('Unverändertes Basisziel'),
+          subtitle: const Text(
+            'Für diesen Tagesplan ist keine temporäre Trainingsanpassung verknüpft.',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/training?date=${apiDate(value.date)}'),
+        ),
+      );
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Für diesen Tag angepasst',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              'Basisziel: ${GermanDecimal.formatString(basis['baseline_energy_target_kcal'])} kcal',
+            ),
+            Text(
+              'Trainingsanpassung: ${_signedTarget(basis['training_adjustment_energy_delta_kcal'])} kcal',
+            ),
+            Text(
+              'Tagesziel: ${GermanDecimal.formatString(basis['effective_energy_target_kcal'])} kcal',
+            ),
+            if (basis['training_adjustment_strategy'] ==
+                'weekly_redistribution')
+              const Text('Teil einer wöchentlichen Umverteilung'),
+            TextButton(
+              onPressed: () async {
+                if (value.id == null) return;
+                final confirmed = await _confirm(
+                  'Anpassung entfernen?',
+                  'Mahlzeiten bleiben erhalten; der Vergleich verwendet wieder nur das Basisziel.',
+                );
+                if (confirmed) {
+                  await ref
+                      .read(dailyPlanRepositoryProvider)
+                      .unlinkTrainingAdjustment(value.id!);
+                  await load();
+                }
+              },
+              child: const Text('Anpassung vom Tagesplan lösen'),
+            ),
           ],
         ),
       ),

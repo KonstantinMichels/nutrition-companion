@@ -58,6 +58,7 @@ class DeletionResponse(BaseModel):
         "profile_and_assessments",
         "recipes",
         "foods",
+        "training_day_data",
         "complete_profile",
     ]
     confirmation_code: str

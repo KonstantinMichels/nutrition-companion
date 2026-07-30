@@ -28,6 +28,7 @@ from app.modules.profiles import repository as profile_repository
 from app.modules.recipe_target_comparison.service import _resolve_assessment
 from app.modules.recipes import repository as recipe_repository
 from app.modules.recipes.engine.calculation import calculate_recipe
+from app.modules.training_day_adjustments.models import TrainingDayTargetAdjustment
 
 
 def error(code: str, msg: str, status: int = 422) -> ApiError:
@@ -93,6 +94,17 @@ def _generate_greedy(session: Session, owner: UUID, req: GenerateRequest) -> dic
         )
     energy_low = Decimal(str(energy_target["lower"]))
     energy_high = Decimal(str(energy_target["upper"]))
+    adjustment_by_date: dict[date, TrainingDayTargetAdjustment] = {}
+    if req.training_adjustment_mode != "ignore":
+        for adjustment in session.scalars(
+            select(TrainingDayTargetAdjustment).where(
+                TrainingDayTargetAdjustment.owner_profile_id == owner,
+                TrainingDayTargetAdjustment.adjustment_date.in_(_dates(req)),
+                TrainingDayTargetAdjustment.source_assessment_id == assessment.id,
+                TrainingDayTargetAdjustment.is_active.is_(True),
+            )
+        ):
+            adjustment_by_date[adjustment.adjustment_date] = adjustment
     base = []
     excluded = []
     for recipe in recipes:
@@ -171,6 +183,13 @@ def _generate_greedy(session: Session, owner: UUID, req: GenerateRequest) -> dic
     shopping_missing: dict[UUID, Decimal] = {}
     weekly_totals: dict[str, Decimal] = {}
     for day in _dates(req):
+        day_adjustment = adjustment_by_date.get(day)
+        day_energy_low = energy_low + (
+            day_adjustment.energy_delta_kcal if day_adjustment else Decimal(0)
+        )
+        day_energy_high = energy_high + (
+            day_adjustment.energy_delta_kcal if day_adjustment else Decimal(0)
+        )
         existing = plan_repository.by_date(session, owner, day)
         occupied = {m.meal_type for m in existing.meals} if existing else set()
         proposed = []
@@ -222,9 +241,9 @@ def _generate_greedy(session: Session, owner: UUID, req: GenerateRequest) -> dic
                         target_fit(
                             "range",
                             totals.get("energy_kcal", Decimal(0)) + energy,
-                            energy_low,
+                            day_energy_low,
                             None,
-                            energy_high,
+                            day_energy_high,
                         )
                         if energy is not None
                         else None
@@ -366,11 +385,21 @@ def _generate_greedy(session: Session, owner: UUID, req: GenerateRequest) -> dic
                 "projected_totals": [
                     {"nutrient_code": k, "amount": v} for k, v in sorted(totals.items())
                 ],
+                "effective_target_basis": {
+                    "training_day_adjustment_id": (
+                        None if day_adjustment is None else day_adjustment.id
+                    ),
+                    "energy_target_lower_kcal": day_energy_low,
+                    "energy_target_upper_kcal": day_energy_high,
+                },
             }
         )
     stable = {
         "preferences_updated_at": pref.updated_at,
         "assessment_id": assessment.id,
+        "training_adjustments": [
+            (item.id, item.created_at, item.is_active) for item in adjustment_by_date.values()
+        ],
         "recipes": [(r.id, r.updated_at) for r, _, _, _ in base],
         "days": days,
         "pantry": sorted(
@@ -487,6 +516,16 @@ def apply(session: Session, owner: UUID, payload: ApplyRequest) -> dict[str, Any
                     if isinstance(draft["assessment"]["id"], str)
                     else draft["assessment"]["id"],
                 )
+                if payload.generation.training_adjustment_mode != "ignore":
+                    adjustment = session.scalar(
+                        select(TrainingDayTargetAdjustment).where(
+                            TrainingDayTargetAdjustment.owner_profile_id == owner,
+                            TrainingDayTargetAdjustment.adjustment_date == day["date"],
+                            TrainingDayTargetAdjustment.source_assessment_id == plan.assessment_id,
+                            TrainingDayTargetAdjustment.is_active.is_(True),
+                        )
+                    )
+                    plan.training_day_adjustment_id = None if adjustment is None else adjustment.id
                 session.add(plan)
                 session.flush()
             occupied = {m.meal_type for m in plan.meals}

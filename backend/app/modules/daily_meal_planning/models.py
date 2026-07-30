@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from app.modules.nutrition_assessment.models import Assessment
     from app.modules.profiles.models import Profile
     from app.modules.recipes.models import Recipe
+    from app.modules.training_day_adjustments.models import TrainingDayTargetAdjustment
 
 
 class DailyMealPlan(Base):
@@ -52,6 +53,9 @@ class DailyMealPlan(Base):
     assessment_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("assessments.id", ondelete="SET NULL"), index=True
     )
+    training_day_adjustment_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("training_day_target_adjustments.id", ondelete="SET NULL"), index=True
+    )
     name: Mapped[str | None] = mapped_column(String(200))
     notes: Mapped[str | None] = mapped_column(Text)
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -63,6 +67,7 @@ class DailyMealPlan(Base):
 
     owner: Mapped[Profile] = relationship(back_populates="daily_meal_plans")
     assessment: Mapped[Assessment | None] = relationship()
+    training_day_adjustment: Mapped[TrainingDayTargetAdjustment | None] = relationship()
     meals: Mapped[list[Meal]] = relationship(
         back_populates="daily_plan",
         cascade="all, delete-orphan",

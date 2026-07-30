@@ -45,6 +45,10 @@ def overview(
         "archived_only_days": 0,
         "comparable_target_days": 0,
         "complete_basic_nutrition_days": 0,
+        "adjusted_day_count": 0,
+        "unadjusted_day_count": 0,
+        "redistribution_day_count": 0,
+        "additive_day_count": 0,
     }
     for offset in range(7):
         day_date = start + timedelta(days=offset)
@@ -72,6 +76,15 @@ def overview(
             )
             continue
         result = daily_service.serialize(plan)
+        basis = result.target_basis
+        if basis.get("training_day_adjustment_id") is None:
+            counts["unadjusted_day_count"] += 1
+        else:
+            counts["adjusted_day_count"] += 1
+            if basis.get("training_adjustment_strategy") == "weekly_redistribution":
+                counts["redistribution_day_count"] += 1
+            elif basis.get("training_adjustment_strategy") == "bounded_additive":
+                counts["additive_day_count"] += 1
         entry_count = result.quality.entry_count
         state = "planned" if entry_count else "empty_plan"
         counts["active_plan_days"] += 1
@@ -112,6 +125,7 @@ def overview(
                     "id": plan.id,
                     "name": plan.name,
                     "assessment_id": plan.assessment_id,
+                    "training_day_adjustment_id": plan.training_day_adjustment_id,
                     "is_archived": False,
                     "updated_at": plan.updated_at,
                 },
@@ -146,6 +160,26 @@ def overview(
     totals = _weekly_totals(results)
     comparisons = _weekly_comparisons(results, totals)
     warnings = _weekly_warnings(counts, results, comparisons)
+    redistribution_batches: dict[str, int] = {}
+    for plan in active.values():
+        adjustment = plan.training_day_adjustment
+        if adjustment is not None and adjustment.strategy == "weekly_redistribution":
+            redistribution_batches[str(adjustment.batch_id)] = (
+                redistribution_batches.get(str(adjustment.batch_id), 0) + 1
+            )
+    if any(count < 7 for count in redistribution_batches.values()):
+        warnings.append(
+            {
+                "code": "TRAINING_ADJUSTMENT_PARTIAL_WEEK_LINK",
+                "severity": "info",
+                "explanation_de": (
+                    "Wöchentliche Umverteilung nur teilweise auf Tagespläne angewendet."
+                ),
+                "date": None,
+                "nutrient_code": "energy_kcal",
+                "suggested_action_de": "Die übrigen Tage werden nicht automatisch verknüpft.",
+            }
+        )
     planned = counts["planned_days"]
     complete = counts["complete_basic_nutrition_days"]
     quality_level = (

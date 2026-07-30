@@ -40,6 +40,12 @@ from app.modules.purchase_to_pantry.models import (
 from app.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep
 from app.modules.reference_data.models import ApplicationRuleSet, ReferenceSet, ReferenceValue
 from app.modules.shopping_lists.models import ShoppingList, ShoppingListItem, ShoppingListItemSource
+from app.modules.training_day_adjustments.models import (
+    TrainingAdjustmentBatch,
+    TrainingAdjustmentPreference,
+    TrainingDayTargetAdjustment,
+    TrainingSession,
+)
 
 __all__ = [
     "ActivityProfile",
@@ -86,4 +92,8 @@ __all__ = [
     "ShoppingListItem",
     "ShoppingListItemSource",
     "SportActivity",
+    "TrainingAdjustmentBatch",
+    "TrainingAdjustmentPreference",
+    "TrainingDayTargetAdjustment",
+    "TrainingSession",
 ]

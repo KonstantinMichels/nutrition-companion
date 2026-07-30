@@ -194,6 +194,12 @@ final class _Latest extends StatelessWidget {
         onPressed: () => context.go('/onboarding?new=true'),
         child: const Text('Neue Einschätzung erstellen'),
       ),
+      const SizedBox(height: 8),
+      OutlinedButton.icon(
+        onPressed: () => context.go('/training'),
+        icon: const Icon(Icons.fitness_center),
+        label: const Text('Training und Tagesziele'),
+      ),
     ],
   );
 }

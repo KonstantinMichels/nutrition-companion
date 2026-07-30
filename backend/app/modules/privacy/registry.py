@@ -4,6 +4,28 @@ PROCESSING_PURPOSE_REGISTRY_VERSION = "mvp_v1"
 
 PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
     {
+        "code": "training_day_target_adjustment",
+        "description_de": (
+            "Manuelle Trainingsplanung und ausdrücklich bestätigte temporäre Tagesziele."
+        ),
+        "data_categories": [
+            "planned training sessions",
+            "baseline inclusion choices",
+            "temporary energy and carbohydrate targets",
+            "daily plan links",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; transiente Vorschauen werden nicht gespeichert",
+        "retention_period": "Bis zur gezielten Löschung oder Profillöschung",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Trainingsdaten und Anpassungen können getrennt oder mit dem Profil gelöscht werden."
+        ),
+        "required": False,
+    },
+    {
         "code": "dynamic_energy_calibration",
         "description_de": (
             "Von dir gestartete, konservative Kalibrierung eines Energie-Ziels aus "
