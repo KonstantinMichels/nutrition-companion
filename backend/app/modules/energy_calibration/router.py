@@ -1,9 +1,11 @@
+from datetime import date
+
 # mypy: disable-error-code="type-arg"
 from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,13 +22,34 @@ Db = Annotated[Session, Depends(get_db)]
 
 
 @router.get("/eligibility")
-def eligibility(profile_id: CurrentProfileId, session: Db) -> dict:
+def eligibility(
+    profile_id: CurrentProfileId,
+    session: Db,
+    method: str = Query("target_response_proxy"),
+    assessment_id: UUID | None = None,
+    window_start: date | None = None,
+    window_end: date | None = None,
+) -> dict:
+    if method == "intake_informed" and window_start and window_end:
+        result = service.preview(
+            session,
+            profile_id,
+            PreviewRequest(
+                method="intake_informed",
+                source_assessment_id=assessment_id,
+                window_start=window_start,
+                window_end=window_end,
+            ),
+        ).get("eligibility", {})
+        return dict(result) if isinstance(result, dict) else {}
     return service.eligibility(session, profile_id)
 
 
 @router.get("/eligible-windows")
-def windows(profile_id: CurrentProfileId, session: Db) -> dict:
-    return service.eligible_windows(session, profile_id)
+def windows(
+    profile_id: CurrentProfileId, session: Db, method: str = Query("target_response_proxy")
+) -> dict:
+    return service.eligible_windows(session, profile_id, method=method)
 
 
 @router.post("/preview")
@@ -69,7 +92,21 @@ def apply(payload: ApplyRequest, profile_id: CurrentProfileId, session: Db) -> d
         if payload.accepted_adjustment_kcal_per_day is not None
         else proposed
     )
-    if accepted != proposed:
+    if payload.preview.method == "intake_informed":
+        if accepted == 0:
+            raise ApiError(
+                "INTAKE_CALIBRATION_NO_CHANGE_RECOMMENDED",
+                "Eine Null-Anpassung erstellt keine neue Einschätzung.",
+                409,
+            )
+        if accepted * proposed <= 0 or abs(accepted) > abs(proposed):
+            raise ApiError(
+                "INTAKE_CALIBRATION_INVALID_CUSTOM_ADJUSTMENT",
+                "Die eigene Anpassung muss kleiner und in derselben Richtung "
+                "wie der Vorschlag sein.",
+                422,
+            )
+    elif accepted != proposed:
         raise ApiError(
             "ENERGY_CALIBRATION_ADJUSTMENT_CHANGED",
             "Die bestätigte Anpassung stimmt nicht mehr mit der Vorschau überein.",
@@ -110,8 +147,8 @@ def decline(payload: DeclineRequest, profile_id: CurrentProfileId, session: Db) 
 
 
 @router.get("/history")
-def history(profile_id: CurrentProfileId, session: Db) -> dict:
-    return {"items": service.history(session, profile_id)}
+def history(profile_id: CurrentProfileId, session: Db, method: str | None = None) -> dict:
+    return {"items": service.history(session, profile_id, method=method)}
 
 
 @router.get("/{record_id}")

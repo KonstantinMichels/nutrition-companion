@@ -8,7 +8,11 @@ from app.modules.consumption_tracking.models import (
     PlannedEntryConsumptionOutcome,
 )
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
-from app.modules.energy_calibration.models import EnergyCalibrationRecord
+from app.modules.energy_calibration.models import (
+    EnergyCalibrationConsumptionEvidence,
+    EnergyCalibrationRecord,
+    EnergyCalibrationWeightEvidence,
+)
 from app.modules.foods.models import Food, FoodMeasure, FoodNutrient
 from app.modules.meal_plan_automation.models import (
     AutomationApplication,
@@ -73,7 +77,9 @@ __all__ = [
     "DailyMealPlan",
     "DeletionRecord",
     "DietaryRestriction",
+    "EnergyCalibrationConsumptionEvidence",
     "EnergyCalibrationRecord",
+    "EnergyCalibrationWeightEvidence",
     "Food",
     "FoodMeasure",
     "FoodNutrient",
