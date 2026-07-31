@@ -107,6 +107,15 @@ def delete_training_day_data(
     return service.delete_training_day_data(session, profile_id)
 
 
+@router.delete("/api/v1/privacy/consumption-data", response_model=DeletionResponse)
+def delete_consumption_data(
+    _confirmation: DeletionConfirmation,
+    profile_id: CurrentProfileId,
+    session: DbSession,
+) -> object:
+    return service.delete_consumption_data(session, profile_id)
+
+
 @router.delete("/api/v1/privacy/local-profile-data", response_model=DeletionResponse)
 def delete_profile_via_privacy_path(
     _confirmation: DeletionConfirmation, profile_id: CurrentProfileId, session: DbSession

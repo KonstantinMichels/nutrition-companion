@@ -230,3 +230,16 @@ Optimizer preferences contain engine, bounded solver settings, strict toggles, r
 and objective weights. Applied audits contain compact engine/status/version, objective/gap and
 relaxation summaries. Solver models, candidate matrices, coefficients, temporary budgets and
 preview tokens are transient and excluded from export.
+
+## Consumption Tracking Core
+
+| Daten | Herkunft | Sensitivität | Speicherung | Löschung |
+|---|---|---|---|---|
+| Verzehrtag, Datum, Status, Vollständigkeits-Selbstauskunft, Notiz | Nutzer/System | Gesundheits-/Verhaltensdaten | PostgreSQL | Einzelner Tag, alle Verzehrdaten oder Profil |
+| Mahlzeit, optionale lokale Uhrzeit und Notiz | Nutzer | Gesundheits-/Verhaltensdaten | PostgreSQL | Kaskade mit Tag |
+| Food-/Recipe-/manueller Eintrag, tatsächliche Menge, Quelle und Version | Nutzer/System | Gesundheits-/Verhaltensdaten | PostgreSQL | Einzelner Eintrag oder Kaskade |
+| Relationale Nährwertsnapshots mit Unknown/True-Zero | Berechnung | Gesundheitsdaten | PostgreSQL | Kaskade mit Eintrag |
+| Planeintragsentscheidung und Ersatzverknüpfungen | Nutzer | Gesundheits-/Verhaltensdaten | PostgreSQL | Entscheidung/Tag/Profil |
+
+Transiente Vorschauen, Tokens und Servercaches werden nicht exportiert. Vorrat und Einkaufslisten
+sind getrennte Datenbestände.

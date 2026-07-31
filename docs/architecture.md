@@ -252,3 +252,20 @@ The optimizer depends inward on that foundation, Nutrition Assessment, Recipe Co
 Planning, Pantry availability and Pantry-aware Shopping. OR-Tools is isolated behind
 `MealPlanSolver`; the foundation runs without CP-SAT. Daily Meal Plans remain the source of truth,
 while Pantry and Shopping Lists are read-only optimization inputs.
+
+# Training-day energy adjustments
+
+`training_day_adjustments` depends inward on immutable Nutrition Assessments and links optional
+immutable target snapshots to Daily Meal Plans. Daily/Weekly Planning may read these snapshots;
+the assessment engine does not depend on them. Preview, explicit apply, idempotency and stale-data
+validation separate transient estimates from persisted history. See
+`training_day_energy_adjustments.md`.
+
+# Consumption Tracking Core
+
+`Consumption Tracking Core → Daily Meal Planning → Food Core / Recipe Core → Nutrition Assessment
+/ Training-Day Energy Adjustments`. Die Abhängigkeit zeigt nur nach innen. Daily Plans bleiben
+geplante Daten; Consumption Days sind ausschließlich ausdrücklich gemeldete tatsächliche Daten.
+Persistierte relationale Nährwertsnapshots halten historische Berechnungen stabil. Pantry bleibt
+ein separates Bestandsaggregat. Eine spätere Kalibrierung darf nur konservativ geeignete
+finalisierte Tage lesen.

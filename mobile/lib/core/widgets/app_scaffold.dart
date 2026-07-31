@@ -105,6 +105,12 @@ final class _NavigationDrawer extends StatelessWidget {
       ),
       _destination(
         context,
+        Icons.restaurant_menu_outlined,
+        'Verzehr',
+        '/consumption',
+      ),
+      _destination(
+        context,
         Icons.calendar_view_week_outlined,
         'Wochenplan',
         '/weekly-plan',

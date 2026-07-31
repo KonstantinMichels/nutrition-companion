@@ -139,3 +139,17 @@ The next expected branch is `feat/progress-tracking-core`. It may add body-weigh
 optional body measurements, trends, target progress, rolling averages, measurement-quality
 metadata and privacy-aware history as groundwork for later energy-needs calibration. It is not yet
 implemented.
+
+# Nächster erwarteter Branch
+
+Trainingstag-Energieanpassungen sind implementiert. Als Nächstes folgt
+`feat/consumption-tracking-core`: Die Funktion soll ausdrücklich gemeldeten tatsächlichen Verzehr
+getrennt von geplanten Mahlzeiten erfassen. Sie darf geplante Einträge nicht automatisch als
+konsumiert behandeln und Vorrat oder Einkaufslisten nicht stillschweigend verändern.
+
+`feat/consumption-tracking-core` ist implementiert. Der nächste erwartete Branch ist
+`feat/intake-informed-energy-calibration`. Er soll nur finalisierte, nach bestem Wissen vollständige
+Tage mit ausreichender Abdeckung verwenden, erfasste Aufnahme mit beobachteten Gewichtstrends
+vergleichen, Unsicherheit und Ausschlussgründe erhalten und Änderungen nur vorschlagen. Eine
+bestätigte Änderung soll eine neue unveränderliche Assessment-Revision erzeugen und niemals
+historische Verzehrtage oder Assessments umschreiben. Diese Kalibrierung ist noch nicht implementiert.

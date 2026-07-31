@@ -200,6 +200,13 @@ final class _Latest extends StatelessWidget {
         icon: const Icon(Icons.fitness_center),
         label: const Text('Training und Tagesziele'),
       ),
+      const SizedBox(height: 8),
+      OutlinedButton.icon(
+        key: const Key('open-consumption'),
+        onPressed: () => context.go('/consumption'),
+        icon: const Icon(Icons.restaurant_outlined),
+        label: const Text('Verzehr erfassen'),
+      ),
     ],
   );
 }

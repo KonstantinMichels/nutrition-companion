@@ -62,6 +62,9 @@ void main() {
     expect(availability.limiting, ['Tomate']);
     expect(availability.ingredients.single.required, '150');
     expect(availability.ingredients.single.remaining, '150');
-    expect(availability.ingredients.single.lots.single['stock_lot_id'], 'lot-1');
+    expect(
+      availability.ingredients.single.lots.single['stock_lot_id'],
+      'lot-1',
+    );
   });
 }

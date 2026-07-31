@@ -31,6 +31,7 @@ import '../features/shopping_lists/pantry_aware_shopping_screen.dart';
 import '../features/meal_plan_automation/automation_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/training/training_screen.dart';
+import '../features/consumption/consumption_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -44,6 +45,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/training',
       builder: (context, state) => TrainingScreen(
+        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      ),
+    ),
+    GoRoute(
+      path: '/consumption',
+      builder: (context, state) => ConsumptionScreen(
         initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
       ),
     ),
