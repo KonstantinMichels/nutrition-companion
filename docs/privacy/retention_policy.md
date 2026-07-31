@@ -86,3 +86,10 @@ Vorschauen und Preview-Token werden nicht persistiert.
 
 Optimizer preferences and applied summaries remain until complete profile deletion. Solver models,
 candidate matrices and mobile drafts last only for the bounded request or current app session.
+
+## Verzehrdaten
+
+Verzehrtage bleiben bis zur ausdrücklichen Einzel-/Tageslöschung, separaten Löschung aller
+Verzehrdaten oder vollständigen Profillöschung gespeichert. Mahlzeiten, Einträge, Snapshots und
+Entscheidungen werden innerhalb des Moduls kaskadiert. Es gibt derzeit keine lokal persistierten
+Verzehrentwürfe und damit keine zusätzliche Draft-TTL.

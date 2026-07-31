@@ -245,3 +245,10 @@ before public release.
 # Food Core
 
 Die App unterstützt jetzt profilgebundene, manuell eingegebene Lebensmittel mit Nährwerten pro 100 g/ml, Suche, Qualitätsanzeige, Haushaltsmaßen sowie Archivierung und Wiederherstellung. Details und ehrliche Einschränkungen: [docs/food_core.md](docs/food_core.md).
+
+# Verzehrerfassung
+
+Die App trennt geplante Mahlzeiten von ausdrücklich gemeldetem tatsächlichem Verzehr. „Verzehr“
+unterstützt Foods, Recipes, manuelle Einträge, Planabgleich, historische Nährwertsnapshots,
+Tagesabschluss und Wochenübersichten, ohne Vorrat automatisch zu verändern. Details:
+[Consumption Tracking Core](docs/consumption_tracking_core.md).

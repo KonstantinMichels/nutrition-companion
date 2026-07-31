@@ -1,5 +1,12 @@
 """Import all ORM models so Alembic sees one complete metadata graph."""
 
+from app.modules.consumption_tracking.models import (
+    ConsumptionDay,
+    ConsumptionEntry,
+    ConsumptionEntryNutrientSnapshot,
+    ConsumptionMeal,
+    PlannedEntryConsumptionOutcome,
+)
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
 from app.modules.energy_calibration.models import EnergyCalibrationRecord
 from app.modules.foods.models import Food, FoodMeasure, FoodNutrient
@@ -59,6 +66,10 @@ __all__ = [
     "BodyMeasurementObservation",
     "BodyWeightObservation",
     "ConsentRecord",
+    "ConsumptionDay",
+    "ConsumptionEntry",
+    "ConsumptionEntryNutrientSnapshot",
+    "ConsumptionMeal",
     "DailyMealPlan",
     "DeletionRecord",
     "DietaryRestriction",
@@ -75,6 +86,7 @@ __all__ = [
     "PantryLocation",
     "PantryMovement",
     "PantryStockLot",
+    "PlannedEntryConsumptionOutcome",
     "PrivacyAction",
     "ProcessingPurpose",
     "Profile",

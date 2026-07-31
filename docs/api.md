@@ -561,3 +561,28 @@ Unter `/api/v1/shopping-lists/{id}` stehen `pantry-handoff-eligibility`, `pantry
 optimizer; `recalculate` preserves locks/overrides and `apply` reuses the foundation transaction.
 Responses include solver status/version/time/gap, candidate/model metrics, objective and constraint
 summaries, relaxations, optional greedy comparison and the opaque preview token.
+
+# Training-day energy adjustments
+
+`/api/v1/training-sessions` provides owned session CRUD plus `complete`, `cancel` and `restore`.
+`/api/v1/training-day-adjustment-preferences` manages reusable strategy defaults.
+`POST /api/v1/training-day-adjustments/preview` is non-persisting; `POST .../apply` requires its
+opaque token and a client operation UUID. Adjustment history is available by list, ID and date.
+Snapshots can be cancelled, linked to a same-date Daily Meal Plan, or unlinked without deleting
+either record. Decimal quantities are serialized without binary-float conversion.
+
+# Consumption tracking
+
+`/api/v1/consumption-days` bietet Liste, Anlage, Datumsabruf, Detail, Änderung und harte Löschung.
+`POST /from-daily-plan` initialisiert offene Planeinträge ohne Verzehrinferenz. Ein bereits
+angelegter, offener Verzehrtag kann über `POST /{day_id}/link-daily-plan` nachträglich mit dem
+Tagesplan desselben Datums verbunden werden; vorhandene Verzehreinträge bleiben erhalten und
+Konflikte müssen ausdrücklich bestätigt werden. Unter einem Tag
+stehen Meal-CRUD/Reorder, Entry-Preview/CRUD, Planentscheidungs-Preview/PUT/DELETE,
+Whole-Meal-Bestätigung sowie `finalize`, `reopen`, `summary` und `planned-vs-actual` bereit.
+`/api/v1/consumption/weekly-summary` und `/history` liefern abgeleitete Übersichten.
+Der Verlauf unterstützt Datumsbereich, Status, Vollständigkeit, Planbezug, ungeklärte Einträge,
+Sortierung und Pagination; Listenelemente enthalten nur kompakte Summen. Die Wochenantwort enthält
+Montag bis Sonntag und kennzeichnet nicht erfasste Tage ausdrücklich, statt sie als null zu werten.
+Schreiboperationen nutzen Versionsprüfungen und relevante mobile Flows UUID-Idempotenzschlüssel.
+Verzehrerfassung erzeugt keine Pantry- oder Einkaufsoperation.

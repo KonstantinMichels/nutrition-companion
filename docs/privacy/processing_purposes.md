@@ -215,3 +215,11 @@ The current API accepts and enforces only `nutrition_assessment_calculation` con
 `daily_meal_planning` also covers explicitly requested local deterministic/CP-SAT draft generation,
 preference profiles and compact application audits. Existing coverage is reused; no separate
 optimizer consent checkbox is introduced.
+
+## `consumption_tracking`
+
+Zweck ist die vom Nutzer angeforderte Speicherung und Auswertung ausdrücklich gemeldeten
+Verzehrs einschließlich historischer Nährwertsnapshots, Planeintragsentscheidungen,
+Vollständigkeits-Selbstauskünften und Zielvergleichen. Keine Nutzung für Werbung, Analytics,
+Forschung, Modelltraining oder automatische Zieländerungen. Rechtsgrundlage und finaler
+Informationstext benötigen vor Produktion qualifizierte Prüfung.

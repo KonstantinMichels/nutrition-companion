@@ -428,3 +428,12 @@ The optional optimizer uses a discrete mathematical model reflecting selected co
 weights. `Optimal` means optimal only for that model—not medically optimal. Deviations are planning
 heuristics; maximums are not goals, incomplete recipe data limits reliability, and allergy,
 intolerance and explicit exclusions are never relaxed.
+
+## Selbst berichteter Verzehr
+
+Geplante Mahlzeiten werden niemals automatisch als konsumiert behandelt. Tatsächliche Summen
+entstehen nur aus ausdrücklich gemeldeten Einträgen und historischen Food-/Recipe-Snapshots.
+Ungeklärte manuelle Einträge und fehlende Quelldaten machen Summen unvollständig; unbekannt ist
+nicht null. Vollständigkeitsangaben sind subjektiv. Geplant-versus-erfasst ist beschreibend, kein
+Erfolgs-, Compliance- oder Ernährungsqualitätsscore. Die Funktion misst weder Portionsgenauigkeit
+noch Nährstoffabsorption und verändert den Vorrat nicht automatisch.

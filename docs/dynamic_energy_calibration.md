@@ -35,4 +35,9 @@ Profil gelöscht. Der Verarbeitungszweck ist im Privacy-Registry dokumentiert.
 
 ## Nächster Branch
 
-`feat/training-day-energy-adjustments`
+`feat/training-day-energy-adjustments` ist implementiert. Trainingstag-Anpassungen bleiben
+separate Planungssnapshots und ändern weder Kalibrierungsvorschläge noch historische
+Einschätzungen. Der nächste erwartete Branch ist `feat/consumption-tracking-core`.
+
+Consumption Tracking stellt lediglich eine konservative spätere Nutzbarkeitsmetrik bereit. Die
+dynamische Kalibrierung liest in diesem Branch keine Verzehrdaten und ändert ihre Regeln nicht.

@@ -153,3 +153,11 @@ Shopping-Snapshots nicht stillschweigend, verändert aber spätere Abgleiche.
 
 Complete deletion removes optimizer audits before their preference profile and the profile. Local
 session drafts disappear with app/process state; OR-Tools retains no user-specific model files.
+
+## Verzehrerfassung
+
+Einzelne tatsächliche Einträge und komplette Verzehrtage werden nach Bestätigung hart gelöscht.
+`DELETE /api/v1/privacy/consumption-data` entfernt alle Consumption Days samt Mahlzeiten,
+Einträgen, Snapshots und Entscheidungen eines Profils. Daily Plans, Assessments,
+Trainingstag-Anpassungen, Foods, Recipes, Pantry und Shopping Lists bleiben bei dieser separaten
+Aktion erhalten. Die vollständige Profillöschung entfernt Verzehrdaten über Profilkaskaden.

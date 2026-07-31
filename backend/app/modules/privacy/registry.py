@@ -4,6 +4,28 @@ PROCESSING_PURPOSE_REGISTRY_VERSION = "mvp_v1"
 
 PROCESSING_PURPOSES: tuple[dict[str, object], ...] = (
     {
+        "code": "consumption_tracking",
+        "description_de": "Speicherung des von dir ausdrücklich gemeldeten tatsächlichen Verzehrs.",
+        "data_categories": [
+            "consumption days and meals",
+            "actual quantities and times",
+            "historical nutrient snapshots",
+            "planned-entry outcomes",
+            "completeness attestations",
+        ],
+        "may_include_special_category_data": True,
+        "storage_location": "PostgreSQL; keine externe Übermittlung",
+        "retention_period": "Bis zur Einzel-, Tages- oder Profillöschung",
+        "legal_basis_placeholder": "Requires qualified legal review",
+        "consent_required": False,
+        "recipients_or_processors": [],
+        "deletion_behavior_de": (
+            "Einträge und Tage können dauerhaft gelöscht werden; die Profillöschung "
+            "entfernt alle Verzehrdaten."
+        ),
+        "required": False,
+    },
+    {
         "code": "training_day_target_adjustment",
         "description_de": (
             "Manuelle Trainingsplanung und ausdrücklich bestätigte temporäre Tagesziele."

@@ -118,3 +118,10 @@ verändert.
 
 Greedy or optimized drafts can add only free meal slots after explicit review. Existing entries
 contribute fixed nutrients and remain unchanged; Daily Meal Plans stay the source of truth.
+
+## Abgrenzung zur Verzehrerfassung
+
+Ein Tagesplan bleibt ausschließlich geplante Aufnahme. Consumption Tracking kann ihn ausdrücklich
+als Ausgangspunkt verknüpfen, markiert dabei aber keinen Eintrag als konsumiert. Überspringen,
+Mengenänderung oder Ersatz verändert den Plan nicht. Der Verzehrtag bewahrt seine beim Anlegen
+gewählte Zielbasis als historischen Snapshot.

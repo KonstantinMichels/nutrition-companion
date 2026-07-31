@@ -67,6 +67,9 @@ class ApiClient:
     def put(self, url: str, **kwargs: Any) -> httpx2.Response:
         return self.request("PUT", url, **kwargs)
 
+    def patch(self, url: str, **kwargs: Any) -> httpx2.Response:
+        return self.request("PATCH", url, **kwargs)
+
     def delete(self, url: str, **kwargs: Any) -> httpx2.Response:
         return self.request("DELETE", url, **kwargs)
 
@@ -130,7 +133,7 @@ def seeded_purposes(db_session: Session) -> None:
 @pytest.fixture
 def seeded_database(db_session: Session) -> None:
     counts = seed_all(db_session)
-    assert counts["processing_purposes"] == 16
+    assert counts["processing_purposes"] == 17
 
 
 @pytest.fixture

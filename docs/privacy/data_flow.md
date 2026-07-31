@@ -212,3 +212,10 @@ Request-ID, keine Listen-, Food-, Plan- oder Mengeninhalte.
 For optimization, profile-owned targets, recipes, plans, Pantry and active shopping commitments are
 loaded into process memory and passed to local OR-Tools CP-SAT. No external solver or AI receives
 them, no model dump is written, and only an explicitly applied compact audit persists.
+
+## Verzehrerfassung
+
+`Flutter → FastAPI Consumption API → Profilbesitzprüfung → Food/Recipe-Normalisierung →
+historische PostgreSQL-Snapshots → abgeleitete Summen`. Es gibt keinen Pfad zu externen Diensten,
+Analytics oder Werbung. Daily Plan und Assessment werden nur gelesen beziehungsweise referenziert;
+Pantry und Shopping Lists werden für eine Verzehrbuchung nicht verändert.

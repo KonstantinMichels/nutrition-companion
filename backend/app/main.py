@@ -21,6 +21,7 @@ from app.core.errors import (
 )
 from app.core.logging import configure_logging, request_log_middleware
 from app.core.security import assert_safe_runtime_configuration
+from app.modules.consumption_tracking.router import router as consumption_router
 from app.modules.daily_meal_planning.router import router as daily_plans_router
 from app.modules.energy_calibration.router import router as energy_calibration_router
 from app.modules.foods.router import router as foods_router
@@ -79,6 +80,7 @@ app.add_exception_handler(StarletteHTTPException, http_error_handler)  # type: i
 app.add_exception_handler(Exception, unexpected_error_handler)
 
 app.include_router(profiles_router)
+app.include_router(consumption_router)
 app.include_router(progress_router)
 app.include_router(training_sessions_router)
 app.include_router(training_preferences_router)

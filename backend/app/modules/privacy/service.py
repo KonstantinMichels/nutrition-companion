@@ -13,6 +13,11 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.branding import CONSENT_TEXT_VERSION
 from app.core.errors import ApiError
+from app.modules.consumption_tracking.models import (
+    ConsumptionDay,
+    ConsumptionEntry,
+    ConsumptionMeal,
+)
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal
 from app.modules.energy_calibration.models import EnergyCalibrationRecord
 from app.modules.foods.models import Food
@@ -330,6 +335,19 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
             .order_by(TrainingAdjustmentBatch.created_at)
         )
     )
+    consumption_days = list(
+        session.scalars(
+            select(ConsumptionDay)
+            .where(ConsumptionDay.owner_profile_id == profile_id)
+            .options(
+                selectinload(ConsumptionDay.meals)
+                .selectinload(ConsumptionMeal.entries)
+                .selectinload(ConsumptionEntry.nutrient_snapshots),
+                selectinload(ConsumptionDay.outcomes),
+            )
+            .order_by(ConsumptionDay.consumption_date)
+        )
+    )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
     session.flush()
     privacy_actions = list(
@@ -407,6 +425,50 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                     ],
                 }
                 for item in training_batches
+            ],
+        },
+        "consumption_tracking": {
+            "notice_de": (
+                "Verzehrdaten sind selbst berichtete Angaben. Geplante Mahlzeiten gelten "
+                "nicht automatisch als konsumiert."
+            ),
+            "days": [
+                {
+                    **{column.name: getattr(day, column.name) for column in day.__table__.columns},
+                    "meals": [
+                        {
+                            **{
+                                column.name: getattr(meal, column.name)
+                                for column in meal.__table__.columns
+                            },
+                            "entries": [
+                                {
+                                    **{
+                                        column.name: getattr(entry, column.name)
+                                        for column in entry.__table__.columns
+                                    },
+                                    "nutrient_snapshots": [
+                                        {
+                                            column.name: getattr(snapshot, column.name)
+                                            for column in snapshot.__table__.columns
+                                        }
+                                        for snapshot in entry.nutrient_snapshots
+                                    ],
+                                }
+                                for entry in meal.entries
+                            ],
+                        }
+                        for meal in day.meals
+                    ],
+                    "planned_entry_outcomes": [
+                        {
+                            column.name: getattr(outcome, column.name)
+                            for column in outcome.__table__.columns
+                        }
+                        for outcome in day.outcomes
+                    ],
+                }
+                for day in consumption_days
             ],
         },
         "activity": None
@@ -1251,5 +1313,21 @@ def delete_training_day_data(session: Session, profile_id: UUID) -> DeletionResp
         message_de=(
             "Trainings- und Tagesanpassungsdaten wurden dauerhaft gelöscht. "
             "Assessments, Mahlzeiten und Lebensmitteldaten bleiben erhalten."
+        ),
+    )
+
+
+def delete_consumption_data(session: Session, profile_id: UUID) -> DeletionResponse:
+    if profile_repository.get_profile(session, profile_id) is None:
+        raise ApiError("PROFILE_NOT_FOUND", "Es sind keine Profildaten gespeichert.", 404)
+    session.execute(delete(ConsumptionDay).where(ConsumptionDay.owner_profile_id == profile_id))
+    session.commit()
+    return DeletionResponse(
+        deleted=True,
+        scope="consumption_data",
+        confirmation_code=secrets.token_hex(8),
+        message_de=(
+            "Alle Verzehrtage, Einträge, Nährwertsnapshots und Planentscheidungen wurden "
+            "dauerhaft gelöscht. Tagespläne und Vorrat bleiben erhalten."
         ),
     )

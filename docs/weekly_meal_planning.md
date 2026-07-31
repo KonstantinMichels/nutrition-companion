@@ -63,3 +63,9 @@ persistiert.
 
 ISO-week optimization jointly evaluates enabled free slots but persists only ordinary daily plans.
 Daily constraints remain per-day; weekly aggregates are planning objectives, not intake records.
+
+## Geplant und tatsächlich erfasst
+
+Die Wochenplanung aggregiert weiterhin nur Planwerte. Die separate Verzehr-Wochenübersicht
+aggregiert historische tatsächliche Snapshots. Fehlende Verzehrtage sind unbekannt und niemals
+Nullaufnahme; gemischte Assessment- und Trainingstag-Zielbasen bleiben je Tag erhalten.

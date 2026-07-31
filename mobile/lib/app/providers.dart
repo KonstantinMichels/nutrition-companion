@@ -18,6 +18,7 @@ import '../features/shopping_lists/pantry_aware_shopping_repository.dart';
 import '../features/meal_plan_automation/automation_repository.dart';
 import '../features/progress/progress_repository.dart';
 import '../features/training/training_repository.dart';
+import '../features/consumption/consumption_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig was not supplied at startup.'),
@@ -94,4 +95,8 @@ final progressRepositoryProvider = Provider<ProgressRepository>(
 
 final trainingRepositoryProvider = Provider<TrainingRepository>(
   (ref) => TrainingRepository(ref.watch(apiClientProvider)),
+);
+
+final consumptionRepositoryProvider = Provider<ConsumptionRepository>(
+  (ref) => ConsumptionRepository(ref.watch(apiClientProvider)),
 );
