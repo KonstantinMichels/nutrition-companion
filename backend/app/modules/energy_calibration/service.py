@@ -10,9 +10,12 @@ from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import ApiError
+from app.modules.consumption_tracking import service as consumption_service
+from app.modules.consumption_tracking.enums import Completeness, DayStatus
+from app.modules.consumption_tracking.models import ConsumptionDay, ConsumptionMeal
 from app.modules.nutrition_assessment.engine import (
     AssessmentInput,
     HealthScreening,
@@ -25,8 +28,12 @@ from app.modules.nutrition_assessment.models import Assessment, AssessmentMetric
 from app.modules.progress_tracking.engine import WeightPoint, representatives
 from app.modules.progress_tracking.models import BodyWeightObservation
 
-from . import engine, rules
-from .models import EnergyCalibrationRecord
+from . import engine, intake_engine, rules
+from .models import (
+    EnergyCalibrationConsumptionEvidence,
+    EnergyCalibrationRecord,
+    EnergyCalibrationWeightEvidence,
+)
 from .schemas import PreviewRequest
 
 
@@ -99,7 +106,9 @@ def _json(value: object) -> object:
     return jsonable_encoder(value, custom_encoder={Decimal: str})
 
 
-def preview(session: Session, owner: UUID, payload: PreviewRequest) -> dict[str, Any]:
+def _target_response_preview(
+    session: Session, owner: UUID, payload: PreviewRequest
+) -> dict[str, Any]:
     source = _source(session, owner, payload.source_assessment_id)
     evaluation = engine.evaluate_window(
         _points(session, owner), payload.window_start, payload.window_end
@@ -125,6 +134,7 @@ def preview(session: Session, owner: UUID, payload: PreviewRequest) -> dict[str,
         .limit(1)
     )
     body = {
+        "method": "target_response_proxy",
         "source_assessment_id": str(source.id),
         "source_calculated_at": source.calculated_at.isoformat(),
         "source_target": {"lower": str(lower), "midpoint": str(midpoint), "upper": str(upper)},
@@ -146,6 +156,404 @@ def preview(session: Session, owner: UUID, payload: PreviewRequest) -> dict[str,
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     body["preview_token"] = hashlib.sha256(canonical.encode()).hexdigest()
     return body
+
+
+def _source_components(source: Assessment) -> tuple[Decimal, Decimal, Decimal, Decimal, Decimal]:
+    energy = source.summary["energy_target"]
+    assert isinstance(energy, dict)
+    lower, midpoint, upper = (Decimal(str(energy[key])) for key in ("lower", "midpoint", "upper"))
+    tdee = next(
+        (
+            m.raw_value
+            for m in source.metrics
+            if m.metric_code == "energy.maintenance" and m.raw_value is not None
+        ),
+        None,
+    )
+    if tdee is None:
+        raise ApiError(
+            "INTAKE_CALIBRATION_ASSESSMENT_UNSUPPORTED",
+            "Die Einschätzung enthält keine nutzbare Ausgangsschätzung des Energieverbrauchs.",
+            409,
+        )
+    return tdee, midpoint - tdee, lower, midpoint, upper
+
+
+def _consumption_days(
+    session: Session, owner: UUID, start: date, end: date
+) -> list[ConsumptionDay]:
+    return list(
+        session.scalars(
+            select(ConsumptionDay)
+            .where(
+                ConsumptionDay.owner_profile_id == owner,
+                ConsumptionDay.consumption_date >= start,
+                ConsumptionDay.consumption_date <= end,
+            )
+            .options(selectinload(ConsumptionDay.meals).selectinload(ConsumptionMeal.entries))
+        )
+    )
+
+
+def _classify_day(day: ConsumptionDay, payload: PreviewRequest) -> dict[str, object]:
+    quality = consumption_service._quality(day)
+    totals = consumption_service._totals(day)
+    energy = next((item for item in totals if item["nutrient_code"] == "energy_kcal"), None)
+    amount = None if energy is None else energy["amount"]
+    state, explanation = "usable", "Der finalisierte Tag besitzt vollständige Energiedaten."
+    if day.id in payload.excluded_consumption_day_ids or (
+        payload.included_consumption_day_ids and day.id not in payload.included_consumption_day_ids
+    ):
+        state, explanation = "excluded_user", "Für diese Vorschau ausdrücklich ausgeschlossen."
+    elif day.status != DayStatus.FINALIZED:
+        state, explanation = "excluded_open", "Der Verzehrtag ist noch offen."
+    elif day.completeness_attestation == Completeness.PARTIAL:
+        state, explanation = (
+            "excluded_partial",
+            "Der Tag wurde als teilweise vollständig abgeschlossen.",
+        )
+    elif day.completeness_attestation == Completeness.UNCERTAIN:
+        state, explanation = "excluded_uncertain", "Die Vollständigkeit des Tages ist unsicher."
+    elif day.completeness_attestation != Completeness.COMPLETE:
+        state, explanation = (
+            "excluded_incomplete",
+            "Es fehlt die Bestätigung der vollständigen Aufzeichnung.",
+        )
+    elif quality["unresolved_entry_count"]:
+        state, explanation = (
+            "excluded_unresolved",
+            "Mindestens ein manueller Eintrag besitzt keine auflösbaren Energiedaten.",
+        )
+    elif amount is None or energy is None or not energy["is_complete"]:
+        state, explanation = (
+            "excluded_missing_energy",
+            "Die Energieaufnahme ist nicht vollständig bekannt.",
+        )
+    elif quality["estimated_conversion_count"] or quality["source_changed_count"]:
+        state, explanation = (
+            "conditionally_usable",
+            "Die Energie ist vollständig, enthält aber eine geschätzte Umrechnung "
+            "oder Quellenwarnung.",
+        )
+        if day.id in payload.conditional_day_confirmations:
+            state, explanation = (
+                "usable",
+                "Bedingte Aufnahme wurde für diese Vorschau ausdrücklich bestätigt.",
+            )
+    return {
+        "id": str(day.id),
+        "date": day.consumption_date.isoformat(),
+        "version": day.version,
+        "finalized_at": None if day.finalized_at is None else day.finalized_at.isoformat(),
+        "status": day.status,
+        "completeness_attestation": day.completeness_attestation,
+        "recorded_energy_kcal": amount,
+        "energy_coverage": None if energy is None else energy["coverage_ratio"],
+        "unresolved_count": quality["unresolved_entry_count"],
+        "estimated_conversion_count": quality["estimated_conversion_count"],
+        "eligibility_state": state,
+        "explanation_de": explanation,
+        "exclusion_reason": payload.consumption_exclusion_reasons.get(day.id),
+    }
+
+
+def _intake_preview(session: Session, owner: UUID, payload: PreviewRequest) -> dict[str, Any]:
+    if payload.window_end > date.today():
+        raise ApiError(
+            "INTAKE_CALIBRATION_FUTURE_WINDOW",
+            "Das Ende des Zeitraums darf nicht in der Zukunft liegen.",
+            422,
+        )
+    span = (payload.window_end - payload.window_start).days + 1
+    if (
+        payload.window_start >= payload.window_end
+        or not rules.MIN_WINDOW_DAYS <= span <= rules.MAX_WINDOW_DAYS
+    ):
+        raise ApiError(
+            "INTAKE_CALIBRATION_INVALID_WINDOW", "Der Zeitraum muss 21 bis 90 Tage umfassen.", 422
+        )
+    source = _source(session, owner, payload.source_assessment_id)
+    source_tdee, goal_adjustment, lower, midpoint, upper = _source_components(source)
+    days = _consumption_days(session, owner, payload.window_start, payload.window_end)
+    known_day_ids = {day.id for day in days}
+    requested_day_ids = (
+        set(payload.included_consumption_day_ids)
+        | set(payload.excluded_consumption_day_ids)
+        | set(payload.conditional_day_confirmations)
+    )
+    if not requested_day_ids <= known_day_ids:
+        raise ApiError(
+            "INTAKE_CALIBRATION_CONSUMPTION_DAY_NOT_FOUND",
+            "Mindestens ein ausgewählter Verzehrtag ist nicht verfügbar.",
+            404,
+        )
+    classified = [_classify_day(day, payload) for day in days]
+    included = [item for item in classified if item["eligibility_state"] == "usable"]
+    coverage_values, intake_checks = intake_engine.coverage(
+        [date.fromisoformat(str(item["date"])) for item in included],
+        payload.window_start,
+        payload.window_end,
+    )
+    checks: list[dict[str, object]] = [
+        {
+            "code": "source_assessment_usable",
+            "passed": True,
+            "current": True,
+            "required": True,
+            "explanation_de": "Die Ausgangseinschätzung ist nutzbar.",
+        },
+        {
+            "code": "minimum_window_length_met",
+            "passed": span >= rules.MIN_WINDOW_DAYS,
+            "current": span,
+            "required": rules.MIN_WINDOW_DAYS,
+            "explanation_de": "Der Zeitraum umfasst mindestens 21 Tage.",
+        },
+        {
+            "code": "maximum_window_length_met",
+            "passed": span <= rules.MAX_WINDOW_DAYS,
+            "current": span,
+            "required": rules.MAX_WINDOW_DAYS,
+            "explanation_de": "Der Zeitraum umfasst höchstens 90 Tage.",
+        },
+        *intake_checks,
+    ]
+    confidence_ok = payload.recording_confidence in {"high", "moderate"}
+    routine_ok = payload.routine_representativeness in {"representative", "minor_changes"}
+    checks += [
+        {
+            "code": "recording_confidence_eligible",
+            "passed": confidence_ok,
+            "current": payload.recording_confidence,
+            "required": "high_or_moderate",
+            "explanation_de": "Die Aufzeichnungsqualität muss hoch oder moderat sein.",
+        },
+        {
+            "code": "routine_representativeness_eligible",
+            "passed": routine_ok,
+            "current": payload.routine_representativeness,
+            "required": "representative_or_minor_changes",
+            "explanation_de": "Der Zeitraum muss den üblichen Alltag ausreichend abbilden.",
+        },
+    ]
+    raw_points = _points(session, owner)
+    requested_weight = set(payload.included_weight_observation_ids)
+    excluded_weight = set(payload.excluded_weight_observation_ids)
+    known_weight_ids = {UUID(point.id) for point in raw_points}
+    if not (requested_weight | excluded_weight) <= known_weight_ids:
+        raise ApiError(
+            "INTAKE_CALIBRATION_WEIGHT_OBSERVATION_NOT_FOUND",
+            "Mindestens ein ausgewählter Gewichtswert ist nicht verfügbar.",
+            404,
+        )
+    selected_points = [
+        p
+        for p in raw_points
+        if payload.window_start <= p.day <= payload.window_end
+        and UUID(p.id) not in excluded_weight
+        and (not requested_weight or UUID(p.id) in requested_weight)
+    ]
+    weight_evaluation = engine.evaluate_window(
+        selected_points, payload.window_start, payload.window_end
+    )
+    trend_evidence = weight_evaluation.evidence["trend"]
+    assert isinstance(trend_evidence, dict)
+    for code, passed, current, required, explanation in (
+        (
+            "minimum_weight_days_met",
+            len(selected_points) >= rules.MIN_REPRESENTATIVE_DAYS,
+            len(selected_points),
+            rules.MIN_REPRESENTATIVE_DAYS,
+            "Mindestens acht repräsentative Gewichtstage.",
+        ),
+        (
+            "weight_trend_quality_met",
+            weight_evaluation.eligible,
+            trend_evidence.get("quality_level"),
+            "usable",
+            "Der Gewichtsverlauf muss auswertbar sein.",
+        ),
+    ):
+        checks.append(
+            {
+                "code": code,
+                "passed": passed,
+                "current": current,
+                "required": required,
+                "explanation_de": explanation,
+            }
+        )
+    previous = session.scalar(
+        select(EnergyCalibrationRecord)
+        .where(
+            EnergyCalibrationRecord.owner_profile_id == owner,
+            EnergyCalibrationRecord.method == "intake_informed",
+            EnergyCalibrationRecord.status == "accepted",
+        )
+        .order_by(EnergyCalibrationRecord.created_at.desc())
+        .limit(1)
+    )
+    new_intake_days = (
+        len(included)
+        if previous is None
+        else sum(date.fromisoformat(str(item["date"])) > previous.window_end for item in included)
+    )
+    new_weight_days = (
+        len(selected_points)
+        if previous is None
+        else sum(point.day > previous.window_end for point in selected_points)
+    )
+    cooldown_days = None if previous is None else (date.today() - previous.created_at.date()).days
+    new_span = None if previous is None else (payload.window_end - previous.window_end).days
+    overlap_days = (
+        0
+        if previous is None
+        else max(
+            0,
+            (
+                min(payload.window_end, previous.window_end)
+                - max(payload.window_start, previous.window_start)
+            ).days
+            + 1,
+        )
+    )
+    for code, passed, current, required, explanation in (
+        (
+            "cooldown_met",
+            previous is None
+            or (cooldown_days is not None and cooldown_days >= rules.CALIBRATION_COOLDOWN_DAYS),
+            cooldown_days,
+            rules.CALIBRATION_COOLDOWN_DAYS,
+            "Zwischen übernommenen Kalibrierungen liegen mindestens 21 Tage.",
+        ),
+        (
+            "new_usable_intake_days_met",
+            previous is None or new_intake_days >= rules.MIN_NEW_INTAKE_DAYS,
+            new_intake_days,
+            rules.MIN_NEW_INTAKE_DAYS,
+            "Seit der letzten Kalibrierung sind mindestens sieben neue Verzehrtage nötig.",
+        ),
+        (
+            "new_weight_representative_days_met",
+            previous is None or new_weight_days >= rules.MIN_NEW_WEIGHT_DAYS,
+            new_weight_days,
+            rules.MIN_NEW_WEIGHT_DAYS,
+            "Seit der letzten Kalibrierung sind mindestens fünf neue Gewichtstage nötig.",
+        ),
+        (
+            "new_evidence_requirement_met",
+            previous is None or (new_span is not None and new_span >= rules.MIN_NEW_CALENDAR_SPAN),
+            new_span,
+            rules.MIN_NEW_CALENDAR_SPAN,
+            "Das Fensterende muss mindestens 14 Tage neue Kalenderzeit umfassen.",
+        ),
+    ):
+        checks.append(
+            {
+                "code": code,
+                "passed": passed,
+                "current": current,
+                "required": required,
+                "explanation_de": explanation,
+            }
+        )
+    eligible = all(bool(item["passed"]) for item in checks)
+    intake: dict[str, object] = {**coverage_values, "days": classified}
+    calculation: dict[str, object] = {}
+    proposal: dict[str, object] | None = None
+    if included:
+        intake.update(
+            intake_engine.intake_summary(
+                [Decimal(str(item["recorded_energy_kcal"])) for item in included],
+                payload.recording_confidence,
+                payload.routine_representativeness,
+            )
+        )
+        low_fence, high_fence = (
+            Decimal(str(intake["unusual_lower_fence_kcal"])),
+            Decimal(str(intake["unusual_upper_fence_kcal"])),
+        )
+        intake["unusual_days"] = [
+            {
+                "id": item["id"],
+                "date": item["date"],
+                "recorded_energy_kcal": item["recorded_energy_kcal"],
+                "explanation_de": (
+                    "Dieser Tag unterscheidet sich deutlich von den übrigen erfassten "
+                    "Tagen. Bitte prüfe, ob er für den Zeitraum repräsentativ ist."
+                ),
+            }
+            for item in included
+            if Decimal(str(item["recorded_energy_kcal"])) < low_fence
+            or Decimal(str(item["recorded_energy_kcal"])) > high_fence
+        ]
+    if eligible:
+        calculation, proposal = intake_engine.calculate(
+            intake=intake,
+            trend=weight_evaluation.evidence["trend"],
+            source_tdee=source_tdee,
+            source_goal_adjustment=goal_adjustment,
+            source_lower=lower,
+            source_upper=upper,
+            confidence=payload.recording_confidence,
+            routine=payload.routine_representativeness,
+        )
+    body: dict[str, Any] = {
+        "method": "intake_informed",
+        "source_assessment_id": str(source.id),
+        "source_assessment": {
+            "id": str(source.id),
+            "estimated_tdee_kcal": source_tdee,
+            "goal_adjustment_kcal": goal_adjustment,
+            "effective_energy_target_kcal": midpoint,
+            "target_lower_kcal": lower,
+            "target_upper_kcal": upper,
+        },
+        "window": {
+            "start": payload.window_start.isoformat(),
+            "end": payload.window_end.isoformat(),
+            "calendar_day_count": span,
+            "overlap_calendar_days": overlap_days,
+            "new_usable_intake_days": new_intake_days,
+            "new_weight_representative_days": new_weight_days,
+        },
+        "eligibility": {"eligible": eligible, "checks": checks},
+        "blockers": [item["code"] for item in checks if not item["passed"]],
+        "intake_evidence": intake,
+        "weight_evidence": weight_evaluation.evidence,
+        "calculation": calculation,
+        "proposal": proposal,
+        "recording_confidence": payload.recording_confidence,
+        "routine_representativeness": payload.routine_representativeness,
+        "rule_set": rules.RULE_SET_ID,
+        "rule_version": rules.INTAKE_RULE_SET_VERSION,
+        "warnings": [
+            {
+                "code": "SELF_REPORTED_INTAKE",
+                "severity": "information",
+                "message_de": (
+                    "Die Aufnahme basiert auf selbst berichteten, finalisierten "
+                    "Verzehrdaten und ist keine objektive Messung."
+                ),
+            }
+        ],
+        "calculated_at": datetime.now(UTC).isoformat(),
+        "notice_de": (
+            "Die Schätzung misst weder die tatsächliche Energieaufnahme noch den "
+            "tatsächlichen Energieverbrauch und ist nicht diagnostisch."
+        ),
+    }
+    canonical = json.dumps(_json(body), sort_keys=True, separators=(",", ":"))
+    body["preview_token"] = hashlib.sha256(canonical.encode()).hexdigest()
+    return _json(body)  # type: ignore[return-value]
+
+
+def preview(session: Session, owner: UUID, payload: PreviewRequest) -> dict[str, Any]:
+    return (
+        _intake_preview(session, owner, payload)
+        if payload.method == "intake_informed"
+        else _target_response_preview(session, owner, payload)
+    )
 
 
 def eligibility(session: Session, owner: UUID) -> dict[str, Any]:
@@ -176,14 +584,47 @@ def eligibility(session: Session, owner: UUID) -> dict[str, Any]:
     }
 
 
-def eligible_windows(session: Session, owner: UUID) -> dict[str, Any]:
+def eligible_windows(
+    session: Session, owner: UUID, method: str = "target_response_proxy"
+) -> dict[str, Any]:
     points = _points(session, owner)
     if not points:
         return {"items": []}
-    end = points[-1].day
+    end = min(points[-1].day, date.today())
     items = []
     for days in (28, 35, 42, 21, 56, 90):
-        evaluation = engine.evaluate_window(points, end - timedelta(days=days - 1), end)
+        start = end - timedelta(days=days - 1)
+        evaluation = engine.evaluate_window(points, start, end)
+        if method == "intake_informed":
+            try:
+                result = _intake_preview(
+                    session,
+                    owner,
+                    PreviewRequest(
+                        method="intake_informed",
+                        window_start=start,
+                        window_end=end,
+                        recording_confidence="high",
+                        routine_representativeness="representative",
+                    ),
+                )
+                item = {
+                    "start_date": start.isoformat(),
+                    "end_date": end.isoformat(),
+                    "window_days": days,
+                    "eligible": result["eligibility"]["eligible"],
+                    "blockers": result["blockers"],
+                    "preferred": rules.PREFERRED_MIN_DAYS
+                    <= days
+                    <= rules.INTAKE_PREFERRED_MAX_DAYS,
+                    "usable_intake_days": result["intake_evidence"].get("usable_day_count", 0),
+                    "coverage_ratio": result["intake_evidence"].get("coverage_ratio", "0"),
+                    "representative_days": result["weight_evidence"]["representative_days"],
+                }
+                items.append(item)
+                continue
+            except ApiError:
+                pass
         items.append(
             {
                 **_json(evaluation.evidence),
@@ -212,26 +653,38 @@ def persist(
     )
     if duplicate:
         return duplicate
-    proposal = preview_data["proposal"]
+    proposal = preview_data.get("proposal") or {}
     assert isinstance(proposal, dict)
+    intake_method = preview_data.get("method") == "intake_informed"
+    evidence = preview_data["weight_evidence"] if intake_method else preview_data["evidence"]
+    window = preview_data.get("window", {})
     record = EnergyCalibrationRecord(
         owner_profile_id=owner,
         client_operation_id=operation_id,
         source_assessment_id=UUID(str(preview_data["source_assessment_id"])),
         status=status,
-        window_start=date.fromisoformat(str(preview_data["evidence"]["start_date"])),
-        window_end=date.fromisoformat(str(preview_data["evidence"]["end_date"])),
-        adherence=str(preview_data["adherence"]),
-        context_stability=str(preview_data["context_stability"]),
+        method=str(preview_data.get("method", "target_response_proxy")),
+        window_start=date.fromisoformat(str(window.get("start", evidence["start_date"]))),
+        window_end=date.fromisoformat(str(window.get("end", evidence["end_date"]))),
+        adherence=str(preview_data.get("adherence", "not_applicable")),
+        context_stability=str(preview_data.get("context_stability", "not_applicable")),
         proposed_adjustment_kcal_per_day=Decimal(str(proposal["proposed_adjustment_kcal_per_day"]))
         if proposal.get("available")
         else None,
         accepted_adjustment_kcal_per_day=accepted,
-        evidence_snapshot=preview_data["evidence"],
+        evidence_snapshot={
+            "intake": preview_data.get("intake_evidence"),
+            "weight": evidence,
+            "eligibility": preview_data.get("eligibility"),
+            "recording_confidence": preview_data.get("recording_confidence"),
+            "routine_representativeness": preview_data.get("routine_representativeness"),
+        }
+        if intake_method
+        else evidence,
         proposal_snapshot=proposal,
         rules_snapshot={
             "identifier": rules.RULE_SET_ID,
-            "version": rules.RULE_SET_VERSION,
+            "version": preview_data.get("rule_version", rules.RULE_SET_VERSION),
             "energy_equivalent_kcal_per_kg": ["6500", "7700", "9500"],
             "deadband": "75",
             "absolute_cap": "200",
@@ -239,6 +692,46 @@ def persist(
         },
     )
     session.add(record)
+    session.flush()
+    if intake_method:
+        for item in preview_data["intake_evidence"]["days"]:
+            session.add(
+                EnergyCalibrationConsumptionEvidence(
+                    calibration_record_id=record.id,
+                    source_id=UUID(item["id"]),
+                    source_version_snapshot=int(item["version"]),
+                    included=item["eligibility_state"] == "usable",
+                    exclusion_reason=item.get("exclusion_reason")
+                    or (
+                        None if item["eligibility_state"] == "usable" else item["eligibility_state"]
+                    ),
+                    evidence_date=date.fromisoformat(item["date"]),
+                    recorded_value_snapshot=None
+                    if item["recorded_energy_kcal"] is None
+                    else Decimal(str(item["recorded_energy_kcal"])),
+                    evidence_snapshot=item,
+                )
+            )
+        included_ids = set(preview_data["weight_evidence"]["observation_ids"])
+        for point in _points(session, owner):
+            if record.window_start <= point.day <= record.window_end:
+                session.add(
+                    EnergyCalibrationWeightEvidence(
+                        calibration_record_id=record.id,
+                        source_id=UUID(point.id),
+                        included=point.id in included_ids,
+                        exclusion_reason=None
+                        if point.id in included_ids
+                        else "excluded_from_preview",
+                        evidence_date=point.day,
+                        recorded_value_snapshot=point.value,
+                        evidence_snapshot={
+                            "observation_id": point.id,
+                            "date": point.day.isoformat(),
+                            "weight_kg": str(point.value),
+                        },
+                    )
+                )
     return record
 
 
@@ -307,7 +800,17 @@ def create_revision(
 ) -> Assessment:
     source = _source(session, owner, record.source_assessment_id)
     timestamp = datetime.now(UTC)
-    result = calculate_assessment(_rebuild_input(source, adjustment), calculated_at=timestamp)
+    raw_input = source.input_snapshot.get("engine_input", {})
+    previous_value = (
+        raw_input.get("energy_calibration_adjustment_kcal_per_day")
+        if isinstance(raw_input, dict)
+        else None
+    )
+    previous = Decimal(0) if previous_value is None else Decimal(str(previous_value))
+    cumulative_adjustment = previous + adjustment
+    result = calculate_assessment(
+        _rebuild_input(source, cumulative_adjustment), calculated_at=timestamp
+    )
     serialized = result.to_dict()
     input_snapshot = dict(source.input_snapshot)
     input_snapshot["engine_input"] = serialized["input_snapshot"]
@@ -315,6 +818,8 @@ def create_revision(
         "record_id": str(record.id),
         "source_assessment_id": str(source.id),
         "adjustment_kcal_per_day": str(adjustment),
+        "cumulative_adjustment_kcal_per_day": str(cumulative_adjustment),
+        "method": record.method,
     }
     assessment = Assessment(
         profile_id=owner,
@@ -353,10 +858,9 @@ def create_revision(
     return assessment
 
 
-def history(session: Session, owner: UUID) -> list[dict[str, Any]]:
-    rows = session.scalars(
-        select(EnergyCalibrationRecord)
-        .where(EnergyCalibrationRecord.owner_profile_id == owner)
-        .order_by(EnergyCalibrationRecord.created_at.desc())
-    ).all()
+def history(session: Session, owner: UUID, method: str | None = None) -> list[dict[str, Any]]:
+    query = select(EnergyCalibrationRecord).where(EnergyCalibrationRecord.owner_profile_id == owner)
+    if method:
+        query = query.where(EnergyCalibrationRecord.method == method)
+    rows = session.scalars(query.order_by(EnergyCalibrationRecord.created_at.desc())).all()
     return [serialize(row) for row in rows]

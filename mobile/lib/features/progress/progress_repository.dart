@@ -61,13 +61,28 @@ final class ProgressRepository {
   Future<void> cancelGoal(String id, int version) =>
       _api.post('/api/v1/progress/goals/$id/cancel?expected_version=$version');
 
-  Future<Map<String, dynamic>> calibrationEligibility() async =>
-      Map<String, dynamic>.from(
-        await _api.get('/api/v1/energy-calibration/eligibility') as Map,
-      );
+  Future<Map<String, dynamic>> calibrationEligibility({
+    String method = 'target_response_proxy',
+  }) async => Map<String, dynamic>.from(
+    await _api.get('/api/v1/energy-calibration/eligibility?method=$method')
+        as Map,
+  );
 
-  Future<List<Map<String, dynamic>>> calibrationWindows() async =>
-      ((await _api.get('/api/v1/energy-calibration/eligible-windows')
+  Future<List<Map<String, dynamic>>> calibrationWindows({
+    String method = 'target_response_proxy',
+  }) async =>
+      ((await _api.get(
+                    '/api/v1/energy-calibration/eligible-windows?method=$method',
+                  )
+                  as Map)['items']
+              as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+
+  Future<List<Map<String, dynamic>>> intakeCalibrationWindows() async =>
+      ((await _api.get(
+                    '/api/v1/energy-calibration/eligible-windows?method=intake_informed',
+                  )
                   as Map)['items']
               as List)
           .map((item) => Map<String, dynamic>.from(item as Map))

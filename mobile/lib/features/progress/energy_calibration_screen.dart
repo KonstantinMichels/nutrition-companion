@@ -29,6 +29,11 @@ final class _EnergyCalibrationScreenState
   Map<String, dynamic>? preview;
   String adherence = 'high';
   String contextStability = 'stable';
+  String method = 'target_response_proxy';
+  String recordingConfidence = 'high';
+  String routineRepresentativeness = 'representative';
+  final Set<String> excludedConsumptionDays = {};
+  final Set<String> confirmedConditionalDays = {};
 
   ProgressRepository get repository => ref.read(progressRepositoryProvider);
 
@@ -42,7 +47,9 @@ final class _EnergyCalibrationScreenState
     try {
       final values = await Future.wait([
         repository.calibrationEligibility(),
-        repository.calibrationWindows(),
+        method == 'intake_informed'
+            ? repository.intakeCalibrationWindows()
+            : repository.calibrationWindows(),
         repository.calibrationHistory(),
       ]);
       if (!mounted) return;
@@ -68,11 +75,18 @@ final class _EnergyCalibrationScreenState
   }
 
   Map<String, dynamic> _request() => {
+    'method': method,
     'source_assessment_id': eligibility?['source_assessment_id'],
     'window_start': selected!['start_date'],
     'window_end': selected!['end_date'],
     'adherence': adherence,
     'context_stability': contextStability,
+    if (method == 'intake_informed') ...{
+      'recording_confidence': recordingConfidence,
+      'routine_representativeness': routineRepresentativeness,
+      'excluded_consumption_day_ids': excludedConsumptionDays.toList(),
+      'conditional_day_confirmations': confirmedConditionalDays.toList(),
+    },
   };
 
   Future<void> _createPreview() async {
@@ -175,6 +189,39 @@ final class _EnergyCalibrationScreenState
             ),
           ),
         ),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(
+              value: 'target_response_proxy',
+              label: Text('Zielbasiert'),
+              icon: Icon(Icons.flag_outlined),
+            ),
+            ButtonSegment(
+              value: 'intake_informed',
+              label: Text('Aufnahmebasiert'),
+              icon: Icon(Icons.restaurant_outlined),
+            ),
+          ],
+          selected: {method},
+          onSelectionChanged: working
+              ? null
+              : (value) {
+                  setState(() {
+                    method = value.first;
+                    loading = true;
+                    preview = null;
+                    selected = null;
+                  });
+                  _load();
+                },
+        ),
+        const SizedBox(height: 8),
+        Text(
+          method == 'intake_informed'
+              ? 'Die aufnahmebasierte Methode nutzt deine finalisierten Verzehrtage. Sie reduziert die Annahme, dass ein Zielwert eingehalten wurde, bleibt aber von der Vollständigkeit der Aufzeichnung abhängig.'
+              : 'Die zielbasierte Methode verwendet dein bisheriges Energie-Ziel als Näherung und benötigt eine Einschätzung zur Zieltreue.',
+        ),
+        const SizedBox(height: 12),
         if (error != null)
           Card(
             color: Theme.of(context).colorScheme.errorContainer,
@@ -213,60 +260,106 @@ final class _EnergyCalibrationScreenState
             }),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: adherence,
-            decoration: const InputDecoration(
-              labelText: 'Wie gut wurde das bisherige Ziel eingehalten?',
+          if (method == 'target_response_proxy')
+            DropdownButtonFormField<String>(
+              initialValue: adherence,
+              decoration: const InputDecoration(
+                labelText: 'Wie gut wurde das bisherige Ziel eingehalten?',
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: 'high',
+                  child: Text('Weitgehend eingehalten'),
+                ),
+                DropdownMenuItem(
+                  value: 'moderate',
+                  child: Text('Teilweise eingehalten'),
+                ),
+                DropdownMenuItem(value: 'low', child: Text('Kaum eingehalten')),
+                DropdownMenuItem(
+                  value: 'unknown',
+                  child: Text('Nicht einschätzbar'),
+                ),
+              ],
+              onChanged: (value) => setState(() {
+                adherence = value!;
+                preview = null;
+              }),
             ),
-            items: const [
-              DropdownMenuItem(
-                value: 'high',
-                child: Text('Weitgehend eingehalten'),
+          if (method == 'target_response_proxy') const SizedBox(height: 12),
+          if (method == 'target_response_proxy')
+            DropdownButtonFormField<String>(
+              initialValue: contextStability,
+              decoration: const InputDecoration(
+                labelText: 'Haben sich Aktivität oder Alltag verändert?',
               ),
-              DropdownMenuItem(
-                value: 'moderate',
-                child: Text('Teilweise eingehalten'),
-              ),
-              DropdownMenuItem(value: 'low', child: Text('Kaum eingehalten')),
-              DropdownMenuItem(
-                value: 'unknown',
-                child: Text('Nicht einschätzbar'),
-              ),
-            ],
-            onChanged: (value) => setState(() {
-              adherence = value!;
-              preview = null;
-            }),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: contextStability,
-            decoration: const InputDecoration(
-              labelText: 'Haben sich Aktivität oder Alltag verändert?',
+              items: const [
+                DropdownMenuItem(
+                  value: 'stable',
+                  child: Text('Nein, weitgehend stabil'),
+                ),
+                DropdownMenuItem(
+                  value: 'minor_changes',
+                  child: Text('Kleinere Änderungen'),
+                ),
+                DropdownMenuItem(
+                  value: 'major_changes',
+                  child: Text('Deutliche Änderungen'),
+                ),
+                DropdownMenuItem(
+                  value: 'unknown',
+                  child: Text('Nicht einschätzbar'),
+                ),
+              ],
+              onChanged: (value) => setState(() {
+                contextStability = value!;
+                preview = null;
+              }),
             ),
-            items: const [
-              DropdownMenuItem(
-                value: 'stable',
-                child: Text('Nein, weitgehend stabil'),
+          if (method == 'intake_informed') ...[
+            DropdownButtonFormField<String>(
+              initialValue: recordingConfidence,
+              decoration: const InputDecoration(
+                labelText: 'Wie vollständig und genau wurde aufgezeichnet?',
               ),
-              DropdownMenuItem(
-                value: 'minor_changes',
-                child: Text('Kleinere Änderungen'),
+              items: const [
+                DropdownMenuItem(value: 'high', child: Text('Hoch')),
+                DropdownMenuItem(value: 'moderate', child: Text('Moderat')),
+                DropdownMenuItem(value: 'low', child: Text('Niedrig')),
+                DropdownMenuItem(value: 'unknown', child: Text('Unbekannt')),
+              ],
+              onChanged: (value) => setState(() {
+                recordingConfidence = value!;
+                preview = null;
+              }),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: routineRepresentativeness,
+              decoration: const InputDecoration(
+                labelText: 'Wie typisch war dein Alltag?',
               ),
-              DropdownMenuItem(
-                value: 'major_changes',
-                child: Text('Deutliche Änderungen'),
-              ),
-              DropdownMenuItem(
-                value: 'unknown',
-                child: Text('Nicht einschätzbar'),
-              ),
-            ],
-            onChanged: (value) => setState(() {
-              contextStability = value!;
-              preview = null;
-            }),
-          ),
+              items: const [
+                DropdownMenuItem(
+                  value: 'representative',
+                  child: Text('Repräsentativ'),
+                ),
+                DropdownMenuItem(
+                  value: 'minor_changes',
+                  child: Text('Kleinere Änderungen'),
+                ),
+                DropdownMenuItem(
+                  value: 'major_changes',
+                  child: Text('Deutliche Änderungen'),
+                ),
+                DropdownMenuItem(value: 'unknown', child: Text('Unbekannt')),
+              ],
+              onChanged: (value) => setState(() {
+                routineRepresentativeness = value!;
+                preview = null;
+              }),
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: working ? null : _createPreview,
@@ -308,6 +401,26 @@ final class _EnergyCalibrationScreenState
               ),
             ),
           ),
+        if (method == 'intake_informed' && preview != null && proposal == null)
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.balance_outlined),
+              title: Text(
+                preview?['calculation']?['result'] == 'direction_uncertain'
+                    ? 'Richtung der Anpassung nicht eindeutig'
+                    : preview?['eligibility']?['eligible'] == true
+                    ? 'Keine relevante Anpassung vorgeschlagen'
+                    : 'Datengrundlage noch nicht ausreichend',
+              ),
+              subtitle: Text(
+                preview?['eligibility']?['eligible'] == true
+                    ? 'Das bisherige Ziel bleibt bestehen. Die Unsicherheit erlaubt derzeit keine sinnvolle Änderung.'
+                    : '${(preview?['blockers'] as List?)?.length ?? 0} Voraussetzungen sind noch nicht erfüllt.',
+              ),
+            ),
+          ),
+        if (method == 'intake_informed' && preview != null)
+          _intakeEvidenceCard(),
         if (history.isNotEmpty) ...[
           const SizedBox(height: 20),
           Text(
@@ -330,6 +443,85 @@ final class _EnergyCalibrationScreenState
             ),
         ],
       ],
+    );
+  }
+
+  Widget _intakeEvidenceCard() {
+    final intake = Map<String, dynamic>.from(
+      preview?['intake_evidence'] as Map? ?? const {},
+    );
+    final calculation = Map<String, dynamic>.from(
+      preview?['calculation'] as Map? ?? const {},
+    );
+    final days = (intake['days'] as List? ?? const [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aufnahme-Evidenz',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              '${intake['usable_day_count'] ?? 0} nutzbare Tage · '
+              '${GermanDecimal.formatString(intake['mean_recorded_intake_kcal'])} kcal/Tag im Mittel',
+            ),
+            if (intake['final_lower_kcal'] != null)
+              Text(
+                'Aufnahme-Unsicherheitsbereich: ${GermanDecimal.formatString(intake['final_lower_kcal'])}–${GermanDecimal.formatString(intake['final_upper_kcal'])} kcal/Tag',
+              ),
+            if (calculation['estimated_tdee_central_kcal'] != null)
+              Text(
+                'Geschätzter Verbrauch: ${GermanDecimal.formatString(calculation['estimated_tdee_central_kcal'])} kcal/Tag '
+                '(${GermanDecimal.formatString(calculation['estimated_tdee_lower_kcal'])}–${GermanDecimal.formatString(calculation['estimated_tdee_upper_kcal'])})',
+              ),
+            const Divider(),
+            const Text(
+              'Verzehrtage prüfen',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            for (final day in days)
+              CheckboxListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                value: day['eligibility_state'] == 'conditionally_usable'
+                    ? confirmedConditionalDays.contains(day['id'])
+                    : !excludedConsumptionDays.contains(day['id']) &&
+                          day['eligibility_state'] == 'usable',
+                onChanged: day['eligibility_state'] == 'usable'
+                    ? (value) => setState(() {
+                        if (value == false) {
+                          excludedConsumptionDays.add(day['id'].toString());
+                        } else {
+                          excludedConsumptionDays.remove(day['id'].toString());
+                        }
+                        preview = null;
+                      })
+                    : day['eligibility_state'] == 'conditionally_usable'
+                    ? (value) => setState(() {
+                        if (value == true) {
+                          confirmedConditionalDays.add(day['id'].toString());
+                        } else {
+                          confirmedConditionalDays.remove(day['id'].toString());
+                        }
+                        preview = null;
+                      })
+                    : null,
+                title: Text(
+                  '${day['date']} · ${GermanDecimal.formatString(day['recorded_energy_kcal'])} kcal',
+                ),
+                subtitle: Text(day['explanation_de']?.toString() ?? ''),
+              ),
+            const Text(
+              'Ausgeschlossene Tage werden nicht verändert. Erstelle nach Änderungen die Vorschau erneut.',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
