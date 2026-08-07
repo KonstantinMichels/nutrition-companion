@@ -1,5 +1,9 @@
 # Nutrition Companion
 
+Der Funktionsumfang enthält einen ausdrücklich bestätigten Vorratsabgleich für Verzehreinträge.
+Er erzeugt beim Erfassen oder Finalisieren niemals automatisch Bestandsbewegungen. Details:
+[Vorratsabgleich für Verzehrdaten](docs/pantry_consumption_reconciliation.md).
+
 Enthält ein datenschutzorientiertes [Progress Tracking](docs/progress_tracking_core.md) für manuelle Messungen, transparente Trends und explizite Ziele.
 
 Meal planning supports a fast deterministic greedy draft and an optional local-backend OR-Tools

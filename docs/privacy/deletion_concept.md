@@ -161,3 +161,9 @@ Einzelne tatsächliche Einträge und komplette Verzehrtage werden nach Bestätig
 Einträgen, Snapshots und Entscheidungen eines Profils. Daily Plans, Assessments,
 Trainingstag-Anpassungen, Foods, Recipes, Pantry und Shopping Lists bleiben bei dieser separaten
 Aktion erhalten. Die vollständige Profillöschung entfernt Verzehrdaten über Profilkaskaden.
+# Pantry Consumption Reconciliation
+
+Verknüpfte Einträge und Tage verlangen vor Einzellöschung die Entscheidung Gegenbewegung,
+Bewegungen beibehalten oder Abbruch. Gegenbewegungen ersetzen oder löschen die ursprüngliche
+Bewegung nicht. Die vollständige Profillöschung entfernt Abgleiche vor Pantry-Bewegungen und
+Beständen sowie anschließend alle übrigen Profildaten.

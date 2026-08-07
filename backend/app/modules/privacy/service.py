@@ -29,6 +29,11 @@ from app.modules.meal_plan_automation.models import (
 from app.modules.nutrition_assessment.models import Assessment
 from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
+from app.modules.pantry_consumption_reconciliation.models import (
+    PantryConsumptionAllocation,
+    PantryConsumptionReconciliationBatch,
+    PantryConsumptionRequirement,
+)
 from app.modules.privacy import repository
 from app.modules.privacy.models import (
     ConsentRecord,
@@ -343,9 +348,25 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                 selectinload(ConsumptionDay.meals)
                 .selectinload(ConsumptionMeal.entries)
                 .selectinload(ConsumptionEntry.nutrient_snapshots),
+                selectinload(ConsumptionDay.meals)
+                .selectinload(ConsumptionMeal.entries)
+                .selectinload(ConsumptionEntry.recipe_ingredient_snapshots),
                 selectinload(ConsumptionDay.outcomes),
             )
             .order_by(ConsumptionDay.consumption_date)
+        )
+    )
+    pantry_consumption_batches = list(
+        session.scalars(
+            select(PantryConsumptionReconciliationBatch)
+            .where(PantryConsumptionReconciliationBatch.owner_profile_id == profile_id)
+            .options(
+                selectinload(PantryConsumptionReconciliationBatch.requirements)
+                .selectinload(PantryConsumptionRequirement.allocations)
+                .selectinload(PantryConsumptionAllocation.reversal_allocations),
+                selectinload(PantryConsumptionReconciliationBatch.reversals),
+            )
+            .order_by(PantryConsumptionReconciliationBatch.applied_at)
         )
     )
     session.add(PrivacyAction(profile_id=profile_id, action_type="export_requested"))
@@ -454,6 +475,13 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                                         }
                                         for snapshot in entry.nutrient_snapshots
                                     ],
+                                    "recipe_ingredient_snapshots": [
+                                        {
+                                            column.name: getattr(snapshot, column.name)
+                                            for column in snapshot.__table__.columns
+                                        }
+                                        for snapshot in entry.recipe_ingredient_snapshots
+                                    ],
                                 }
                                 for entry in meal.entries
                             ],
@@ -469,6 +497,53 @@ def build_export(session: Session, profile_id: UUID) -> PrivacyExportResponse:
                     ],
                 }
                 for day in consumption_days
+            ],
+        },
+        "pantry_consumption_reconciliation": {
+            "notice_de": (
+                "Bestandsabgleiche sind ausdrücklich bestätigte Buchungsbeziehungen. "
+                "Sie beweisen weder Lebensmittelherkunft noch exakten Zutatenverbrauch."
+            ),
+            "batches": [
+                {
+                    **{
+                        column.name: getattr(batch, column.name)
+                        for column in batch.__table__.columns
+                    },
+                    "requirements": [
+                        {
+                            **{
+                                column.name: getattr(requirement, column.name)
+                                for column in requirement.__table__.columns
+                            },
+                            "allocations": [
+                                {
+                                    **{
+                                        column.name: getattr(allocation, column.name)
+                                        for column in allocation.__table__.columns
+                                    },
+                                    "reversal_allocations": [
+                                        {
+                                            column.name: getattr(reversal, column.name)
+                                            for column in reversal.__table__.columns
+                                        }
+                                        for reversal in allocation.reversal_allocations
+                                    ],
+                                }
+                                for allocation in requirement.allocations
+                            ],
+                        }
+                        for requirement in batch.requirements
+                    ],
+                    "reversals": [
+                        {
+                            column.name: getattr(item, column.name)
+                            for column in item.__table__.columns
+                        }
+                        for item in batch.reversals
+                    ],
+                }
+                for batch in pantry_consumption_batches
             ],
         },
         "activity": None
@@ -1115,6 +1190,12 @@ def delete_complete_profile(session: Session, profile_id: UUID) -> DeletionRespo
         session.flush()
         # Plan entries and recipe ingredients protect their source records.
         session.execute(delete(DailyMealPlan).where(DailyMealPlan.owner_profile_id == profile_id))
+        session.flush()
+        session.execute(
+            delete(PantryConsumptionReconciliationBatch).where(
+                PantryConsumptionReconciliationBatch.owner_profile_id == profile_id
+            )
+        )
         session.flush()
         session.execute(delete(PantryMovement).where(PantryMovement.owner_profile_id == profile_id))
         session.execute(delete(PantryStockLot).where(PantryStockLot.owner_profile_id == profile_id))

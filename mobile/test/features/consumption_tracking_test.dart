@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutrition_companion/app/providers.dart';
 import 'package:nutrition_companion/core/api/api_client.dart';
 import 'package:nutrition_companion/core/config/app_config.dart';
@@ -15,12 +16,20 @@ void main() {
   testWidgets('navigation exposes explicit consumption tracking', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: AppScaffold(title: 'Test', body: SizedBox.shrink()),
-      ),
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => const AppScaffold(
+            title: 'Test',
+            body: SizedBox.shrink(),
+          ),
+        ),
+      ],
     );
-    await tester.tap(find.byTooltip('Open navigation menu'));
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
     expect(find.text('Verzehr'), findsOneWidget);
     expect(find.textContaining('Automatisch gegessen'), findsNothing);
@@ -73,6 +82,12 @@ void main() {
     expect(adapter.created, isTrue);
     expect(find.text('Aufzeichnung offen'), findsOneWidget);
     expect(find.text('Vorrat bleibt unverändert'), findsOneWidget);
+    expect(find.byKey(const Key('pantry-reconciliation-day')), findsOneWidget);
+    expect(find.text('Mit Vorrat abgleichen'), findsOneWidget);
+    expect(
+      find.textContaining('Automatisch aus Vorrat abziehen'),
+      findsNothing,
+    );
     expect(find.byKey(const Key('finalize-consumption-day')), findsOneWidget);
   });
 }

@@ -5,6 +5,7 @@ from app.modules.consumption_tracking.models import (
     ConsumptionEntry,
     ConsumptionEntryNutrientSnapshot,
     ConsumptionMeal,
+    ConsumptionRecipeIngredientSnapshot,
     PlannedEntryConsumptionOutcome,
 )
 from app.modules.daily_meal_planning.models import DailyMealPlan, Meal, MealEntry
@@ -22,6 +23,13 @@ from app.modules.meal_plan_automation.models import (
 from app.modules.nutrition_assessment.models import Assessment, AssessmentMetric, SafetyFlag
 from app.modules.pantry.models import PantryLocation, PantryMovement, PantryStockLot
 from app.modules.pantry_aware_shopping.models import PantryAwareShoppingOperation
+from app.modules.pantry_consumption_reconciliation.models import (
+    PantryConsumptionAllocation,
+    PantryConsumptionReconciliationBatch,
+    PantryConsumptionRequirement,
+    PantryConsumptionReversal,
+    PantryConsumptionReversalAllocation,
+)
 from app.modules.privacy.models import (
     ConsentRecord,
     DeletionRecord,
@@ -74,6 +82,7 @@ __all__ = [
     "ConsumptionEntry",
     "ConsumptionEntryNutrientSnapshot",
     "ConsumptionMeal",
+    "ConsumptionRecipeIngredientSnapshot",
     "DailyMealPlan",
     "DeletionRecord",
     "DietaryRestriction",
@@ -89,6 +98,11 @@ __all__ = [
     "Measurement",
     "NutritionGoal",
     "PantryAwareShoppingOperation",
+    "PantryConsumptionAllocation",
+    "PantryConsumptionReconciliationBatch",
+    "PantryConsumptionRequirement",
+    "PantryConsumptionReversal",
+    "PantryConsumptionReversalAllocation",
     "PantryLocation",
     "PantryMovement",
     "PantryStockLot",

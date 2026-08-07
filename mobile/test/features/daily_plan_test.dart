@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutrition_companion/core/secure_storage/sensitive_store.dart';
 import 'package:nutrition_companion/core/widgets/app_scaffold.dart';
 import 'package:nutrition_companion/core/widgets/content_width.dart';
@@ -74,14 +75,22 @@ void main() {
   testWidgets(
     'top-level navigation contains manual daily planning without scores',
     (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: AppScaffold(title: 'Test', body: SizedBox.shrink()),
-        ),
+      final router = GoRouter(
+        initialLocation: '/home',
+        routes: [
+          GoRoute(
+            path: '/home',
+            builder: (_, _) => const AppScaffold(
+              title: 'Test',
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ],
       );
-      await tester.tap(find.byTooltip('Open navigation menu'));
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
-      expect(find.text('Tagesplan'), findsOneWidget);
+      expect(find.text('Plan'), findsOneWidget);
       expect(find.textContaining('Health Score'), findsNothing);
       expect(find.textContaining('Empfehlung'), findsNothing);
     },

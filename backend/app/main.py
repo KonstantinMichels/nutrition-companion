@@ -29,6 +29,9 @@ from app.modules.meal_plan_automation.router import router as automation_router
 from app.modules.nutrition_assessment.router import router as assessment_router
 from app.modules.pantry.router import router as pantry_router
 from app.modules.pantry_aware_shopping.router import router as pantry_aware_shopping_router
+from app.modules.pantry_consumption_reconciliation.router import (
+    router as pantry_consumption_reconciliation_router,
+)
 from app.modules.pantry_recipe_availability.router import (
     router as pantry_recipe_availability_router,
 )
@@ -90,6 +93,7 @@ app.include_router(privacy_router)
 app.include_router(reference_data_router)
 app.include_router(daily_plans_router)
 app.include_router(pantry_router)
+app.include_router(pantry_consumption_reconciliation_router)
 app.include_router(automation_router)
 app.include_router(pantry_aware_shopping_router)
 app.include_router(shopping_lists_router)

@@ -174,6 +174,8 @@ final class _PantryDetailScreenState extends ConsumerState<PantryDetailScreen> {
                   subtitle: Text(
                     '${item.delta} ${item.unit} · ${item.before} → ${item.after} ${item.unit}\n'
                     '${item.sourceType == 'shopping_list_purchase' ? 'Aus Einkaufsliste übernommen · ' : ''}'
+                    '${item.sourceType == 'consumption_reconciliation' ? 'Verzehrabgleich · ' : ''}'
+                    '${item.sourceType == 'consumption_reconciliation_reversal' ? 'Gegenbewegung zum Verzehrabgleich · ' : ''}'
                     '${DateFormatters.dateTime(item.createdAt)}${item.note == null ? '' : ' · ${item.note}'}',
                   ),
                 ),

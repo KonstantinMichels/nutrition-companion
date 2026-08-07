@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../core/formatting/german_decimal.dart';
@@ -256,6 +257,14 @@ final class _ConsumptionScreenState extends ConsumerState<ConsumptionScreen> {
           ),
         ),
         _comparisonCard(current, summary),
+        OutlinedButton.icon(
+          key: const Key('pantry-reconciliation-day'),
+          onPressed: () => context.push(
+            '/consumption/${current['id']}/pantry-reconciliation',
+          ),
+          icon: const Icon(Icons.inventory_2_outlined),
+          label: const Text('Mit Vorrat abgleichen'),
+        ),
         if (editable && plan != null && current['source_daily_plan_id'] == null)
           OutlinedButton.icon(
             key: const Key('link-existing-consumption-to-plan'),
@@ -468,38 +477,41 @@ final class _ConsumptionScreenState extends ConsumerState<ConsumptionScreen> {
               ),
               isThreeLine: true,
               onTap: () => _snapshotDetails(Map<String, dynamic>.from(raw)),
-              trailing: editable
-                  ? Wrap(
-                      children: [
-                        IconButton(
-                          tooltip: raw['entry_type'] == 'manual_unresolved'
-                              ? 'Mit Lebensmittel oder Rezept klären'
-                              : 'Menge bearbeiten',
-                          onPressed: mutating
-                              ? null
-                              : () => _guard(
-                                  () => raw['entry_type'] == 'manual_unresolved'
-                                      ? _resolveManualEntry(
-                                          Map<String, dynamic>.from(raw),
-                                        )
-                                      : _editEntry(
-                                          Map<String, dynamic>.from(raw),
-                                        ),
-                                ),
-                          icon: const Icon(Icons.edit_outlined),
-                        ),
-                        IconButton(
-                          tooltip: 'Eintrag dauerhaft löschen',
-                          onPressed: mutating
-                              ? null
-                              : () => _guard(
-                                  () => _deleteEntry(raw['id'].toString()),
-                                ),
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                      ],
-                    )
-                  : null,
+              trailing: Wrap(
+                children: [
+                  IconButton(
+                    tooltip: 'Mit Vorrat abgleichen',
+                    onPressed: () => context.push(
+                      '/consumption/${day!['id']}/pantry-reconciliation?entryId=${raw['id']}',
+                    ),
+                    icon: const Icon(Icons.inventory_2_outlined),
+                  ),
+                  if (editable)
+                    IconButton(
+                      tooltip: raw['entry_type'] == 'manual_unresolved'
+                          ? 'Mit Lebensmittel oder Rezept klären'
+                          : 'Menge bearbeiten',
+                      onPressed: mutating
+                          ? null
+                          : () => _guard(
+                              () => raw['entry_type'] == 'manual_unresolved'
+                                  ? _resolveManualEntry(
+                                      Map<String, dynamic>.from(raw),
+                                    )
+                                  : _editEntry(Map<String, dynamic>.from(raw)),
+                            ),
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                  IconButton(
+                    tooltip: 'Eintrag dauerhaft löschen',
+                    onPressed: mutating
+                        ? null
+                        : () =>
+                              _guard(() => _deleteEntry(raw['id'].toString())),
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
+              ),
             ),
           if (editable)
             Padding(
@@ -1548,19 +1560,101 @@ final class _ConsumptionScreenState extends ConsumerState<ConsumptionScreen> {
   }
 
   Future<void> _deleteEntry(String id) async {
-    final confirmed = await _confirm('Eintrag dauerhaft löschen?');
-    if (!confirmed) return;
-    await repository.deleteEntry(day!['id'].toString(), id);
+    final reconciliation = ref.read(pantryReconciliationRepositoryProvider);
+    final preview = await reconciliation.deletionPreview(
+      day!['id'].toString(),
+      entryId: id,
+    );
+    final policy = await _deletionPolicy(preview, isDay: false);
+    if (policy == null) return;
+    await reconciliation.deleteWithResolution(
+      day!['id'].toString(),
+      entryId: id,
+      policy: policy,
+      operationId: policy == 'reverse_and_delete'
+          ? consumptionOperationId()
+          : null,
+    );
     await _load();
   }
 
   Future<void> _deleteDay() async {
-    final confirmed = await _confirm(
-      'Verzehrtag mit allen Einträgen und Snapshots dauerhaft löschen? Tagesplan und Vorrat bleiben erhalten.',
+    final reconciliation = ref.read(pantryReconciliationRepositoryProvider);
+    final preview = await reconciliation.deletionPreview(day!['id'].toString());
+    final policy = await _deletionPolicy(preview, isDay: true);
+    if (policy == null) return;
+    await reconciliation.deleteWithResolution(
+      day!['id'].toString(),
+      policy: policy,
+      operationId: policy == 'reverse_all_and_delete'
+          ? consumptionOperationId()
+          : null,
     );
-    if (!confirmed) return;
-    await repository.deleteDay(day!['id'].toString());
     await _load();
+  }
+
+  Future<String?> _deletionPolicy(
+    Map<String, dynamic> preview, {
+    required bool isDay,
+  }) async {
+    if (preview['requires_resolution'] != true) {
+      final confirmed = await _confirm(
+        isDay
+            ? 'Verzehrtag mit allen Einträgen und Snapshots dauerhaft löschen? Tagesplan und Vorrat bleiben erhalten.'
+            : 'Eintrag dauerhaft löschen?',
+      );
+      return confirmed
+          ? (isDay
+                ? 'keep_all_movements_and_delete'
+                : 'keep_pantry_movements_and_delete')
+          : null;
+    }
+    final allocations = (preview['active_allocations'] as List? ?? const [])
+        .whereType<Map>();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bestandsbewegungen vorhanden'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Der Verzehr wurde bereits vom Vorrat abgezogen. Wähle ausdrücklich, was damit geschehen soll.',
+              ),
+              const SizedBox(height: 8),
+              for (final item in allocations)
+                Text(
+                  '• ${item['food_name']}: ${item['active_quantity']} ${item['canonical_unit']} (${item['location_name']})',
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(
+              context,
+              isDay
+                  ? 'keep_all_movements_and_delete'
+                  : 'keep_pantry_movements_and_delete',
+            ),
+            child: const Text('Abzüge behalten & löschen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(
+              context,
+              isDay ? 'reverse_all_and_delete' : 'reverse_and_delete',
+            ),
+            child: const Text('Zurückbuchen & löschen'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool> _confirm(String message) async =>

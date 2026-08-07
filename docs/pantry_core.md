@@ -56,3 +56,12 @@ Bestände aus ausdrücklich bestätigten Übergaben verwenden die generische Bew
 
 Pantry-aware Shopping liest aktive Lose und Datumszustände nur für eine flüchtige Vorschau. Es
 erzeugt weder Reservierung noch Bewegung oder Abzug.
+
+# Herkunft aus Verzehrabgleichen
+
+Die getrennte Integration `pantry_consumption_reconciliation` ruft Pantry Core ausschließlich über
+dessen Bewegungsservice auf. Bestätigte Abzüge tragen die Quelle `consumption_reconciliation`,
+Korrekturen die Quelle `consumption_reconciliation_reversal`. Vorschau, Herkunftsentscheidung,
+Zutatenanforderungen und Zuordnungen gehören nicht Pantry Core; Pantry bleibt autoritativ für
+Chargenmenge, Version, Datumsstatus und Bewegungsledger. Es gibt keinen automatischen Abzug allein
+durch einen Verzehreintrag.

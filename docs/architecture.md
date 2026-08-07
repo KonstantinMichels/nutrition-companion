@@ -1,5 +1,13 @@
 # Architecture
 
+## Pantry Consumption Reconciliation
+
+`Flutter → Reconciliation API → Reconciliation Service → Consumption Tracking + Pantry Core +
+Food Core + Recipe Core`. Consumption und Pantry bleiben getrennte Quellen der Wahrheit. Alle
+Mengenänderungen laufen durch Pantry Core; unveränderliche Abgleichsdatensätze liefern die
+Provenienz. Rücknahmen erzeugen Gegenbewegungen und historische Nährwertsnapshots bleiben
+unverändert.
+
 ## Progress Tracking Core
 
 `Flutter → Progress API → Application Service → Observation/Goal Storage + pure Trend Engine`. Beobachtungen sind die Quelle der Wahrheit, Trends entstehen bei Abruf. Immutable Assessments und Planungsziele werden nicht verändert; dynamische Energiekalibrierung bleibt nachgelagert.

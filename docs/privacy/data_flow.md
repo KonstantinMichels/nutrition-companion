@@ -219,3 +219,8 @@ them, no model dump is written, and only an explicitly applied compact audit per
 historische PostgreSQL-Snapshots → abgeleitete Summen`. Es gibt keinen Pfad zu externen Diensten,
 Analytics oder Werbung. Daily Plan und Assessment werden nur gelesen beziehungsweise referenziert;
 Pantry und Shopping Lists werden für eine Verzehrbuchung nicht verändert.
+# Pantry Consumption Reconciliation
+
+Die ausdrücklich gestartete mobile Vorschau sendet Entscheidungen an das eigene FastAPI-System.
+Nach Bestätigung erzeugt der Pantry-Core-Service lokale PostgreSQL-Bewegungen. Es gibt keine
+externen Empfänger, Analytik, Werbung oder Modelltrainingsnutzung.
