@@ -1,5 +1,12 @@
 # Nutrition methodology
 
+## Vorratsabgleich und Verzehrquelle
+
+Ein Verzehreintrag identifiziert nicht die Herkunft eines Lebensmittels. Rezeptzutaten werden
+für Bestandsbuchungen nur theoretisch aus Rezeptportionen skaliert; Verluste, Reste und Batch
+Cooking können abweichen. Bestätigte Vorratsbewegungen ändern keine Nährwertsummen.
+Datumsfelder einer Charge bestimmen nicht deren Lebensmittelsicherheit.
+
 ## Fortschrittsmessungen
 
 Messwerte sind Nutzereingaben. Kurzfristige Gewichtsänderungen können viele Ursachen haben. Rolling Averages reduzieren sichtbare Tagesvariabilität, zeigen aber weder Ursache noch Körperzusammensetzung. Lineare Trends sind beschreibend; Messmethoden sind nur eingeschränkt vergleichbar. Es erfolgen keine Diagnose und keine automatische Zieländerung.

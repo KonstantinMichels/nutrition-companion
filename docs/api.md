@@ -1,5 +1,12 @@
 # REST API
 
+## Pantry Consumption Reconciliation
+
+Status und Vorschau liegen unter
+`/api/v1/consumption-days/{id}/pantry-reconciliation`; Apply bleibt ausdrücklich und
+idempotent. Historie, Detail, Rücknahmevorschau und Gegenbewegungen liegen unter
+`/api/v1/pantry-consumption-reconciliations`. Vorschauen verändern weder Vorrat noch Verzehr.
+
 ## Progress Tracking
 
 `/api/v1/progress` bietet `overview`, CRUD für Gewicht, Körpermaße und Körperzusammensetzung sowie Ziele mit Abschluss und Abbruch. Historien sind paginiert; die Übersicht liefert chartfertige Roh-, Tagesrepräsentanten- und Rolling-Average-Werte. Decimal-Werte werden als Strings ausgegeben.

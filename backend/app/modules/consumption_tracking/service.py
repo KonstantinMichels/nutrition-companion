@@ -38,6 +38,7 @@ from .models import (
     ConsumptionEntry,
     ConsumptionEntryNutrientSnapshot,
     ConsumptionMeal,
+    ConsumptionRecipeIngredientSnapshot,
     PlannedEntryConsumptionOutcome,
 )
 from .schemas import (
@@ -631,6 +632,39 @@ def create_entry(
                 source_quality="estimated" if entry.conversion_estimated else "reported",
             )
         )
+    if payload.entry_type == EntryType.RECIPE and model is not None:
+        portions = payload.recipe_portion_count or Decimal(0)
+        for ingredient in model.ingredients:
+            measure_snapshot = None
+            if ingredient.food_measure is not None:
+                measure_snapshot = {
+                    "id": str(ingredient.food_measure.id),
+                    "name": ingredient.food_measure.name,
+                    "quantity": str(ingredient.food_measure.quantity),
+                    "equivalent_quantity": str(ingredient.food_measure.equivalent_quantity),
+                    "equivalent_unit": ingredient.food_measure.equivalent_unit,
+                    "is_estimated": ingredient.food_measure.is_estimated,
+                }
+            entry.recipe_ingredient_snapshots.append(
+                ConsumptionRecipeIngredientSnapshot(
+                    source_recipe_id=model.id,
+                    source_recipe_ingredient_id=ingredient.id,
+                    food_id=ingredient.food_id,
+                    food_name_snapshot=ingredient.food.name,
+                    ingredient_position=ingredient.position,
+                    original_quantity=ingredient.quantity,
+                    original_unit_code=ingredient.unit_code,
+                    normalized_quantity_for_logged_portions=(
+                        ingredient.normalized_quantity * portions / model.servings
+                    ),
+                    canonical_unit=ingredient.normalized_unit,
+                    food_measure_snapshot=measure_snapshot,
+                    conversion_estimated=ingredient.conversion_is_estimated,
+                    optional_ingredient=ingredient.is_optional,
+                    normalization_status="normalized",
+                    source_version_snapshot=model.updated_at.isoformat(),
+                )
+            )
     day.version += 1
     if commit:
         session.commit()

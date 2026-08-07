@@ -17,6 +17,9 @@ LOAD = (
     selectinload(ConsumptionDay.meals)
     .selectinload(ConsumptionMeal.entries)
     .selectinload(ConsumptionEntry.nutrient_snapshots),
+    selectinload(ConsumptionDay.meals)
+    .selectinload(ConsumptionMeal.entries)
+    .selectinload(ConsumptionEntry.recipe_ingredient_snapshots),
     selectinload(ConsumptionDay.outcomes).selectinload(PlannedEntryConsumptionOutcome.entries),
     selectinload(ConsumptionDay.assessment),
     selectinload(ConsumptionDay.training_day_adjustment),

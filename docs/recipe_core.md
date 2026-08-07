@@ -27,3 +27,12 @@ Recipe Target Comparison ist implementiert und verknüpft die aktuellen Recipe-C
 Pantry Recipe Availability vergleicht aktuelle Rezeptzutaten auf Abruf mit aktiven Vorratslosen.
 Ergebnisse werden nicht im Rezept gespeichert; siehe
 [pantry_recipe_availability.md](pantry_recipe_availability.md).
+
+## Historische Zutaten beim Verzehr
+
+Beim Erfassen eines Rezeptverzehrs werden die Zutaten proportional zur erfassten Portionszahl als
+historische Snapshots am Verzehreintrag gespeichert. Der spätere Vorratsabgleich verwendet nur diese
+Snapshots und niemals stillschweigend die aktuelle Rezeptversion. Optionale Zutaten sind zunächst
+ausgeschlossen. Für ältere Einträge ohne Snapshot ist eine Rekonstruktion nur bei exakt kompatibler
+Rezeptversion und nach ausdrücklicher Bestätigung zulässig; andernfalls bleibt die Anforderung
+ungeklärt. Siehe [pantry_consumption_reconciliation.md](pantry_consumption_reconciliation.md).

@@ -76,9 +76,18 @@ Nährwertsnapshots, Entscheidungen, Notizen und Zeitstempel. Der separate Datens
 entfernt alle Verzehrdaten. Es gibt keine Analytics, Werbung, externe API oder Drittlandübermittlung.
 
 Nicht implementiert sind Foto-, Barcode-, Beleg-, Restaurant-, Wearable- oder Health-Connect-
-Erfassung, automatische Vorratsbuchung, automatische Planänderung, Absorptionsmessung,
+Erfassung, automatische Planänderung, Absorptionsmessung,
 Adhärenzscore und automatische Zielkalibrierung. Unfertige Formulare werden derzeit nicht lokal
 persistiert. Eine konservative Readiness-Metrik löst keine Kalibrierung aus und behauptet keine
 objektive Vollständigkeit.
 
 Nächster erwarteter Branch: `feat/intake-informed-energy-calibration`.
+
+## Bewusster Vorratsabgleich
+
+Ein Verzehreintrag verändert den Vorrat weiterhin niemals automatisch. Die getrennte Integration
+`pantry_consumption_reconciliation` kann nach einer ausdrücklichen Herkunfts-, Mengen- und
+Chargenentscheidung kompensierbare Pantry-Bewegungen erzeugen. Rezeptverzehr speichert dafür beim
+Erfassen historische Zutatensnapshots; spätere Rezeptänderungen verändern diesen Stand nicht.
+Löschen bei aktiven Abzügen verlangt die ausdrückliche Wahl zwischen Gegenbuchung und Beibehaltung.
+Details stehen in [pantry_consumption_reconciliation.md](pantry_consumption_reconciliation.md).

@@ -19,6 +19,7 @@ import '../features/meal_plan_automation/automation_repository.dart';
 import '../features/progress/progress_repository.dart';
 import '../features/training/training_repository.dart';
 import '../features/consumption/consumption_repository.dart';
+import '../features/consumption/pantry_reconciliation_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig was not supplied at startup.'),
@@ -100,3 +101,8 @@ final trainingRepositoryProvider = Provider<TrainingRepository>(
 final consumptionRepositoryProvider = Provider<ConsumptionRepository>(
   (ref) => ConsumptionRepository(ref.watch(apiClientProvider)),
 );
+
+final pantryReconciliationRepositoryProvider =
+    Provider<PantryReconciliationRepository>(
+      (ref) => PantryReconciliationRepository(ref.watch(apiClientProvider)),
+    );

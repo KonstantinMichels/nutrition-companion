@@ -32,12 +32,15 @@ import '../features/meal_plan_automation/automation_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/training/training_screen.dart';
 import '../features/consumption/consumption_screen.dart';
+import '../features/consumption/pantry_reconciliation_screen.dart';
+import '../features/more/more_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const BootstrapScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/more', builder: (context, state) => const MoreScreen()),
     GoRoute(
       path: '/progress',
       builder: (context, state) => const ProgressScreen(),
@@ -52,6 +55,13 @@ final appRouter = GoRouter(
       path: '/consumption',
       builder: (context, state) => ConsumptionScreen(
         initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      ),
+    ),
+    GoRoute(
+      path: '/consumption/:dayId/pantry-reconciliation',
+      builder: (context, state) => PantryReconciliationScreen(
+        dayId: state.pathParameters['dayId']!,
+        entryId: state.uri.queryParameters['entryId'],
       ),
     ),
     GoRoute(path: '/pantry', builder: (context, state) => const PantryScreen()),

@@ -223,3 +223,9 @@ Verzehrs einschließlich historischer Nährwertsnapshots, Planeintragsentscheidu
 Vollständigkeits-Selbstauskünften und Zielvergleichen. Keine Nutzung für Werbung, Analytics,
 Forschung, Modelltraining oder automatische Zieländerungen. Rechtsgrundlage und finaler
 Informationstext benötigen vor Produktion qualifizierte Prüfung.
+# Pantry Consumption Reconciliation
+
+Der Zweck `pantry_consumption_reconciliation` umfasst die vom Nutzer bestätigte Verbindung
+zwischen sensiblen Verzehrdaten und Haushaltsbestand. Die bestehende Verarbeitung deckt den
+funktionalen Zusammenhang; es wird kein wiederholter Zustimmungsdialog eingeführt. Die
+rechtliche Bewertung bleibt vor öffentlicher Bereitstellung erforderlich.

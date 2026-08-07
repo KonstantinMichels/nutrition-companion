@@ -93,3 +93,8 @@ Verzehrtage bleiben bis zur ausdrücklichen Einzel-/Tageslöschung, separaten L�
 Verzehrdaten oder vollständigen Profillöschung gespeichert. Mahlzeiten, Einträge, Snapshots und
 Entscheidungen werden innerhalb des Moduls kaskadiert. Es gibt derzeit keine lokal persistierten
 Verzehrentwürfe und damit keine zusätzliche Draft-TTL.
+# Pantry Consumption Reconciliation
+
+Unveränderliche Abgleiche und Gegenbewegungen bleiben bis zur vollständigen Profillöschung.
+Bei Einzellöschung des Verzehrs bleibt je nach ausdrücklicher Entscheidung der Audit-Snapshot
+mit nullbarer Live-Referenz erhalten. Transiente Vorschauen werden nicht gespeichert.

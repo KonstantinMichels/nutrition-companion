@@ -235,6 +235,12 @@ class ConsumptionEntry(Base):
     nutrient_snapshots: Mapped[list[ConsumptionEntryNutrientSnapshot]] = relationship(
         back_populates="entry", cascade="all, delete-orphan", passive_deletes=True
     )
+    recipe_ingredient_snapshots: Mapped[list[ConsumptionRecipeIngredientSnapshot]] = relationship(
+        back_populates="entry",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="ConsumptionRecipeIngredientSnapshot.ingredient_position",
+    )
 
 
 class ConsumptionEntryNutrientSnapshot(Base):
@@ -256,3 +262,41 @@ class ConsumptionEntryNutrientSnapshot(Base):
     source_quality: Mapped[str | None] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     entry: Mapped[ConsumptionEntry] = relationship(back_populates="nutrient_snapshots")
+
+
+class ConsumptionRecipeIngredientSnapshot(Base):
+    __tablename__ = "consumption_recipe_ingredient_snapshots"
+    __table_args__ = (
+        UniqueConstraint(
+            "consumption_entry_id",
+            "ingredient_position",
+            name="uq_consumption_recipe_snapshot_position",
+        ),
+        Index("ix_consumption_recipe_snapshot_food", "food_id"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    consumption_entry_id: Mapped[UUID] = mapped_column(
+        ForeignKey("consumption_entries.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    source_recipe_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("recipes.id", ondelete="SET NULL")
+    )
+    source_recipe_ingredient_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("recipe_ingredients.id", ondelete="SET NULL")
+    )
+    food_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("foods.id", ondelete="SET NULL"), index=True
+    )
+    food_name_snapshot: Mapped[str] = mapped_column(String(200), nullable=False)
+    ingredient_position: Mapped[int] = mapped_column(Integer, nullable=False)
+    original_quantity: Mapped[Decimal] = mapped_column(Numeric(30, 15), nullable=False)
+    original_unit_code: Mapped[str] = mapped_column(String(32), nullable=False)
+    normalized_quantity_for_logged_portions: Mapped[Decimal | None] = mapped_column(Numeric(30, 15))
+    canonical_unit: Mapped[str | None] = mapped_column(String(8))
+    food_measure_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSON_DOCUMENT)
+    conversion_estimated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    optional_ingredient: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    normalization_status: Mapped[str] = mapped_column(String(24), nullable=False)
+    source_version_snapshot: Mapped[str] = mapped_column(String(80), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    entry: Mapped[ConsumptionEntry] = relationship(back_populates="recipe_ingredient_snapshots")

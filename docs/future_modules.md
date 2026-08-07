@@ -1,5 +1,11 @@
 # Future modules
 
+Nächster erwarteter Branch ist `feat/barcode-product-import`. Er soll Barcodes scannen oder
+entgegennehmen, unterstützte Produktquellen durchsuchen und Produkt- sowie Nährwertdaten mit
+Quelle und Qualitätsstatus zur Bestätigung zeigen. Erst danach wird ein Food erstellt oder
+zugeordnet; optional kann nach weiterer Bestätigung Vorrat entstehen. Externe Daten werden nie
+stillschweigend vertraut. Barcode Product Import ist noch nicht implementiert.
+
 Nächster erwarteter Branch ist `feat/dynamic-energy-calibration`. Er soll nur bei ausreichender Abdeckung konservative, unsichere Korrekturen vorschlagen. Bestätigte Änderungen müssen einen neuen unveränderlichen Datensatz erzeugen; historische Assessments werden nie umgeschrieben. Dies ist noch nicht implementiert.
 
 The next expected branch is `feat/shopping-list-core`. It will collect requirements

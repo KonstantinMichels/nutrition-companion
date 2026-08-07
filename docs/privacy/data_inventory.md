@@ -243,3 +243,9 @@ preview tokens are transient and excluded from export.
 
 Transiente Vorschauen, Tokens und Servercaches werden nicht exportiert. Vorrat und Einkaufslisten
 sind getrennte Datenbestände.
+# Pantry Consumption Reconciliation
+
+Gespeichert werden Verzehr-Referenzen und Quellsnapshots, Herkunftsentscheidungen,
+Rezeptzutaten-Snapshots, theoretische und ausgewählte Mengen, Chargen- und Lagerortreferenzen,
+Bewegungsreferenzen, Rücknahmegründe und Zeitpunkte. Vorschauen und Tokens werden nicht
+gespeichert.

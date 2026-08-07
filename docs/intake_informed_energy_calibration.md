@@ -31,3 +31,6 @@ Aufnahme, Absorption noch Energieverbrauch und sind nicht diagnostisch. Es gibt 
 automatische Anwendung und keine Vorratsänderung.
 
 Nächster fachlicher Branch: `feat/pantry-consumption-reconciliation`.
+
+Der Vorratsabgleich verändert weder historische Aufnahme-Energie noch die Eignung oder
+Ergebnisse dieser Kalibrierung. Er ist ausschließlich eine bestätigte Bestandsbuchung.

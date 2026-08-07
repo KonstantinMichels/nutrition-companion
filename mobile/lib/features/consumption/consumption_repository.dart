@@ -16,6 +16,11 @@ final class ConsumptionRepository {
     }
   }
 
+  Future<Map<String, dynamic>> detail(String dayId) async =>
+      Map<String, dynamic>.from(
+        await _api.get('/api/v1/consumption-days/$dayId') as Map,
+      );
+
   Future<Map<String, dynamic>> create(String date) async =>
       Map<String, dynamic>.from(
         await _api.post(
