@@ -205,19 +205,22 @@ final appRouter = GoRouter(
   ],
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(title: const Text('Seite nicht gefunden')),
-    body: Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Diese Seite konnte nicht geöffnet werden.'),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => context.go('/home'),
-              child: const Text('Zur Übersicht'),
-            ),
-          ],
+    body: ColoredBox(
+      color: Theme.of(context).colorScheme.surface,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Diese Seite konnte nicht geöffnet werden.'),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => context.go('/home'),
+                child: const Text('Zur Übersicht'),
+              ),
+            ],
+          ),
         ),
       ),
     ),

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
+import '../../core/widgets/design_system.dart';
 import '../../core/widgets/states.dart';
 import 'shopping_list_models.dart';
 
@@ -33,6 +35,7 @@ class _ShoppingListsState extends ConsumerState<ShoppingListsScreen> {
   @override
   Widget build(BuildContext context) => AppScaffold(
     title: 'Einkaufslisten',
+    revealRootBackground: true,
     actions: [IconButton(onPressed: reload, icon: const Icon(Icons.refresh))],
     body: FutureBuilder<List<ShoppingListSummary>>(
       future: future,
@@ -48,56 +51,76 @@ class _ShoppingListsState extends ConsumerState<ShoppingListsScreen> {
         }
         final items = snapshot.data ?? [];
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            AppLayout.sectionOuterMargin,
+            AppSpacing.sm,
+            AppLayout.sectionOuterMargin,
+            AppLayout.navigationContentInset +
+                MediaQuery.viewPaddingOf(context).bottom,
+          ),
           children: [
-            Wrap(
-              spacing: 8,
-              children: [
-                FilledButton.icon(
-                  onPressed: _create,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Leere Liste'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => context.push('/shopping-lists/generate'),
-                  icon: const Icon(Icons.event_note),
-                  label: const Text('Aus Plan'),
-                ),
-                FilterChip(
-                  label: const Text('Archivierte'),
-                  selected: archived,
-                  onSelected: (value) {
-                    archived = value;
-                    reload();
-                  },
-                ),
-              ],
+            NutritionSection(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NutritionSectionHeader(title: 'Neue Einkaufsliste'),
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _create,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Leere Liste'),
+                      ),
+                      NutritionActionPill(
+                        label: 'Aus Plan',
+                        icon: Icons.event_note,
+                        onPressed: () =>
+                            context.push('/shopping-lists/generate'),
+                      ),
+                      FilterChip(
+                        label: const Text('Archivierte'),
+                        selected: archived,
+                        onSelected: (value) {
+                          archived = value;
+                          reload();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sm),
             if (items.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(32),
+              const NutritionSection(
                 child: Center(child: Text('Noch keine Einkaufsliste')),
               )
             else
-              ...items.map(
-                (item) => Card(
-                  child: ListTile(
-                    leading: Icon(
-                      item.status == 'completed'
-                          ? Icons.task_alt
-                          : Icons.shopping_cart_outlined,
-                    ),
-                    title: Text(item.name),
-                    subtitle: Text(
-                      '${_source(item.sourceType)} · '
-                      '${item.checkedCount}/${item.itemCount} erledigt',
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context
-                        .push('/shopping-lists/${item.id}')
-                        .then((_) => reload()),
-                  ),
+              NutritionSection(
+                child: Column(
+                  children: [
+                    for (var index = 0; index < items.length; index++)
+                      NutritionListRow(
+                        leading: Icon(
+                          items[index].status == 'completed'
+                              ? Icons.task_alt
+                              : Icons.shopping_cart_outlined,
+                        ),
+                        title: Text(items[index].name),
+                        subtitle: Text(
+                          '${_source(items[index].sourceType)} · '
+                          '${items[index].checkedCount}/${items[index].itemCount} erledigt',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context
+                            .push('/shopping-lists/${items[index].id}')
+                            .then((_) => reload()),
+                        showDivider: index < items.length - 1,
+                      ),
+                  ],
                 ),
               ),
           ],

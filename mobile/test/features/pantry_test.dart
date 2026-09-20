@@ -83,10 +83,8 @@ void main() {
       routes: [
         GoRoute(
           path: '/home',
-          builder: (_, _) => const AppScaffold(
-            title: 'Test',
-            body: SizedBox.shrink(),
-          ),
+          builder: (_, _) =>
+              const AppScaffold(title: 'Test', body: SizedBox.shrink()),
         ),
       ],
     );

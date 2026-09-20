@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/formatting/date_formatters.dart';
 import '../../core/formatting/german_decimal.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
+import '../../core/widgets/design_system.dart';
 import '../../core/widgets/states.dart';
 import '../nutrition_assessment/assessment_models.dart';
 
@@ -25,6 +27,7 @@ final class AssessmentReportScreen extends ConsumerWidget {
     final report = ref.watch(assessmentReportProvider(assessmentId));
     return AppScaffold(
       title: 'Ernährungseinschätzung',
+      revealRootBackground: true,
       body: report.when(
         loading: () => const LoadingState(message: 'Bericht wird geladen …'),
         error: (error, _) => ErrorState(
@@ -57,96 +60,113 @@ final class _Report extends StatelessWidget {
       referenceSetVersion: report.referenceSetVersion,
       applicationRuleSetVersion: report.applicationRuleSetVersion,
     );
+    final sections = <Widget>[
+      NutritionSection(
+        child: NutritionSectionHeader(
+          title: 'Dein genauer Ernährungsbericht',
+          subtitle:
+              'Erstellt am ${DateFormatters.dateTime(summary.calculatedAt)}',
+        ),
+      ),
+      _ScopeCard(status: summary.supportedScopeStatus),
+      _OverviewCard(summary: summary),
+      section(
+        title: 'Erhaltungsenergie',
+        subtitle: 'Geschätzter täglicher Energiebedarf als Bereich',
+        metrics: _select(report.metrics, const ['energy.maintenance']),
+      ),
+      section(
+        title: 'Zielenergie',
+        subtitle: 'Aus Ziel und Anwendungsvorgaben abgeleiteter Bereich',
+        metrics: _select(report.metrics, const ['energy.goal_target']),
+      ),
+      section(
+        title: 'Ruheenergie',
+        metrics: _select(report.metrics, const [
+          'energy.resting_energy',
+          'energy.resting_energy_formula_comparison',
+        ]),
+      ),
+      section(
+        title: 'BMI',
+        metrics: _select(report.metrics, const ['anthropometrics.bmi']),
+      ),
+      section(
+        title: 'Taillenverhältnisse',
+        metrics: _select(report.metrics, const [
+          'anthropometrics.waist_to_height_ratio',
+          'anthropometrics.waist_to_hip_ratio',
+        ]),
+      ),
+      section(
+        title: 'Körperzusammensetzung',
+        metrics: _select(report.metrics, const [
+          'body_composition.fat_mass_kg',
+          'body_composition.fat_free_mass_kg',
+        ]),
+      ),
+      section(
+        title: 'Aktivität und PAL',
+        metrics: _select(report.metrics, const ['activity.pal']),
+      ),
+      section(
+        title: 'Protein',
+        metrics: _prefix(report.metrics, const ['protein.', 'macros.protein_']),
+      ),
+      section(
+        title: 'Fett',
+        metrics: _prefix(report.metrics, const [
+          'macros.fat_',
+          'macros.saturated_fat_',
+        ]),
+      ),
+      section(
+        title: 'Kohlenhydrate',
+        metrics: _prefix(report.metrics, const ['macros.carbohydrate_']),
+      ),
+      section(
+        title: 'Makronährstoff-Bilanz',
+        metrics: _select(report.metrics, const ['macros.energy_sum']),
+      ),
+      section(
+        title: 'Ballaststoffe',
+        metrics: _prefix(report.metrics, const ['fiber.']),
+      ),
+      section(
+        title: 'Flüssigkeit',
+        metrics: _prefix(report.metrics, const ['hydration.']),
+      ),
+      section(
+        title: 'Mikronährstoffe',
+        metrics: _prefix(report.metrics, const ['micronutrients.']),
+        unavailable: report.unavailableMicronutrients,
+      ),
+      _FoodGroups(groups: report.foodGroups),
+      _Warnings(flags: summary.warnings),
+      _Methodology(report: report),
+      NutritionSection(
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                'Diese Einschätzung ist eine allgemeine, wissenschaftlich referenzierte Schätzung und nicht für Diagnose oder Behandlung bestimmt.',
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Erstellt am ${DateFormatters.dateTime(summary.calculatedAt)}'),
-        const SizedBox(height: 12),
-        _ScopeCard(status: summary.supportedScopeStatus),
-        _OverviewCard(summary: summary),
-        section(
-          title: 'Erhaltungsenergie',
-          subtitle: 'Geschätzter täglicher Energiebedarf als Bereich',
-          metrics: _select(report.metrics, const ['energy.maintenance']),
-        ),
-        section(
-          title: 'Zielenergie',
-          subtitle: 'Aus Ziel und Anwendungsvorgaben abgeleiteter Bereich',
-          metrics: _select(report.metrics, const ['energy.goal_target']),
-        ),
-        section(
-          title: 'Ruheenergie',
-          metrics: _select(report.metrics, const [
-            'energy.resting_energy',
-            'energy.resting_energy_formula_comparison',
-          ]),
-        ),
-        section(
-          title: 'BMI',
-          metrics: _select(report.metrics, const ['anthropometrics.bmi']),
-        ),
-        section(
-          title: 'Taillenverhältnisse',
-          metrics: _select(report.metrics, const [
-            'anthropometrics.waist_to_height_ratio',
-            'anthropometrics.waist_to_hip_ratio',
-          ]),
-        ),
-        section(
-          title: 'Körperzusammensetzung',
-          metrics: _select(report.metrics, const [
-            'body_composition.fat_mass_kg',
-            'body_composition.fat_free_mass_kg',
-          ]),
-        ),
-        section(
-          title: 'Aktivität und PAL',
-          metrics: _select(report.metrics, const ['activity.pal']),
-        ),
-        section(
-          title: 'Protein',
-          metrics: _prefix(report.metrics, const [
-            'protein.',
-            'macros.protein_',
-          ]),
-        ),
-        section(
-          title: 'Fett',
-          metrics: _prefix(report.metrics, const [
-            'macros.fat_',
-            'macros.saturated_fat_',
-          ]),
-        ),
-        section(
-          title: 'Kohlenhydrate',
-          metrics: _prefix(report.metrics, const ['macros.carbohydrate_']),
-        ),
-        section(
-          title: 'Makronährstoff-Bilanz',
-          metrics: _select(report.metrics, const ['macros.energy_sum']),
-        ),
-        section(
-          title: 'Ballaststoffe',
-          metrics: _prefix(report.metrics, const ['fiber.']),
-        ),
-        section(
-          title: 'Flüssigkeit',
-          metrics: _prefix(report.metrics, const ['hydration.']),
-        ),
-        section(
-          title: 'Mikronährstoffe',
-          metrics: _prefix(report.metrics, const ['micronutrients.']),
-          unavailable: report.unavailableMicronutrients,
-        ),
-        _FoodGroups(groups: report.foodGroups),
-        _Warnings(flags: summary.warnings),
-        _Methodology(report: report),
-        const SizedBox(height: 24),
-        const Text(
-          'Diese Einschätzung ist eine allgemeine, wissenschaftlich referenzierte Schätzung und nicht für Diagnose oder Behandlung bestimmt.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 32),
+        for (var index = 0; index < sections.length; index++) ...[
+          if (index > 0) const SizedBox(height: AppLayout.sectionGap),
+          sections[index],
+        ],
       ],
     );
   }
@@ -159,24 +179,35 @@ final class _ScopeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final supported = status == 'supported';
-    return Card(
-      color: supported
+    return NutritionSection(
+      backgroundColor: supported
           ? Theme.of(context).colorScheme.primaryContainer
           : Theme.of(context).colorScheme.errorContainer,
-      child: ListTile(
-        leading: Icon(
-          supported ? Icons.check_circle_outline : Icons.info_outline,
-        ),
-        title: Text(
-          supported
-              ? 'Automatisch unterstützter Bereich'
-              : 'Außerhalb des automatisch unterstützten Bereichs',
-        ),
-        subtitle: Text(
-          supported
-              ? 'Die Angaben liegen im vorgesehenen Nutzerbereich des MVP.'
-              : 'Einige Standardziele können bewusst fehlen. Bitte beachte die Hinweise und ziehe qualifizierte Beratung in Betracht.',
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(supported ? Icons.check_circle_outline : Icons.info_outline),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  supported
+                      ? 'Automatisch unterstützter Bereich'
+                      : 'Außerhalb des automatisch unterstützten Bereichs',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  supported
+                      ? 'Die Angaben liegen im vorgesehenen Nutzerbereich des MVP.'
+                      : 'Einige Standardziele können bewusst fehlen. Bitte beachte die Hinweise und ziehe qualifizierte Beratung in Betracht.',
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -187,20 +218,17 @@ final class _OverviewCard extends StatelessWidget {
   final AssessmentSummary summary;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Überblick', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          _valueRow('Erhaltungsenergie', summary.maintenanceEnergy.display),
-          _valueRow('Zielenergie', summary.targetEnergy.display),
-          for (final entry in summary.macros.entries)
-            _valueRow(_label(entry.key), entry.value),
-        ],
-      ),
+  Widget build(BuildContext context) => NutritionSection(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Überblick', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        _valueRow('Erhaltungsenergie', summary.maintenanceEnergy.display),
+        _valueRow('Zielenergie', summary.targetEnergy.display),
+        for (final entry in summary.macros.entries)
+          _valueRow(_label(entry.key), entry.value),
+      ],
     ),
   );
 }
@@ -222,45 +250,44 @@ final class _MetricSection extends StatelessWidget {
   final String applicationRuleSetVersion;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
-          if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle!)],
-          if (metrics.isEmpty && unavailable.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Für diese Einschätzung ist kein Wert verfügbar.'),
-            ),
-          for (final metric in metrics)
-            _MetricTile(
-              metric: metric,
-              referenceSetVersion: referenceSetVersion,
-              applicationRuleSetVersion: applicationRuleSetVersion,
-            ),
-          if (unavailable.isNotEmpty)
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              leading: const Icon(Icons.info_outline),
-              title: const Text('Nicht verfügbare Referenzwerte'),
-              subtitle: Text(
-                '${unavailable.length} Werte wurden nicht erfunden oder ersetzt.',
-              ),
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(unavailable.join(', ')),
-                  ),
-                ),
-              ],
-            ),
+  Widget build(BuildContext context) => NutritionSection(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle!)],
+        if (metrics.isEmpty && unavailable.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Für diese Einschätzung ist kein Wert verfügbar.'),
+          ),
+        for (final metric in metrics) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _MetricTile(
+            metric: metric,
+            referenceSetVersion: referenceSetVersion,
+            applicationRuleSetVersion: applicationRuleSetVersion,
+          ),
         ],
-      ),
+        if (unavailable.isNotEmpty)
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Nicht verfügbare Referenzwerte'),
+            subtitle: Text(
+              '${unavailable.length} Werte wurden nicht erfunden oder ersetzt.',
+            ),
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(unavailable.join(', ')),
+                ),
+              ),
+            ],
+          ),
+      ],
     ),
   );
 }
@@ -280,50 +307,52 @@ final class _MetricTile extends StatelessWidget {
     final value = metric.lowerValue != null && metric.upperValue != null
         ? '${GermanDecimal.format(metric.lowerValue!, decimals: 1)}–${GermanDecimal.format(metric.upperValue!, decimals: 1)} ${metric.unit}'
         : '${metric.displayValue}${metric.unit.isEmpty || metric.displayValue.contains(metric.unit) ? '' : ' ${metric.unit}'}';
-    return ExpansionTile(
-      key: ValueKey(metric.code),
-      tilePadding: EdgeInsets.zero,
-      title: Text(_label(metric.code)),
-      subtitle: Text(value),
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Wie wurde das berechnet?',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(metric.explanation),
-                const SizedBox(height: 12),
-                _detail('Formel oder Regel', metric.methodCode),
-                _detail(
-                  'Eingaben',
-                  const JsonEncoder.withIndent(
-                    '  ',
-                  ).convert(metric.calculationInputs),
-                ),
-                _detail(
-                  'Wissenschaftliche Quelle',
-                  _source(metric.sourceMetadata),
-                ),
-                _detail('Referenzsatz-Version', referenceSetVersion),
-                if (metric.applicationRuleIdentifier != null)
-                  _detail(
-                    'Anwendungsregel',
-                    '${metric.applicationRuleIdentifier!} (Regelsatz $applicationRuleSetVersion)',
+    return NutritionSubSurface(
+      child: ExpansionTile(
+        key: ValueKey(metric.code),
+        tilePadding: EdgeInsets.zero,
+        title: Text(_label(metric.code)),
+        subtitle: Text(value),
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Wie wurde das berechnet?',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                _detail('Einordnung', _confidence(metric.confidenceType)),
-                _detail('Grenzen und Unsicherheit', metric.limitations),
-              ],
+                  const SizedBox(height: 6),
+                  Text(metric.explanation),
+                  const SizedBox(height: 12),
+                  _detail('Formel oder Regel', metric.methodCode),
+                  _detail(
+                    'Eingaben',
+                    const JsonEncoder.withIndent(
+                      '  ',
+                    ).convert(metric.calculationInputs),
+                  ),
+                  _detail(
+                    'Wissenschaftliche Quelle',
+                    _source(metric.sourceMetadata),
+                  ),
+                  _detail('Referenzsatz-Version', referenceSetVersion),
+                  if (metric.applicationRuleIdentifier != null)
+                    _detail(
+                      'Anwendungsregel',
+                      '${metric.applicationRuleIdentifier!} (Regelsatz $applicationRuleSetVersion)',
+                    ),
+                  _detail('Einordnung', _confidence(metric.confidenceType)),
+                  _detail('Grenzen und Unsicherheit', metric.limitations),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -333,40 +362,37 @@ final class _FoodGroups extends StatelessWidget {
   final List<Map<String, dynamic>> groups;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Lebensmittelgruppen',
-            style: Theme.of(context).textTheme.titleLarge,
+  Widget build(BuildContext context) => NutritionSection(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Lebensmittelgruppen',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Allgemeine lebensmittelbezogene Empfehlungen; ohne Ernährungstagebuch wird keine Einhaltung bewertet.',
+        ),
+        if (groups.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 12),
+            child: Text('Keine strukturierten Empfehlungen verfügbar.'),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Allgemeine lebensmittelbezogene Empfehlungen; ohne Ernährungstagebuch wird keine Einhaltung bewertet.',
+        for (final group in groups)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.eco_outlined),
+            title: Text(
+              (group['display_name_de'] ?? group['name'] ?? group['code'])
+                  .toString(),
+            ),
+            subtitle: Text(
+              (group['recommendation_de'] ?? group['recommendation'] ?? '')
+                  .toString(),
+            ),
           ),
-          if (groups.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 12),
-              child: Text('Keine strukturierten Empfehlungen verfügbar.'),
-            ),
-          for (final group in groups)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.eco_outlined),
-              title: Text(
-                (group['display_name_de'] ?? group['name'] ?? group['code'])
-                    .toString(),
-              ),
-              subtitle: Text(
-                (group['recommendation_de'] ?? group['recommendation'] ?? '')
-                    .toString(),
-              ),
-            ),
-        ],
-      ),
+      ],
     ),
   );
 }
@@ -376,33 +402,32 @@ final class _Warnings extends StatelessWidget {
   final List<SafetyFlag> flags;
 
   @override
-  Widget build(BuildContext context) => Card(
-    color: flags.isEmpty ? null : Theme.of(context).colorScheme.errorContainer,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Hinweise und Sicherheitsmarkierungen',
-            style: Theme.of(context).textTheme.titleLarge,
+  Widget build(BuildContext context) => NutritionSection(
+    backgroundColor: flags.isEmpty
+        ? null
+        : Theme.of(context).colorScheme.errorContainer,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hinweise und Sicherheitsmarkierungen',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        if (flags.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text('Keine besonderen Hinweise für diese Einschätzung.'),
           ),
-          if (flags.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text('Keine besonderen Hinweise für diese Einschätzung.'),
-            ),
-          for (final flag in flags)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.info_outline),
-              title: Text(flag.explanation),
-              subtitle: flag.recommendedAction.isEmpty
-                  ? null
-                  : Text(flag.recommendedAction),
-            ),
-        ],
-      ),
+        for (final flag in flags)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.info_outline),
+            title: Text(flag.explanation),
+            subtitle: flag.recommendedAction.isEmpty
+                ? null
+                : Text(flag.recommendedAction),
+          ),
+      ],
     ),
   );
 }
@@ -412,10 +437,11 @@ final class _Methodology extends StatelessWidget {
   final AssessmentReport report;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => NutritionSection(
     child: ExpansionTile(
+      tilePadding: EdgeInsets.zero,
       title: const Text('Methodik und Versionen'),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
       children: [
         Align(
           alignment: Alignment.centerLeft,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/states.dart';
 import '../../core/formatting/german_decimal.dart';
@@ -46,7 +48,7 @@ final class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         data: (recipe) {
           if (servings.text.isEmpty) servings.text = recipe.servings;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: AppLayout.scrollPadding(context),
             children: [
               Text(
                 recipe.name,

@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
+import '../../core/widgets/design_system.dart';
 import '../../core/widgets/states.dart';
 import 'food_models.dart';
 
@@ -36,6 +39,7 @@ final class _FoodListScreenState extends ConsumerState<FoodListScreen> {
     final state = ref.watch(foodListProvider(filter));
     return AppScaffold(
       title: 'Lebensmittel',
+      revealRootBackground: true,
       actions: [
         IconButton(
           onPressed: () => context.go('/foods/scan'),
@@ -49,27 +53,41 @@ final class _FoodListScreenState extends ConsumerState<FoodListScreen> {
         label: const Text('Neu'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(
+          AppLayout.sectionOuterMargin,
+          AppSpacing.sm,
+          AppLayout.sectionOuterMargin,
+          0,
+        ),
         child: Column(
           children: [
-            TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                labelText: 'Name oder Marke suchen',
+            NutritionSection(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      labelText: 'Name oder Marke suchen',
+                    ),
+                    onChanged: (value) {
+                      timer?.cancel();
+                      timer = Timer(
+                        const Duration(milliseconds: 350),
+                        () => setState(() => query = value),
+                      );
+                    },
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Archivierte anzeigen'),
+                    value: archived,
+                    onChanged: (value) => setState(() => archived = value),
+                  ),
+                ],
               ),
-              onChanged: (value) {
-                timer?.cancel();
-                timer = Timer(
-                  const Duration(milliseconds: 350),
-                  () => setState(() => query = value),
-                );
-              },
             ),
-            SwitchListTile(
-              title: const Text('Archivierte anzeigen'),
-              value: archived,
-              onChanged: (value) => setState(() => archived = value),
-            ),
+            const SizedBox(height: AppSpacing.sm),
             Expanded(
               child: state.when(
                 loading: () => const LoadingState(),
@@ -81,12 +99,21 @@ final class _FoodListScreenState extends ConsumerState<FoodListScreen> {
                     ? const Center(
                         child: Text('Noch keine Lebensmittel gespeichert.'),
                       )
-                    : ListView.builder(
-                        itemCount: items.length,
-                        itemBuilder: (_, index) {
-                          final food = items[index];
-                          return Card(
-                            child: ListTile(
+                    : NutritionSection(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: ListView.builder(
+                          padding: EdgeInsets.only(
+                            bottom:
+                                AppLayout.navigationContentInset +
+                                MediaQuery.viewPaddingOf(context).bottom,
+                          ),
+                          itemCount: items.length,
+                          itemBuilder: (_, index) {
+                            final food = items[index];
+                            return NutritionListRow(
                               title: Text(food.name),
                               subtitle: Text(
                                 '${food.brand ?? 'Ohne Marke'} · pro 100 ${food.referenceUnit}\n${food.quality == 'incomplete' ? 'Unvollständige Angaben' : 'Grundwerte vollständig'}${food.archived ? ' · Archiviert' : ''}',
@@ -94,9 +121,10 @@ final class _FoodListScreenState extends ConsumerState<FoodListScreen> {
                               isThreeLine: true,
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => context.go('/foods/${food.id}'),
-                            ),
-                          );
-                        },
+                              showDivider: index < items.length - 1,
+                            );
+                          },
+                        ),
                       ),
               ),
             ),

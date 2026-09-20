@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/widgets/app_scaffold.dart';
+import '../../core/widgets/design_system.dart';
 import 'pantry_models.dart';
 
 final class PantryScreen extends ConsumerStatefulWidget {
@@ -77,6 +79,7 @@ final class _PantryScreenState extends ConsumerState<PantryScreen> {
   @override
   Widget build(BuildContext context) => AppScaffold(
     title: 'Vorrat',
+    revealRootBackground: true,
     actions: [
       IconButton(
         tooltip: 'Lagerorte verwalten',
@@ -102,72 +105,106 @@ final class _PantryScreenState extends ConsumerState<PantryScreen> {
         : RefreshIndicator(
             onRefresh: load,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              padding: EdgeInsets.fromLTRB(
+                AppLayout.sectionOuterMargin,
+                AppSpacing.sm,
+                AppLayout.sectionOuterMargin,
+                AppLayout.navigationContentInset +
+                    MediaQuery.viewPaddingOf(context).bottom,
+              ),
               children: [
                 _summary(),
-                TextField(
-                  controller: search,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    labelText: 'Vorrat durchsuchen',
+                const SizedBox(height: AppSpacing.sm),
+                NutritionSection(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: search,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search),
+                          labelText: 'Vorrat durchsuchen',
+                        ),
+                        onChanged: (_) {
+                          debounce?.cancel();
+                          debounce = Timer(
+                            const Duration(milliseconds: 350),
+                            load,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                            value: false,
+                            label: Text('Lebensmittel'),
+                            icon: Icon(Icons.restaurant),
+                          ),
+                          ButtonSegment(
+                            value: true,
+                            label: Text('Lagerort'),
+                            icon: Icon(Icons.shelves),
+                          ),
+                        ],
+                        selected: {byLocation},
+                        onSelectionChanged: (value) =>
+                            setState(() => byLocation = value.first),
+                      ),
+                      _filters(),
+                    ],
                   ),
-                  onChanged: (_) {
-                    debounce?.cancel();
-                    debounce = Timer(const Duration(milliseconds: 350), load);
-                  },
                 ),
-                const SizedBox(height: 8),
-                SegmentedButton<bool>(
-                  segments: const [
-                    ButtonSegment(
-                      value: false,
-                      label: Text('Nach Lebensmittel'),
-                      icon: Icon(Icons.restaurant),
-                    ),
-                    ButtonSegment(
-                      value: true,
-                      label: Text('Nach Lagerort'),
-                      icon: Icon(Icons.shelves),
-                    ),
-                  ],
-                  selected: {byLocation},
-                  onSelectionChanged: (value) =>
-                      setState(() => byLocation = value.first),
-                ),
-                _filters(),
+                const SizedBox(height: AppSpacing.sm),
                 if (lots.isEmpty)
                   _empty()
-                else if (byLocation)
-                  ...locations.map(_location)
                 else
-                  ...foods.map(_food),
+                  NutritionSection(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: Column(
+                      children: byLocation
+                          ? [
+                              for (
+                                var index = 0;
+                                index < locations.length;
+                                index++
+                              )
+                                _location(
+                                  locations[index],
+                                  index < locations.length - 1,
+                                ),
+                            ]
+                          : [
+                              for (var index = 0; index < foods.length; index++)
+                                _food(foods[index], index < foods.length - 1),
+                            ],
+                    ),
+                  ),
               ],
             ),
           ),
   );
 
-  Widget _summary() => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Vorratsübersicht',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Text(
-            '${summary['active_food_count'] ?? 0} Lebensmittel · ${summary['active_lot_count'] ?? 0} aktive Bestände',
-          ),
-          Text(
-            '${summary['expiring_soon_count'] ?? 0} mit nahem Datum · ${(summary['past_best_before_count'] ?? 0) + (summary['past_use_by_count'] ?? 0)} mit überschrittenem Datum',
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Datumsangaben dienen der Bestandsübersicht. Die App bewertet nicht automatisch, ob ein Lebensmittel noch verzehrfähig ist.',
-          ),
-        ],
-      ),
+  Widget _summary() => NutritionSection(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const NutritionSectionHeader(title: 'Vorratsübersicht'),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          '${summary['active_food_count'] ?? 0} Lebensmittel · ${summary['active_lot_count'] ?? 0} aktive Bestände',
+        ),
+        Text(
+          '${summary['expiring_soon_count'] ?? 0} mit nahem Datum · ${(summary['past_best_before_count'] ?? 0) + (summary['past_use_by_count'] ?? 0)} mit überschrittenem Datum',
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        const Text(
+          'Datumsangaben dienen der Bestandsübersicht. Die App bewertet nicht automatisch, ob ein Lebensmittel noch verzehrfähig ist.',
+        ),
+      ],
     ),
   );
   Widget _filters() => ExpansionTile(
@@ -217,42 +254,48 @@ final class _PantryScreenState extends ConsumerState<PantryScreen> {
       const SizedBox(height: 8),
     ],
   );
-  Widget _food(PantryAvailability item) {
+  Widget _food(PantryAvailability item, bool showDivider) {
     final foodLots = lots.where((lot) => lot.foodId == item.foodId).toList();
-    return Card(
-      child: ExpansionTile(
-        leading: const Icon(Icons.inventory_2_outlined),
-        title: Text(
-          '${item.name}${item.brand == null ? '' : ' · ${item.brand}'}',
+    return Column(
+      children: [
+        ExpansionTile(
+          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(
+            '${item.name}${item.brand == null ? '' : ' · ${item.brand}'}',
+          ),
+          subtitle: Text(
+            '${item.quantity} ${item.unit} verfügbar · ${item.lotCount} Bestände',
+          ),
+          children: [
+            if (item.archivedFood)
+              const ListTile(
+                leading: Icon(Icons.warning_amber),
+                title: Text('Das Lebensmittel ist archiviert.'),
+              ),
+            for (final lot in foodLots) _lotTile(lot),
+          ],
         ),
-        subtitle: Text(
-          '${item.quantity} ${item.unit} verfügbar · ${item.lotCount} Bestände',
-        ),
-        children: [
-          if (item.archivedFood)
-            const ListTile(
-              leading: Icon(Icons.warning_amber),
-              title: Text('Das Lebensmittel ist archiviert.'),
-            ),
-          for (final lot in foodLots) _lotTile(lot),
-        ],
-      ),
+        if (showDivider) const Divider(),
+      ],
     );
   }
 
-  Widget _location(PantryLocation item) {
+  Widget _location(PantryLocation item, bool showDivider) {
     final locationLots = lots
         .where((lot) => lot.locationId == item.id)
         .toList();
-    return Card(
-      child: ExpansionTile(
-        leading: Icon(_locationIcon(item.type)),
-        title: Text(item.name),
-        subtitle: Text('${locationLots.length} Bestände'),
-        children: locationLots.isEmpty
-            ? [const ListTile(title: Text('Kein aktiver Bestand'))]
-            : locationLots.map(_lotTile).toList(),
-      ),
+    return Column(
+      children: [
+        ExpansionTile(
+          leading: Icon(_locationIcon(item.type)),
+          title: Text(item.name),
+          subtitle: Text('${locationLots.length} Bestände'),
+          children: locationLots.isEmpty
+              ? [const ListTile(title: Text('Kein aktiver Bestand'))]
+              : locationLots.map(_lotTile).toList(),
+        ),
+        if (showDivider) const Divider(),
+      ],
     );
   }
 
@@ -268,21 +311,18 @@ final class _PantryScreenState extends ConsumerState<PantryScreen> {
     isThreeLine: true,
     trailing: const Icon(Icons.chevron_right),
   );
-  Widget _empty() => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Icon(Icons.inventory_2_outlined, size: 48),
-          const SizedBox(height: 12),
-          const Text('Noch keine Lebensmittel im Vorrat'),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: () => context.push('/pantry/add'),
-            child: const Text('Lebensmittel hinzufügen'),
-          ),
-        ],
-      ),
+  Widget _empty() => NutritionSection(
+    child: Column(
+      children: [
+        const Icon(Icons.inventory_2_outlined, size: 48),
+        const SizedBox(height: 12),
+        const Text('Noch keine Lebensmittel im Vorrat'),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: () => context.push('/pantry/add'),
+          child: const Text('Lebensmittel hinzufügen'),
+        ),
+      ],
     ),
   );
   Widget _error() => Center(

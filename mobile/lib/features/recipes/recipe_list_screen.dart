@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
+import '../../core/widgets/design_system.dart';
 import '../../core/widgets/states.dart';
 import 'recipe_models.dart';
 import 'recipe_availability_models.dart';
@@ -56,62 +59,79 @@ final class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
     final state = ref.watch(recipeAvailabilityListProvider(filter));
     return AppScaffold(
       title: 'Rezepte',
+      revealRootBackground: true,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/recipes/new'),
         icon: const Icon(Icons.add),
         label: const Text('Rezept'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(
+          AppLayout.sectionOuterMargin,
+          AppSpacing.sm,
+          AppLayout.sectionOuterMargin,
+          0,
+        ),
         child: Column(
           children: [
-            TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                labelText: 'Rezepte suchen',
+            NutritionSection(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      labelText: 'Rezepte suchen',
+                    ),
+                    onChanged: (value) {
+                      timer?.cancel();
+                      timer = Timer(
+                        const Duration(milliseconds: 350),
+                        () => setState(() => query = value),
+                      );
+                    },
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Archivierte anzeigen'),
+                    value: archived,
+                    onChanged: (value) => setState(() => archived = value),
+                  ),
+                  DropdownButtonFormField<String>(
+                    initialValue: availability,
+                    decoration: const InputDecoration(
+                      labelText: 'Vorratsverfügbarkeit',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'all',
+                        child: Text('Alle Rezepte'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'fully_available',
+                        child: Text('Vollständig verfügbar'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'partially_available',
+                        child: Text('Teilweise verfügbar'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'not_available',
+                        child: Text('Nicht verfügbar'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'unresolved',
+                        child: Text('Nicht berechenbar'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) setState(() => availability = value);
+                    },
+                  ),
+                ],
               ),
-              onChanged: (value) {
-                timer?.cancel();
-                timer = Timer(
-                  const Duration(milliseconds: 350),
-                  () => setState(() => query = value),
-                );
-              },
             ),
-            SwitchListTile(
-              title: const Text('Archivierte anzeigen'),
-              value: archived,
-              onChanged: (value) => setState(() => archived = value),
-            ),
-            DropdownButtonFormField<String>(
-              initialValue: availability,
-              decoration: const InputDecoration(
-                labelText: 'Vorratsverfügbarkeit',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'all', child: Text('Alle Rezepte')),
-                DropdownMenuItem(
-                  value: 'fully_available',
-                  child: Text('Vollständig verfügbar'),
-                ),
-                DropdownMenuItem(
-                  value: 'partially_available',
-                  child: Text('Teilweise verfügbar'),
-                ),
-                DropdownMenuItem(
-                  value: 'not_available',
-                  child: Text('Nicht verfügbar'),
-                ),
-                DropdownMenuItem(
-                  value: 'unresolved',
-                  child: Text('Nicht berechenbar'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => availability = value);
-              },
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Expanded(
               child: state.when(
                 loading: () => const LoadingState(),
@@ -124,20 +144,30 @@ final class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                     ? const Center(
                         child: Text('Noch keine Rezepte gespeichert.'),
                       )
-                    : ListView.builder(
-                        itemCount: items.length,
-                        itemBuilder: (_, index) {
-                          final item = items[index];
-                          return Card(
-                            child: ListTile(
+                    : NutritionSection(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: ListView.builder(
+                          padding: EdgeInsets.only(
+                            bottom:
+                                AppLayout.navigationContentInset +
+                                MediaQuery.viewPaddingOf(context).bottom,
+                          ),
+                          itemCount: items.length,
+                          itemBuilder: (_, index) {
+                            final item = items[index];
+                            return NutritionListRow(
                               title: Text(item.name),
                               subtitle: Text(_availabilityText(item)),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () =>
                                   context.go('/recipes/${item.recipeId}'),
-                            ),
-                          );
-                        },
+                              showDivider: index < items.length - 1,
+                            );
+                          },
+                        ),
                       ),
               ),
             ),

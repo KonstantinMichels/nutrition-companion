@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/formatting/date_formatters.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
 import '../../core/widgets/states.dart';
+import '../../core/widgets/design_system.dart';
 import '../nutrition_assessment/assessment_models.dart';
 
 final assessmentHistoryProvider = FutureProvider<List<AssessmentSummary>>(
@@ -21,6 +23,7 @@ final class HistoryScreen extends ConsumerWidget {
     final history = ref.watch(assessmentHistoryProvider);
     return AppScaffold(
       title: 'Einschätzungsverlauf',
+      revealRootBackground: true,
       body: history.when(
         loading: () => const LoadingState(),
         error: (error, _) => ErrorState(
@@ -32,11 +35,24 @@ final class HistoryScreen extends ConsumerWidget {
               ? const _EmptyHistory()
               : Column(
                   children: [
-                    const Text(
-                      'Jede Einschätzung ist ein unveränderlicher historischer Stand. Profiländerungen überschreiben frühere Ergebnisse nicht.',
+                    NutritionSection(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const NutritionSectionHeader(
+                            title: 'Gespeicherte Einschätzungen',
+                            subtitle:
+                                'Profiländerungen überschreiben frühere Ergebnisse nicht.',
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          for (var index = 0; index < items.length; index++)
+                            _HistoryRow(
+                              item: items[index],
+                              showDivider: index < items.length - 1,
+                            ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    for (final item in items) _HistoryCard(item: item),
                   ],
                 ),
         ),
@@ -45,32 +61,31 @@ final class HistoryScreen extends ConsumerWidget {
   }
 }
 
-final class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.item});
+final class _HistoryRow extends StatelessWidget {
+  const _HistoryRow({required this.item, required this.showDivider});
   final AssessmentSummary item;
+  final bool showDivider;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      contentPadding: const EdgeInsets.all(16),
-      title: Text(DateFormatters.dateTime(item.calculatedAt)),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Ziel: ${_goal(item.goalType)}'),
-          Text(
-            'Zielenergie: ${item.energyTargetLabel ?? item.targetEnergy.display}',
-          ),
-          Text(
-            item.warnings.isEmpty
-                ? 'Keine Warnhinweise'
-                : '${item.warnings.length} Hinweis(e)',
-          ),
-        ],
-      ),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.go('/assessment/${item.id}'),
+  Widget build(BuildContext context) => NutritionListRow(
+    title: Text(DateFormatters.dateTime(item.calculatedAt)),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Ziel: ${_goal(item.goalType)}'),
+        Text(
+          'Zielenergie: ${item.energyTargetLabel ?? item.targetEnergy.display}',
+        ),
+        Text(
+          item.warnings.isEmpty
+              ? 'Keine Warnhinweise'
+              : '${item.warnings.length} Hinweis(e)',
+        ),
+      ],
     ),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => context.go('/assessment/${item.id}'),
+    showDivider: showDivider,
   );
 }
 
@@ -78,21 +93,22 @@ final class _EmptyHistory extends StatelessWidget {
   const _EmptyHistory();
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      const SizedBox(height: 48),
-      const Icon(Icons.history, size: 64),
-      const SizedBox(height: 16),
-      Text(
-        'Noch keine Einschätzungen',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: () => context.go('/onboarding?new=true'),
-        child: const Text('Einschätzung starten'),
-      ),
-    ],
+  Widget build(BuildContext context) => NutritionSection(
+    child: Column(
+      children: [
+        const Icon(Icons.history, size: 64),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          'Noch keine Einschätzungen',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        FilledButton(
+          onPressed: () => context.go('/onboarding?new=true'),
+          child: const Text('Einschätzung starten'),
+        ),
+      ],
+    ),
   );
 }
 

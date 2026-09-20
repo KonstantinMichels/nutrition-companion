@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/formatting/date_formatters.dart';
 import '../../core/formatting/german_decimal.dart';
@@ -79,7 +80,7 @@ final class _WeeklyPlanScreenState extends ConsumerState<WeeklyPlanScreen> {
         : RefreshIndicator(
             onRefresh: load,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppLayout.scrollPadding(context),
               children: [
                 _header(week!),
                 _summary(week!),

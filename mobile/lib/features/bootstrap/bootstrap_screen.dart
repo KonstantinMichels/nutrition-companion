@@ -38,19 +38,22 @@ final class _BootstrapScreenState extends ConsumerState<BootstrapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: SafeArea(
-      child: Column(
-        children: [
-          Expanded(child: LoadingState(message: 'App wird vorbereitet …')),
-          Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              AppBranding.productName,
-              style: TextStyle(fontWeight: FontWeight.w600),
+  Widget build(BuildContext context) => Scaffold(
+    body: ColoredBox(
+      color: Theme.of(context).colorScheme.surface,
+      child: const SafeArea(
+        child: Column(
+          children: [
+            Expanded(child: LoadingState(message: 'App wird vorbereitet …')),
+            Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                AppBranding.productName,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );

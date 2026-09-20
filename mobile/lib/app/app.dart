@@ -36,23 +36,28 @@ final class ConfigurationErrorApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: AppBranding.productName,
     theme: AppTheme.light(),
-    home: Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.settings_outlined, size: 64),
-                const SizedBox(height: 16),
-                const Text(
-                  'Die App-Konfiguration ist ungültig.',
-                  style: TextStyle(fontSize: 20),
+    home: Builder(
+      builder: (context) => Scaffold(
+        body: ColoredBox(
+          color: Theme.of(context).colorScheme.surface,
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.settings_outlined, size: 64),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Die App-Konfiguration ist ungültig.',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(height: 12),
+                    SelectableText(message, textAlign: TextAlign.center),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                SelectableText(message, textAlign: TextAlign.center),
-              ],
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/states.dart';
 import 'food_list_screen.dart';
@@ -30,7 +31,7 @@ final class FoodDetailScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(foodDetailProvider(id)),
         ),
         data: (food) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppLayout.scrollPadding(context),
           children: [
             Text(food.name, style: Theme.of(context).textTheme.headlineSmall),
             if (food.brand != null) Text(food.brand!),

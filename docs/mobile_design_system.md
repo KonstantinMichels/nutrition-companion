@@ -34,16 +34,25 @@ the bottom navigation visible and select the closest primary destination.
 
 ## Shared tokens
 
-Global spacing, card radius, app-bar styling, navigation styling, and control
-themes belong in `mobile/lib/app/theme.dart`. Feature screens should consume
-`Theme.of(context)` and shared layout widgets instead of defining colors or
-component shapes locally.
+The normative component and usage rules now live in the root
+`DESIGN_SYSTEM.md`. Global spacing, radii, app-bar styling, navigation styling,
+and control themes belong in `mobile/lib/app/theme.dart`. Feature screens
+consume `Theme.of(context)` and shared layout widgets instead of defining
+colors or component shapes locally.
 
 Current foundation:
 
-- page padding: 20 dp
-- section spacing: 24 dp
-- card radius: 16 dp
+- outer section margin: 2 dp
+- section spacing: 10–24 dp according to grouping
+- section radius: 32 dp
+- inner-surface radius: 26 dp
+- floating-navigation margin: 12 dp horizontal, 8 dp above the safe edge
+- scroll end inset: 86 dp plus the system navigation/gesture inset
+- deepest application background: black in light and dark mode
+- Overview hero: attached to y=0, behind the status bar, bottom corners only
+- all other screens: top-attached title/action hero followed by a rounded body
+- selected navigation item: icon and text share one rounded highlight
+- navigation surface: translucent and distinct from section/card surfaces
 - flat app bars and cards
 - 72 dp bottom navigation with icon and label
 

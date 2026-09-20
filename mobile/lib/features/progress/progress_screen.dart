@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/formatting/german_decimal.dart';
 import '../../core/widgets/app_scaffold.dart';
@@ -258,7 +259,7 @@ final class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   }
 
   Widget _weightHistory() => ListView(
-    padding: const EdgeInsets.all(16),
+    padding: AppLayout.scrollPadding(context),
     children: [
       const Text(
         'Alle Rohmessungen',
@@ -295,7 +296,7 @@ final class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   );
 
   Widget _body() => ListView(
-    padding: const EdgeInsets.all(16),
+    padding: AppLayout.scrollPadding(context),
     children: [
       FilledButton.tonalIcon(
         onPressed: _measurementDialog,
@@ -344,7 +345,7 @@ final class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   Widget _goals() {
     final active = goals.where((g) => g['status'] == 'active').firstOrNull;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppLayout.scrollPadding(context),
       children: [
         if (active == null)
           _Empty(

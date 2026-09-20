@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/content_width.dart';
+import '../../core/widgets/design_system.dart';
 
 final class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -10,6 +12,7 @@ final class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppScaffold(
     title: 'Mehr',
+    revealRootBackground: true,
     body: ContentWidth(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,31 +55,22 @@ final class MoreScreen extends StatelessWidget {
   );
 
   Widget _section(BuildContext context, String title, List<_Entry> entries) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-          ),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                for (var index = 0; index < entries.length; index++) ...[
-                  ListTile(
-                    leading: Icon(entries[index].icon),
-                    title: Text(entries[index].label),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.go(entries[index].path),
-                  ),
-                  if (index < entries.length - 1)
-                    const Divider(height: 1, indent: 56),
-                ],
-              ],
-            ),
-          ),
-        ],
+      NutritionSection(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NutritionSectionHeader(title: title),
+            const SizedBox(height: AppSpacing.sm),
+            for (var index = 0; index < entries.length; index++)
+              NutritionListRow(
+                leading: Icon(entries[index].icon),
+                title: Text(entries[index].label),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go(entries[index].path),
+                showDivider: index < entries.length - 1,
+              ),
+          ],
+        ),
       );
 }
 
